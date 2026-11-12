@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="OOP Group Project" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Option virtualFolders="data/" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/OOP Group Project" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add directory="include" />
+					<Add directory="data" />
+					<Add directory="src" />
+					<Add directory="universal" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/OOP Group Project" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add directory="include" />
+					<Add directory="data" />
+					<Add directory="src" />
+					<Add directory="universal" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Unit filename="data/FoodItems.h" />
+		<Unit filename="data/Merchandise.h" />
+		<Unit filename="data/Product.h" />
+		<Unit filename="data/Tickets.h" />
+		<Unit filename="include/Coach.h" />
+		<Unit filename="include/FootballTeam.h" />
+		<Unit filename="include/LeagueComissioner.h" />
+		<Unit filename="include/MatchOfficial.h" />
+		<Unit filename="include/Person.h" />
+		<Unit filename="include/Player.h" />
+		<Unit filename="include/Product.h">
+			<Option virtualFolder="data/" />
+		</Unit>
+		<Unit filename="include/Spectator.h" />
+		<Unit filename="main.cpp" />
+		<Unit filename="src/Fixture.h" />
+		<Unit filename="src/FootballLeague.h" />
+		<Unit filename="src/MatchResults.h" />
+		<Unit filename="src/Stadium.h" />
+		<Unit filename="src/StadiumShop.h" />
+		<Unit filename="universal/Date.h" />
+		<Unit filename="universal/Time.h" />
+		<Extensions>
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
