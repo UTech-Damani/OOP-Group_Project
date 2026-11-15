@@ -2,6 +2,9 @@
 #define SPECTATOR_H
 
 #include "Person.h"
+#include <iostream>
+
+using namespace std;
 
 class Spectator : public Person{
     private:
@@ -12,7 +15,7 @@ class Spectator : public Person{
         Spectator() : Person()
         {
             //initialized to zero as nothing has been stored yet
-            ticketPurchased = 0;
+            ticketsPurchased = 0;
             totalAmountSpent =  0.0;
         }
 
@@ -38,6 +41,15 @@ class Spectator : public Person{
         }
         void setTotalAmountSpent( double total){
             totalAmountSpent = total;
+        }
+
+        void Display(){
+            cout << "ID: " << getIdNom() << endl;
+            cout << "Name: " << getFullName() << endl;
+            cout << "Age: " << getAge() << endl;
+            cout << "Gender: " << getGender() << endl;
+            cout << "Tickets Purchased: " << ticketsPurchased << endl;
+            cout << "Total Amount Spent: $" << totalAmountSpent << endl;
         }
 };
 

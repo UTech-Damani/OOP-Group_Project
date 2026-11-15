@@ -3,10 +3,14 @@
 
 #include "FootballTeam.h"
 
+#include <string>
+#include <iostream>
 
-class Coach{
+using namespace std;
+
+class Coach : public Person{
     private:
-        std::string qualificaton;
+        std::string qualification;
         std::string coachingRole;
         std::string teamAssignment;
         FootballTeam* team;
@@ -18,7 +22,7 @@ class Coach{
             teamAssignment = ""; //No team assigned
         }
 
-        Coach(int id, string name, int a, string g, string qual, string role, string team){
+        Coach(int id, string name, int a, string g, string qual, string role, string team) : Person(id, name, a, g){
             qualification = qual;
             coachingRole = role;
             teamAssignment = team;
@@ -48,6 +52,17 @@ class Coach{
 
         void setTeam(FootballTeam* t){
             team = t;
+        }
+
+        void Display() 
+        {
+            cout << "ID: " << getIdNom() << endl;
+            cout << "Name: " << getFullName() << endl;
+            cout << "Age: " << getAge() << endl;
+            cout << "Gender: " << getGender() << endl;
+            cout << "Qualification: " << qualification << endl;
+            cout << "Coaching Role: " << coachingRole << endl;
+            cout << "Team Assignment: " << teamAssignment << endl;
         }
 
 };

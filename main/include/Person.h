@@ -2,31 +2,34 @@
 #define PERSON_H
 
 #include <string>
+#include <iostream>
+
+using namespace std;
 
 // Since this class contains abstract methods/destructor, it is now an abstract class
 class Person{
     private:
         int IdNom;
-        std::string FullName;
+        string FullName;
         int Age;
-        int Gender;
+        string Gender;
 
     public:
         virtual ~Person() = 0;
-        virtual Display() =0;
+        virtual void Display() =0;
 
         //Constructors
         Person()
         {
             //initializes
             IdNom = 0;
-            FullName = "";
+            FullName = "BLANK";
             Age = 0;
-            Gender = "";
+            Gender = "BLANK";
 
         }
 
-        Person(int id, string name,int a, int g)
+        Person(int id, string name,int a, string g)
         {
             //will store data entered by the user.
             IdNom = id;
@@ -45,7 +48,7 @@ class Person{
         int getAge() const{
             return Age;
         }
-        int getGender() const{
+        string getGender() const{
             return Gender;
         }
 
@@ -59,7 +62,7 @@ class Person{
         void setAge(int a){
             Age = a;
         }
-        void setGender(int g){
+        void setGender(string g){
             Gender = g;
         }
 };

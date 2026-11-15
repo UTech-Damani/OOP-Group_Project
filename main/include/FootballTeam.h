@@ -6,6 +6,8 @@
 #include "Player.h"
 #include "Coach.h"
 
+using namespace std;
+
 class FootballTeam {
     private:
         int teamID;
@@ -19,11 +21,11 @@ class FootballTeam {
 
         std::vector <Player> players;
         std::vector <Coach> coaches;
-     
+    
     public:
     // Default Constructor
     FootballTeam() {}
-     
+    
     // Parameterized Constructor
     FootballTeam(int teamID, string teamName, string registrationDate,
         int points, int wins, int draws,
@@ -37,7 +39,7 @@ class FootballTeam {
         this->losses = losses;
         this->teamStatus = teamStatus;
     }
-     
+    
     // Getters
     int getTeamID() { return teamID; }
     string getTeamName() { return teamName; }
@@ -47,7 +49,7 @@ class FootballTeam {
     int getDraws() { return draws; }
     int getLosses() { return losses; }
     string getTeamStatus() { return teamStatus; }
-     
+    
     // Setters
     void setTeamID(int teamID) { this->teamID = teamID; }
     void setTeamName(string teamName) { this->teamName = teamName; }
@@ -58,6 +60,24 @@ class FootballTeam {
     void setLosses(int losses) { this->losses = losses; }
     void setTeamStatus(string teamStatus) { this->teamStatus = teamStatus; }
 
+    // Rule 2: Update this team's record based on the match outcome.
+    void updateLeaguePoints(const std::string& result) {
+        if (result == "win") {
+            ++wins;
+            points += 3;
+        } else if (result == "draw") {
+            ++draws;
+            points += 1;
+        } else if (result == "loss") {
+            ++losses; // Count the loss, but add no points.
+        }
+    }
+
+    // Rule 3: Accept only registered teams.
+    // "unregistered" and "suspended" both return false.
+    bool canParticipate() const {
+        return teamStatus == "registered";
+    }
     // Adding each player object to their respective team
     void addPlayer(Player p){
         players.push_back(p);

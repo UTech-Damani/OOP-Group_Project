@@ -3,6 +3,7 @@
 
 #include "Person.h"
 #include <string>
+#include <iostream>
 
 class MatchOfficial : public Person {
     std::string officiatingRole;
@@ -20,7 +21,7 @@ class MatchOfficial : public Person {
             yearsExperience = 0;  //Starts with 0 years of experience
         }
 
-        MatchOfficial::MatchOfficial(int id, string name, int a, string g,
+        MatchOfficial(int id, string name, int a, string g,
                              string role, string r, bool available,
                              int experience)
                             : Person(id, name, a, g)
@@ -58,6 +59,21 @@ class MatchOfficial : public Person {
         }
         void setYearsExperience(int years){
             yearsExperience = years;
+        }
+
+        void Display()
+        {
+            cout << "ID: " << getIdNom() << endl;
+            cout << "Name: " << getFullName() << endl;
+            cout << "Age: " << getAge() << endl;
+            cout << "Gender: " << getGender() << endl;
+            cout << "Role: " << officiatingRole << endl;
+            cout << "Rank: " << rank << endl;
+            cout << "Availability: "
+                << (availability ? "Available" : "Unavailable")
+                << endl;
+            cout << "Years of Experience: "
+                << yearsExperience << endl;
         }
 };
 

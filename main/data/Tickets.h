@@ -2,6 +2,11 @@
 #define TICKETS_H
 #include <string>
 #include <iomanip>
+#include <iostream>
+
+#include "Product.h"
+
+using namespace std;
 
 class Tickets : public Product{
     private:
@@ -34,7 +39,7 @@ class Tickets : public Product{
             return ticketCategory;
         }
 
-        tm getMatchDate() {
+        string getMatchDate() {
             return matchDate;
         }
 
@@ -60,10 +65,10 @@ class Tickets : public Product{
             cout << "\n================================"
             << "\n      Tickets DETAILS"
             << "\n================================"
-            << "\nProduct ID:       " << productID
-            << "\nProduct Name:     " << productName
-            << "\nPrice:            $" << fixed << setprecision(2) << price
-            << "\nQuantity:         " << quantityInStock
+            << "\nProduct ID:       " << getProductID()
+            << "\nProduct Name:     " << getProductName()
+            << "\nPrice:            $" << fixed << setprecision(2) << getPrice()
+            << "\nQuantity:         " << getQuantityInStock()
             << "\nTicket Category:             " << ticketCategory
             << "\nMatch Date:            " << matchDate
             << "\nSeat Number:           " << seatNumber

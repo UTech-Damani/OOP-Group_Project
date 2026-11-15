@@ -1,6 +1,9 @@
 #ifndef STADIUMSHOP_H
 #define STADIUMSHOP_H
 #include <string>
+#include <math.h>
+
+using namespace std;
 
 class StadiumShop
 {
@@ -94,6 +97,23 @@ class StadiumShop
 
         void setTaxRate(double taxRate) {
             this->taxRate = taxRate;
+        }
+
+        // Rule 1: Add 15% GCT to a price that does not include tax yet.
+        static double calculatePriceWithGCT(double preTaxPrice) {
+            return std::round(preTaxPrice * 1.15 * 100.0) / 100.0;
+        }
+
+        // Store the tax-inclusive price using the product's existing setter.
+        template <typename ProductType>
+        static void setPriceFromPreTax(ProductType& product, double preTaxPrice) {
+            product.setPrice(calculatePriceWithGCT(preTaxPrice));
+        }
+
+        // Find the tax already included in a selling price for a receipt.
+        // Do not add this amount to the selling price again.
+        static double calculateIncludedGCT(double sellingPrice) {
+            return std::round(sellingPrice * (15.0 / 115.0) * 100.0) / 100.0;
         }
 };
 

@@ -3,6 +3,11 @@
 
 #include <string>
 #include <iomanip>
+#include <iostream>
+
+#include "Product.h"
+
+using namespace std;
 
 class FoodItems : public Product{
     private:
@@ -29,7 +34,7 @@ class FoodItems : public Product{
         }
 
         // Getters
-        tm getExpiryDate() {
+        string getExpiryDate() {
             return expiryDate;
         }
 
@@ -51,10 +56,10 @@ class FoodItems : public Product{
             cout << "\n================================"
             << "\n      FoodItems DETAILS"
             << "\n================================"
-            << "\nProduct ID:       " << productID
-            << "\nProduct Name:     " << productName
-            << "\nPrice:            $" << fixed << setprecision(2) << price
-            << "\nQuantity:         " << quantityInStock
+            << "\nProduct ID:       " << getProductID()
+            << "\nProduct Name:     " << getProductName()
+            << "\nPrice:            $" << fixed << setprecision(2) << getPrice()
+            << "\nQuantity:         " << getQuantityInStock()
             << "\nExpiry Date:             " << expiryDate
             << "\nCategory:            " << category
             << "\n================================\n";

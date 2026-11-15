@@ -15,6 +15,17 @@ class Fixture
         string fixtureStatus;
         int attendance;
 
+        // Rule 4: Store IDs so the league can check both team positions.
+        // Zero means a team has not been assigned yet.
+        int homeTeamID = 0;
+        int awayTeamID = 0;
+
+        // Stop the same result from awarding points twice.
+        bool leaguePointsAwarded = false;
+
+        // Let FootballLeague assign teams after its checks pass.
+        friend class FootballLeague;
+
     public:
         // Constructors
         Fixture(){
@@ -73,6 +84,14 @@ class Fixture
 
         int getAttendance() const {
             return attendance;
+        }
+
+        int getHomeTeamID() const {
+            return homeTeamID;
+        }
+
+        int getAwayTeamID() const {
+            return awayTeamID;
         }
 };
 

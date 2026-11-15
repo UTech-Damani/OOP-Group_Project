@@ -16,7 +16,7 @@ class Product
         virtual ~Product() = 0;
 
         // Creates an abstract method which must be implemented by all child class
-        virtual Display() = 0;
+        virtual void Display() = 0;
 
         //Default Constructor
         Product() {

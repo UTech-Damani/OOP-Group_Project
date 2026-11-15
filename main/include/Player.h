@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 #include <string>
+#include <iostream>
 
 #include "Person.h"
 #include "FootballTeam.h"
@@ -20,6 +21,7 @@ class Player : public Person {
             jerseyNom = 0;        //Sets jersey number to 0
             goalScored = 0;       //Player starts with 0 goals
             playerStatus = "";    //No player status assigned
+            team = nullptr;
         }
 
         Player(int id, string name, int a, string g,
@@ -63,6 +65,18 @@ class Player : public Person {
 
         void setTeam(FootballTeam* t) {
             team = t;
+        }
+
+        void Display() 
+        {
+            cout << "ID: " << getIdNom() << endl;
+            cout << "Name: " << getFullName() << endl;
+            cout << "Age: " << getAge() << endl;
+            cout << "Gender: " << getGender() << endl;
+            cout << "Position: " << positionOnField << endl;
+            cout << "Jersey Number: " << jerseyNom << endl;
+            cout << "Goals Scored: " << goalScored << endl;
+            cout << "Player Status: " << playerStatus << endl;
         }
 };
 

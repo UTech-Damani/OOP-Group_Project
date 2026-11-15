@@ -2,6 +2,7 @@
 #define LEAGUECOMMISSIONER_H
 #include "Person.h"
 #include <string>
+#include <iostream>
 
 class LeagueCommissioner : public Person{
     bool approvalAuthority;
@@ -9,6 +10,19 @@ class LeagueCommissioner : public Person{
     std::string assignedRegion;
 
     public:
+        LeagueCommissioner(){
+            approvalAuthority = false;
+            yearsOfService = 0;
+            assignedRegion = "No region Assigned";
+        }
+        
+        LeagueCommissioner(bool approvalAuthority, int yearsOfService, string assignedRegion,
+                            int IdNom, string FullName, int Age, string Gender) : Person(IdNom, FullName, Age, Gender){
+                                this->approvalAuthority = approvalAuthority;
+                                this->yearsOfService = yearsOfService;
+                                this->assignedRegion = assignedRegion;
+                            }
+
         //Getters
         bool getApprovalAuthority() const{
             return approvalAuthority;
@@ -29,6 +43,21 @@ class LeagueCommissioner : public Person{
         }
         void setAssignedRegion(const std::string& region){
             assignedRegion = region;
+        }
+
+        void Display() 
+        {
+            cout << "ID: " << getIdNom() << endl;
+            cout << "Name: " << getFullName() << endl;
+            cout << "Age: " << getAge() << endl;
+            cout << "Gender: " << getGender() << endl;
+            cout << "Approval Authority: "
+                << (approvalAuthority ? "Yes" : "No")
+                << endl;
+            cout << "Years Of Service: "
+                << yearsOfService << endl;
+            cout << "Assigned Region: "
+                << assignedRegion << endl;
         }
 };
 

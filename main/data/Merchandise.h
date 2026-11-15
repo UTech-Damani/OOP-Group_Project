@@ -1,7 +1,13 @@
 #ifndef MERCHANDISE_H
 #define MERCHANDISE_H
+
 #include <string>
 #include <iomanip>
+#include <iostream>
+
+#include "Product.h"
+
+using namespace std;
 
 class Merchandise : public Product{
     private:
@@ -20,9 +26,9 @@ class Merchandise : public Product{
         }
 
         Merchandise(string sizeOfItem, string brand, int productID,
-        std::string productName, double price, int quantityInStock) : Product(productID, productName, price, quantityInStock)
+        std::string productName, double price, int quantityInStock) : Product(productID, productName, price, quantityInStock){
 
-            this->size = size;
+            this->sizeOfItem = sizeOfItem;
             this->brand = brand;
         }
 
@@ -49,10 +55,10 @@ class Merchandise : public Product{
             cout << "\n================================"
             << "\n      MERCHANDISE DETAILS"
             << "\n================================"
-            << "\nProduct ID:       " << productID
-            << "\nProduct Name:     " << productName
-            << "\nPrice:            $" << fixed << setprecision(2) << price
-            << "\nQuantity:         " << quantityInStock
+            << "\nProduct ID:       " << getProductID()
+            << "\nProduct Name:     " << getProductName()
+            << "\nPrice:            $" << fixed << setprecision(2) << getPrice()
+            << "\nQuantity:         " << getQuantityInStock()
             << "\nSize:             " << sizeOfItem
             << "\nBrand:            " << brand
             << "\n================================\n";
