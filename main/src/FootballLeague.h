@@ -2,6 +2,7 @@
 #define FOOTBALLLEAGUE_H
 
 #include <string>
+#include <vector>
 
 #include "Date.h"
 #include "Fixture.h"
@@ -19,6 +20,9 @@ class FootballLeague
         Date endDate;
         int numberOfTeams;
         string currentStatus;
+        int minimumAge;
+
+        vector<Fixture> fixtures;
 
     public:
         // Default Constructor
@@ -33,7 +37,7 @@ class FootballLeague
         // Parameterized Constructor
         FootballLeague(int leagueID, string leagueName, string season,
                        Date startDate, Date endDate,
-                       int numberOfTeams, string currentStatus) {
+                       int numberOfTeams, string currentStatus, int minimumAge) {
             this->leagueID = leagueID;
             this->leagueName = leagueName;
             this->season = season;
@@ -41,6 +45,7 @@ class FootballLeague
             this->endDate = endDate;
             this->numberOfTeams = numberOfTeams;
             this->currentStatus = currentStatus;
+            this->minimumAge = minimumAge;
         }
 
         // Getters
@@ -72,6 +77,10 @@ class FootballLeague
             return currentStatus;
         }
 
+        int getMinimumAge(){
+            return minimumAge;
+        }
+
         // Setters
         void setLeagueID(int leagueID) {
             this->leagueID = leagueID;
@@ -99,6 +108,10 @@ class FootballLeague
 
         void setCurrentStatus(string currentStatus) {
             this->currentStatus = currentStatus;
+        }
+
+        void setMinimumAge(int minAge){
+            minimumAge = minAge;
         }
 
         void getStandings(){

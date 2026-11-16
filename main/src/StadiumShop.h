@@ -1,13 +1,12 @@
 #ifndef STADIUMSHOP_H
 #define STADIUMSHOP_H
 
-#include "Merchandise.h"
-#include "Tickets.h"
-#include "FoodItems.h"
 #include "Product.h"
+#include "Spectator.h"
 
 #include <string>
 #include <math.h>
+#include <vector>
 
 using namespace std;
 
@@ -20,7 +19,9 @@ class StadiumShop
         string location;
         double inventoryValue;
         int totalProductsSold;
-        double taxRate;
+        static const double taxRate = 15;
+
+        vector<Product*> products;
 
     public:
     // Default Constructor
@@ -31,20 +32,20 @@ class StadiumShop
             location = "";
             inventoryValue = 0.0;
             totalProductsSold = 0;
-            taxRate = 0.0;
+            
         }
 
         // Parameterized Constructor
         StadiumShop(int shopID, string shopName, int productCount,
                     string location, double inventoryValue,
-                    int totalProductsSold, double taxRate) {
+                    int totalProductsSold) {
             this->shopID = shopID;
             this->shopName = shopName;
             this->productCount = productCount;
             this->location = location;
             this->inventoryValue = inventoryValue;
             this->totalProductsSold = totalProductsSold;
-            this->taxRate = taxRate;
+        
         }
 
         // Getters
@@ -101,25 +102,39 @@ class StadiumShop
             this->totalProductsSold = totalProductsSold;
         }
 
-        void setTaxRate(double taxRate) {
-            this->taxRate = taxRate;
-        }
-
         // Rule 1: Add 15% GCT to a price that does not include tax yet.
         static double calculatePriceWithGCT(double preTaxPrice) {
             return std::round(preTaxPrice * 1.15 * 100.0) / 100.0;
         }
 
         // Store the tax-inclusive price using the product's existing setter.
-        template <typename ProductType>
-        static void setPriceFromPreTax(ProductType& product, double preTaxPrice) {
-            product.setPrice(calculatePriceWithGCT(preTaxPrice));
+        static void setPriceFromPreTax(Product* product, double preTaxPrice) {
+            product->setPrice(calculatePriceWithGCT(preTaxPrice));
         }
 
         // Find the tax already included in a selling price for a receipt.
-        // Do not add this amount to the selling price again.
         static double calculateIncludedGCT(double sellingPrice) {
-            return std::round(sellingPrice * (15.0 / 115.0) * 100.0) / 100.0;
+            return std::round(sellingPrice * (taxRate / 115.0) * 100.0) / 100.0;
+        }
+
+        void addProduct(Product* p){
+            setPriceFromPreTax(p, p->getPrice());
+            products.push_back(p);
+            productCount++;
+            
+        }
+
+        bool transaction(Spectator* spectator, Product* product){
+            if(spectator->getBalance() >= product->getPrice()){
+                spectator->setBalance(spectator->getBalance() - product->getPrice());
+
+                totalProductsSold++;
+                inventoryValue -= product->getPrice();
+
+                return true;
+            }
+
+            return false;
         }
 };
 

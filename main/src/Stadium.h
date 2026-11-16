@@ -1,7 +1,9 @@
 #ifndef STADIUM_H
 #define STADIUM_H
+#include "StadiumShop.h"
 
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -15,6 +17,8 @@ class Stadium
         string fieldCondition;
         double ticketPrice;
         int occupancy;
+
+        vector<StadiumShop> shops;
 
     public:
         // Default Constructor
@@ -110,6 +114,10 @@ class Stadium
         }
         void increaseOccupancy(){
             
+        }
+
+        void addShop(const StadiumShop& shop) {
+            shops.push_back(shop);
         }
 
 };
