@@ -7,6 +7,7 @@
 #include "Date.h"
 #include "Fixture.h"
 #include "FootballTeam.h"
+#include "Stadium.h"
 
 using namespace std;
 
@@ -22,7 +23,9 @@ class FootballLeague
         string currentStatus;
         int minimumAge;
 
-        vector<Fixture> fixtures;
+        vector <Fixture> fixtures;
+        vector <Stadium> stadiums;
+        vector <FootballTeam> teams;
 
     public:
         // Default Constructor

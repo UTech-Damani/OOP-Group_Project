@@ -53,6 +53,7 @@ class Spectator : public Person{
         }
 
         void buyTicket(){
+            ticketsPurchased++;
 
         }
         void buyProduct(){

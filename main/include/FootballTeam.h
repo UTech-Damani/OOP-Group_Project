@@ -5,6 +5,7 @@
 
 #include "Player.h"
 #include "Coach.h"
+#include "Date.h"
 
 using namespace std;
 
@@ -12,7 +13,7 @@ class FootballTeam {
     private:
         int teamID;
         string teamName;
-        string registrationDate;
+        Date registrationDate;
         int points;
         int wins;
         int draws;
@@ -27,12 +28,14 @@ class FootballTeam {
     FootballTeam() {}
     
     // Parameterized Constructor
-    FootballTeam(int teamID, string teamName, string registrationDate,
+    FootballTeam(int teamID, string teamName,
         int points, int wins, int draws,
-        int losses, string teamStatus) {
+        int losses, string teamStatus, int day, int month, int year) {
         this->teamID = teamID;
         this->teamName = teamName;
-        this->registrationDate = registrationDate;
+        registrationDate.setDay(day);
+        registrationDate.setMonth(month);
+        registrationDate.setYear(year);
         this->points = points;
         this->wins = wins;
         this->draws = draws;
@@ -43,7 +46,7 @@ class FootballTeam {
     // Getters
     int getTeamID() { return teamID; }
     string getTeamName() { return teamName; }
-    string getRegistrationDate() { return registrationDate; }
+    void getRegistrationDate() { registrationDate.displayDate(); }
     int getPoints() { return points; }
     int getWins() { return wins; }
     int getDraws() { return draws; }
@@ -53,7 +56,11 @@ class FootballTeam {
     // Setters
     void setTeamID(int teamID) { this->teamID = teamID; }
     void setTeamName(string teamName) { this->teamName = teamName; }
-    void setRegistrationDate(string registrationDate) { this->registrationDate = registrationDate; }
+    void setRegistrationDate(int day, int month, int year) {
+        registrationDate.setDay(day);
+        registrationDate.setMonth(month);
+        registrationDate.setYear(year);
+    }
     void setPoints(int points) { this->points = points; }
     void setWins(int wins) { this->wins = wins; }
     void setDraws(int draws) { this->draws = draws; }
