@@ -54,6 +54,10 @@ class Coach : public Person{
             team = t;
         }
 
+        void removeFromTeam(){
+
+        }
+
         void Display() 
         {
             cout << "ID: " << getIdNom() << endl;

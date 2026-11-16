@@ -1,8 +1,12 @@
 #ifndef FIXTURE_H
 #define FIXTURE_H
+#include "Stadium.h"
+#include "MatchResults.h"
+#include "MatchOfficial.h"
 
 #include <string>
 #include <iomanip>
+#include <vector>
 
 using namespace std;
 
@@ -25,6 +29,10 @@ class Fixture
 
         // Let FootballLeague assign teams after its checks pass.
         friend class FootballLeague;
+
+        Stadium stadium;
+        MatchResult result;
+        vector<MatchOfficial> officials;
 
     public:
         // Constructors
@@ -92,6 +100,22 @@ class Fixture
 
         int getAwayTeamID() const {
             return awayTeamID;
+        }
+
+        void conflictsWith(){
+
+        }
+        void addOfficial(const MatchOfficial& o){
+            officials.push_back(o);
+        }
+        void recordResults(){
+
+        }
+        void completeFixture(){
+
+        }
+        void postpone(){
+            
         }
 };
 

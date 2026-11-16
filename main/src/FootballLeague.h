@@ -101,6 +101,10 @@ class FootballLeague
             this->currentStatus = currentStatus;
         }
 
+        void getStandings(){
+            
+        }
+
         bool scheduleFixture(Fixture proposed, FootballTeam& home, FootballTeam& away) {
             // Rule 3: Both teams must be registered to play.
             if (!home.canParticipate() || !away.canParticipate()) {

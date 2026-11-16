@@ -43,6 +43,16 @@ class Spectator : public Person{
             totalAmountSpent = total;
         }
 
+        void buyTicket(){
+
+        }
+        void buyProduct(){
+
+        }
+        void addToTotalSpent(){
+            
+        }
+
         void Display(){
             cout << "ID: " << getIdNom() << endl;
             cout << "Name: " << getFullName() << endl;

@@ -3,6 +3,8 @@
 
 #include <string>
 
+using namespace std;
+
 class Stadium
 {
     private:
@@ -95,6 +97,19 @@ class Stadium
 
         void setOccupancy(int occupancy) {
             this->occupancy = occupancy;
+        }
+
+        void hasCapacityFor(){
+
+        }
+        void getRemainingSeats(){
+
+        }
+        void isAvailable(){
+
+        }
+        void increaseOccupancy(){
+            
         }
 
 };

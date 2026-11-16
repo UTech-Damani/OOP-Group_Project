@@ -67,6 +67,18 @@ class Player : public Person {
             team = t;
         }
 
+        void recordGoals(){
+
+        }
+
+        void isEligible(){
+
+        }
+
+        void changeStatus(){
+
+        }
+
         void Display() 
         {
             cout << "ID: " << getIdNom() << endl;
@@ -78,6 +90,7 @@ class Player : public Person {
             cout << "Goals Scored: " << goalScored << endl;
             cout << "Player Status: " << playerStatus << endl;
         }
+
 };
 
 

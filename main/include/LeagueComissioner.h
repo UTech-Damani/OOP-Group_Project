@@ -45,6 +45,16 @@ class LeagueCommissioner : public Person{
             assignedRegion = region;
         }
 
+        void approveTeam(){
+
+        }
+        void suspendTeam(){
+
+        }
+        void assignOffical(){
+            
+        }
+
         void Display() 
         {
             cout << "ID: " << getIdNom() << endl;

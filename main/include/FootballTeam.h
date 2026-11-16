@@ -79,14 +79,15 @@ class FootballTeam {
         return teamStatus == "registered";
     }
     // Adding each player object to their respective team
-    void addPlayer(Player p){
+    void addPlayer(Player& p){
         players.push_back(p);
         p.setTeam(this);
     }
-    void addCoach(Coach c){
+    void addCoach(Coach& c){
         coaches.push_back(c);
         c.setTeam(this);
     }
 };
 
 #endif // FOOTBALLTEAM_H
+ 

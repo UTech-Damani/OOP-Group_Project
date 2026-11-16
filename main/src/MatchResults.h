@@ -66,6 +66,13 @@ class MatchResult {
             this->matchStatistics = matchStatistics;
         }
 
+        void getPointsFor(){
+
+        }
+        void validateScores(){
+            
+        }
+
         // Display Method
         void Display() {
             cout << "\n=== Match Result ===" << endl;

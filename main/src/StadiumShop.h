@@ -1,5 +1,11 @@
 #ifndef STADIUMSHOP_H
 #define STADIUMSHOP_H
+
+#include "Merchandise.h"
+#include "Tickets.h"
+#include "FoodItems.h"
+#include "Product.h"
+
 #include <string>
 #include <math.h>
 

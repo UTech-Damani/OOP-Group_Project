@@ -17,7 +17,7 @@ class MatchOfficial : public Person {
         {
             officiatingRole = ""; //No officiating role assigned
             rank = "";            //No rank assigned
-            availability = false; //Official is initially unavailable
+            availability = true; //Official is initially available
             yearsExperience = 0;  //Starts with 0 years of experience
         }
 
@@ -59,6 +59,14 @@ class MatchOfficial : public Person {
         }
         void setYearsExperience(int years){
             yearsExperience = years;
+        }
+
+        void hasConflict(){
+
+        }
+
+        void assignToFixture(){
+            
         }
 
         void Display()
