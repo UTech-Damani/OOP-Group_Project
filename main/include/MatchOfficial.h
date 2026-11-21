@@ -20,7 +20,7 @@ class MatchOfficial : public Person {
             yearsExperience = 0;  //Starts with 0 years of experience
         }
 
-        MatchOfficial::MatchOfficial(int id, string name, int a, string g,
+        MatchOfficial(int id, string name, int a, string g,
                              string role, string r, bool available,
                              int experience)
                             : Person(id, name, a, g)
@@ -46,7 +46,7 @@ class MatchOfficial : public Person {
             return yearsExperience;
         }
 
-        // Setters with validation
+        // Setters with validation - Monecia
 
         // Set officiating role
         void setOfficiatingRole(const std::string& oRole)

@@ -39,34 +39,33 @@ class Coach : public Person{
             return teamAssignment;
         }
 
-    //Setters with validation
+    //Setters with validation - Monecia
         // if any of these are not entered then it is invalid
         void setQualification(const std::string& qual){
             if (qual == "Level 1" ||
                 qual == "Level 2" ||
                 qual == "Level 3")
             {
-                   qualification = qual;
+                qualification = qual;
             }
-        else
+            else
             {
                 cout << "Invalid qualification." << endl;
             }
         }
-        void setCoachingRole( const std::string& role)
-
-        {
+        void setCoachingRole( const std::string& role){
              if (role == "Head Coach" ||
                  role == "Assistant Coach" ||
                  role == "Goalkeeping Coach")
             {
-                    coachingRole = role;
+                coachingRole = role;
             }
-        }
-        else
+        
+            else
             {
                  cout << "Invalid coaching role." << endl;
             }
+        }
         void setTeamAssignment(const std::string& assigns)
         {
             if (assigns == "Harbour FC" ||
@@ -91,7 +90,7 @@ class Coach : public Person{
 
         }
 
-
+        // Display - Damani
         void Display() 
         {
             cout << "ID: " << getIdNom() << endl;

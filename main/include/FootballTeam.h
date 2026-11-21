@@ -53,19 +53,56 @@ class FootballTeam {
     int getLosses() { return losses; }
     string getTeamStatus() { return teamStatus; }
     
-    // Setters
-    void setTeamID(int teamID) { this->teamID = teamID; }
-    void setTeamName(string teamName) { this->teamName = teamName; }
+    // Setters - Monecia
+    void setTeamID(int teamID) { 
+        if (teamID > 0)
+            {
+                this->teamID = teamID;
+            } 
+    }
+    void setTeamName(string teamName) { 
+        if (teamName != "")
+            {
+                this->teamName = teamName;
+            }
+    }
     void setRegistrationDate(int day, int month, int year) {
         registrationDate.setDay(day);
         registrationDate.setMonth(month);
         registrationDate.setYear(year);
     }
-    void setPoints(int points) { this->points = points; }
-    void setWins(int wins) { this->wins = wins; }
-    void setDraws(int draws) { this->draws = draws; }
-    void setLosses(int losses) { this->losses = losses; }
-    void setTeamStatus(string teamStatus) { this->teamStatus = teamStatus; }
+    void setPoints(int points) { 
+        if (points >= 0)
+            {
+                this->points = points;
+            }
+    }
+    void setWins(int wins) { 
+        if (wins >= 0)
+            {
+                this->wins = wins;
+            }
+    }
+    void setDraws(int draws) { 
+        if (draws >= 0)
+            {
+                this->draws = draws;
+            } 
+    }
+    void setLosses(int losses) { 
+        if (losses >= 0)
+            {
+                this->losses = losses;
+            } 
+    }
+    void setTeamStatus(string teamStatus) { 
+        if (teamStatus == "registered" ||
+            teamStatus == "unregistered" ||
+            teamStatus == "suspended")
+            {
+                this->teamStatus = teamStatus;
+            } 
+    }
 
     // Rule 2: Update this team's record based on the match outcome.
     void updateLeaguePoints(const std::string& result) {

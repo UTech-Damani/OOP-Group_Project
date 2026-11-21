@@ -52,18 +52,40 @@ class Person{
             return Gender;
         }
 
-        //setters
+        //Setters - Monecia
+
+        // Set ID
         void setIdNom(int id){
-            IdNom = id;
+            if (id > 0){
+                IdNom = id;
+            }
         }
-        void setFullName(const std::string& name){
-            FullName = name;
+
+        // Set full name
+        void setFullName(const std::string& name)
+        {
+            if (name != "")
+                {
+                    FullName = name;
+                }
         }
-        void setAge(int a){
-            Age = a;
+
+        // Set age
+        void setAge(int a)
+        {
+            if (a >= 0)
+                {
+                    Age = a;
+                }
         }
-        void setGender(string g){
-            Gender = g;
+
+        // Set gender
+        void setGender(int g)
+        {
+            if (g >= 0)
+                {
+                    Gender = g;
+                }
         }
 };
 inline Person::~Person(){}

@@ -34,15 +34,21 @@ class LeagueCommissioner : public Person{
             return assignedRegion;
         }
 
-        //Setters
+        //Setters - Monecia
         void setApprovalAuthority(bool apr){
             approvalAuthority = apr;
         }
         void setYearsOfService(int year){
-            yearsOfService = year;
+             if (year >= 0)
+                {
+                    yearsOfService = year;
+                }
         }
         void setAssignedRegion(const std::string& region){
-            assignedRegion = region;
+            if (region != "")
+                {
+                    assignedRegion = region;
+                }
         }
 
         void approveTeam(){
