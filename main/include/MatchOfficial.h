@@ -3,7 +3,6 @@
 
 #include "Person.h"
 #include <string>
-#include <iostream>
 
 class MatchOfficial : public Person {
     std::string officiatingRole;
@@ -17,11 +16,11 @@ class MatchOfficial : public Person {
         {
             officiatingRole = ""; //No officiating role assigned
             rank = "";            //No rank assigned
-            availability = true; //Official is initially available
+            availability = false; //Official is initially unavailable
             yearsExperience = 0;  //Starts with 0 years of experience
         }
 
-        MatchOfficial(int id, string name, int a, string g,
+        MatchOfficial::MatchOfficial(int id, string name, int a, string g,
                              string role, string r, bool available,
                              int experience)
                             : Person(id, name, a, g)
@@ -47,41 +46,54 @@ class MatchOfficial : public Person {
             return yearsExperience;
         }
 
-        //Setters
-        void setOfficiatingRole(const std::string& oRole){
-            officiatingRole = oRole;
+        // Setters with validation
+
+        // Set officiating role
+        void setOfficiatingRole(const std::string& oRole)
+        {
+            if (oRole != "")
+                {
+                    officiatingRole = oRole;
+                }
         }
-        void setRank(const std::string& r){
-            rank = r;
+
+        // Set rank
+        void setRank(const std::string& r)
+        {
+            if (r != "")
+                {
+                    rank = r;
+                }
         }
-        void setAvailability(bool ava){
+
+        // Set availability
+        void setAvailability(bool ava)
+            {
+                availability = ava;
+            }
+
+        // Set years of experience
+        void setYearsExperience(int years)
+            {
+                if (years >= 0)
+                {
+                    yearsExperience = years;
+                }
+            }
+
+          // Set availability
+        void setAvailability(bool ava)
+        {
             availability = ava;
         }
-        void setYearsExperience(int years){
-            yearsExperience = years;
-        }
 
-        void hasConflict(){
-
-        }
-
-        void assignToFixture(){
-            
-        }
-
-        void Display()
+        // Set years of experience
+        void setYearsExperience(int years)
         {
-            cout << "ID: " << getIdNom() << endl;
-            cout << "Name: " << getFullName() << endl;
-            cout << "Age: " << getAge() << endl;
-            cout << "Gender: " << getGender() << endl;
-            cout << "Role: " << officiatingRole << endl;
-            cout << "Rank: " << rank << endl;
-            cout << "Availability: "
-                << (availability ? "Available" : "Unavailable")
-                << endl;
-            cout << "Years of Experience: "
-                << yearsExperience << endl;
+            if (years >= 0) //cannot be anything under 0
+                {
+                    yearsExperience = years;
+                }
         }
 };
 
