@@ -48,7 +48,7 @@ class Date {
         }
 
         // Display date
-        void displayDate(){
+        void displayDate() const{
             cout << day << "/" << month << "/" << year << endl;
         }
 };

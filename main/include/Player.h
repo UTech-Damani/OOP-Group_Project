@@ -51,20 +51,57 @@ class Player : public Person {
 
         //Setters
         void setPositionOnField(const std::string& pos){
-            positionOnField = pos;
+            if (pos == "Goalkeeper" ||
+                pos == "Centre Back" ||
+                pos == "Left Back" ||
+                pos == "Right Back" ||
+                pos == "Left Wing Back" ||
+                pos == "Right Wing Back" ||
+                pos == "Defensive Midfielder" ||
+                pos == "Central Midfielder" ||
+                pos == "Attacking Midfielder" ||
+                pos == "Left Midfielder" ||
+                pos == "Right Midfielder" ||
+                pos == "Left Winger" ||
+                pos == "Right Winger" ||
+                pos == "Striker" ||
+                pos == "Centre Forward"){
+
+                positionOnField = pos;
+            }
+            else
+                {
+                    cout << "Invalid playing position." << endl;
+                }
         }
         void setJerseyNom(int jersey){
-            jerseyNom = jersey;
+            if (jersey >= 0)
+                {
+                    jerseyNom = jersey;
+                }
         }
         void setGoalScored(int goals){
-            goalScored = goals;
+            if (goals >= 0)
+                {
+                    goalScored = goals;
+                }
         }
         void setPlayerStatus(const std::string& status){
-            playerStatus = status;
+            if (status == "Active" ||
+                status == "Injured" ||
+                status == "Suspended" ||
+                status == "Inactive" ||
+                status == "Transferred" ||
+                status == "Retired")
+                {
+                    playerStatus = status;
+                }
         }
 
         void setTeam(FootballTeam* t) {
-            team = t;
+            if (t != nullptr){
+                team = t;
+            }
         }
 
         void recordGoals(){

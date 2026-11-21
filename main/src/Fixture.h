@@ -3,6 +3,8 @@
 #include "Stadium.h"
 #include "MatchResults.h"
 #include "MatchOfficial.h"
+#include "Date.h"
+#include "Time.h"
 
 #include <string>
 #include <iomanip>
@@ -14,10 +16,10 @@ class Fixture
 {
     private:
         int fixtureID;
-        string fixtureDate;
-        string fixtureTime;
+        Date fixtureDate;
+        Time fixtureTime;
         string fixtureStatus;
-        int attendance;
+        int attendance; // Number of persons attending
 
         // Rule 4: Store IDs so the league can check both team positions.
         // Zero means a team has not been assigned yet.
@@ -30,23 +32,34 @@ class Fixture
         // Let FootballLeague assign teams after its checks pass.
         friend class FootballLeague;
 
-        Stadium stadium;
+        Stadium* stadium;
         MatchResult result;
         vector<MatchOfficial> officials;
 
     public:
         // Constructors
         Fixture(){
+            
             fixtureID = 0;
-            fixtureDate = "";
-            fixtureTime = "";
-            fixtureStatus = "";
+            fixtureDate.setDay(0);
+            fixtureDate.setMonth(0);
+            fixtureDate.setYear(0);
+
+            fixtureTime.setHours(0);
+            fixtureTime.setMinutes(0);
+            fixtureTime.setSeconds(0);
+
+            fixtureStatus = "No schedule at this moment";
             attendance = 0;
+
+            stadium = nullptr;
         }
-        Fixture(int ID, string Date, string Time, string Status, int attendance){
-            fixtureID = ID;
-            fixtureDate = Date;
-            fixtureTime = Time;
+        Fixture(int day, int month, int year, int hours, int minutes, int seconds, string Status, int attendance,
+                Stadium &stadium){
+            this->stadium = &stadium;
+
+            setFixtureDate(day, month, year);
+            setFixtureTime(hours, minutes, seconds);
             fixtureStatus = Status;
             this->attendance = attendance;
         }
@@ -56,19 +69,31 @@ class Fixture
             fixtureID = id;
         }
 
-        void setFixtureDate(string date) {
-            fixtureDate = date;
+        void setFixtureDate(int day, int month, int year) {
+            fixtureDate.setDay(day);
+            fixtureDate.setMonth(month);
+            fixtureDate.setYear(year);
         }
 
-        void setFixtureTime(string time) {
-            fixtureTime = time;
+        void setFixtureTime(int hours, int minutes, int seconds) {
+            fixtureTime.setHours(hours);
+            fixtureTime.setMinutes(minutes);
+            fixtureTime.setSeconds(seconds);
         }
 
         void setFixtureStatus(string status) {
-            fixtureStatus = status;
+            if(status != "Scheduled" || status != "In progress" ||
+               status != "Half Time" || status != "Full Time"   ||
+               status != "Postponed" || status != "Cancelled"   ){
+                     cout << "Invalid Status" << endl;
+               }
+               fixtureStatus = status;
         }
 
         void setAttendance(int attend) {
+            if(attend <= 0){
+
+            }
             attendance = attend;
         }
 
@@ -78,12 +103,12 @@ class Fixture
             return fixtureID;
         }
 
-        string getFixtureDate() const {
-            return fixtureDate;
+        void getFixtureDate() {
+            fixtureDate.displayDate();
         }
 
-        string getFixtureTime() const {
-            return fixtureTime;
+        void getFixtureTime() const {
+            fixtureTime.displayTime();
         }
 
         string getFixtureStatus() const {

@@ -43,13 +43,20 @@ class Spectator : public Person{
 
         //Setters
         void setTicketsPurchased(int tickets){
-            ticketsPurchased = tickets;
+            if (tickets >= 0){
+                ticketsPurchased = tickets;
+            }
         }
-        void setTotalAmountSpent( double total){
-            totalAmountSpent = total;
+        void setTotalAmountSpent(double total){
+             if (total >= 0){
+                totalAmountSpent = total;
+            }
         }
         void setBalance(double bal){
-            balance = bal;
+            if(bal >= 0){
+                balance = bal;
+            }
+            
         }
 
         void buyTicket(){
