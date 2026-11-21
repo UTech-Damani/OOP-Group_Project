@@ -18,6 +18,11 @@ class FootballTeam {
         int wins;
         int draws;
         int losses;
+
+        int goalsFor = 0;
+        int goalsAgainst = 0;
+        int goalDifference = 0;
+
         string teamStatus;
 
         std::vector <Player> players;
@@ -25,7 +30,11 @@ class FootballTeam {
     
     public:
     // Default Constructor
-    FootballTeam() {}
+    FootballTeam() {
+        goalsFor = 0;
+        goalsAgainst = 0;
+        goalDifference = 0;
+    }
     
     // Parameterized Constructor
     FootballTeam(int teamID, string teamName,
@@ -44,16 +53,42 @@ class FootballTeam {
     }
     
     // Getters
-    int getTeamID() { return teamID; }
-    string getTeamName() { return teamName; }
-    void getRegistrationDate() { registrationDate.displayDate(); }
-    int getPoints() { return points; }
-    int getWins() { return wins; }
-    int getDraws() { return draws; }
-    int getLosses() { return losses; }
-    string getTeamStatus() { return teamStatus; }
+    int getTeamID() { 
+        return teamID; 
+    }
+    string getTeamName() {
+        return teamName; 
+    }
+    void getRegistrationDate() { 
+        registrationDate.displayDate(); 
+    }
+    int getPoints() {
+        return points; 
+    }
+    int getWins() { 
+        return wins; 
+    }
+    int getDraws() { 
+        return draws; 
+    }
+    int getLosses() { 
+        return losses; 
+    }
+    string getTeamStatus() { 
+        return teamStatus; 
+    }
+
+    int getGoalDifference(){
+        return goalDifference;
+    }
+    int getGoalsFor(){
+        return goalsFor;
+    }
+    int getGoalsAgainst(){
+        return goalsAgainst;
+    }
     
-    // Setters - Monecia
+    // Setters - Monecia Implementation Starts
     void setTeamID(int teamID) { 
         if (teamID > 0)
             {
@@ -103,6 +138,7 @@ class FootballTeam {
                 this->teamStatus = teamStatus;
             } 
     }
+    // Setters - Monecia Implementation Ends
 
     // Rule 2: Update this team's record based on the match outcome.
     void updateLeaguePoints(const std::string& result) {
@@ -131,6 +167,20 @@ class FootballTeam {
         coaches.push_back(c);
         c.setTeam(this);
     }
+
+    void addGoalsFor(int goal){
+        goalsFor += goal;
+    }
+
+    void addGoalsAgainst(int goal){
+        goalsAgainst += goal;
+    }
+
+    void calcGoalDifference(){
+        goalDifference = goalsFor - goalDifference;
+    }
+
+    
 };
 
 #endif // FOOTBALLTEAM_H

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <iomanip>
 
 #include "Date.h"
 #include "Fixture.h"
@@ -21,7 +22,7 @@ class FootballLeague
         Date endDate;
         int numberOfTeams;
         string currentStatus;
-        int minimumAge;
+        const int minimumAge = 16;
 
         vector <Fixture> fixtures;
         vector <Stadium> stadiums;
@@ -40,7 +41,7 @@ class FootballLeague
         // Parameterized Constructor
         FootballLeague(int leagueID, string leagueName, string season,
                        Date startDate, Date endDate,
-                       int numberOfTeams, string currentStatus, int minimumAge) {
+                       int numberOfTeams, string currentStatus) {
             this->leagueID = leagueID;
             this->leagueName = leagueName;
             this->season = season;
@@ -48,7 +49,7 @@ class FootballLeague
             this->endDate = endDate;
             this->numberOfTeams = numberOfTeams;
             this->currentStatus = currentStatus;
-            this->minimumAge = minimumAge;
+            
         }
 
         // Getters
@@ -113,12 +114,62 @@ class FootballLeague
             this->currentStatus = currentStatus;
         }
 
-        void setMinimumAge(int minAge){
-            minimumAge = minAge;
+        //Worker Functions
+
+        void addStadiums(const Stadium& stadium){
+            stadiums.push_back(stadium);
+        }
+
+        void addFootBallTeams(const FootballTeam& team){
+            teams.push_back(team);
+        }
+
+        void addFixtures(const Fixture& fixture){
+            fixtures.push_back(fixture);
         }
 
         void getStandings(){
-            
+            cout << "\n";
+            cout << "============================================================\n";
+            cout << "                 FOOTBALL LEAGUE                            \n";
+            cout << "                    STANDINGS                               \n";
+            cout << "============================================================\n";
+
+            cout << "------------------------------------------------------------\n";
+            cout << left
+                << setw(5)  << "POS"
+                << setw(25) << "TEAM"
+                << setw(5)  << "P"
+                << setw(5)  << "W"
+                << setw(5)  << "D"
+                << setw(5)  << "L"
+                << setw(7)  << "GF"
+                << setw(7)  << "GA"
+                << setw(7)  << "GD"
+                << setw(5)  << "PTS" << endl;
+
+            cout << "------------------------------------------------------------\n";
+
+            // Display standings here
+            for (FootballTeam& team : teams){
+                cout << left
+                     << setw(5)  << 1
+                     << setw(25) << team.getTeamName()
+                     << setw(5)  << 1
+                     << setw(5)  << team.getWins()
+                     << setw(5)  << team.getDraws()
+                     << setw(5)  << team.getLosses()
+                     << setw(7)  << team.getGoalsFor()
+                     << setw(7)  << team.getGoalsAgainst()
+                     << setw(7)  << team.getGoalDifference()
+                     << setw(5)  << team.getPoints()
+                     << endl;
+
+            }
+            cout << "============================================================\n";
+            cout << " P = Played | W = Won | D = Drawn | L = Lost\n";
+            cout << " GF = Goals For | GA = Goals Against | GD = Goal Difference\n";
+            cout << "============================================================\n";
         }
 
         bool scheduleFixture(Fixture proposed, FootballTeam& home, FootballTeam& away) {
@@ -133,8 +184,13 @@ class FootballLeague
             for (const Fixture& existing : fixtures) {
                 // Rule 4: Check whether either team already plays at this kickoff.
                 const bool sameKickoff =
-                    existing.getFixtureDate() == proposed.getFixtureDate() &&
-                    existing.getFixtureTime() == proposed.getFixtureTime();
+                    existing.getFixtureDateMember().getDay() == proposed.getFixtureDateMember().getDay() &&
+                    existing.getFixtureDateMember().getMonth() == proposed.getFixtureDateMember().getMonth() &&
+                    existing.getFixtureDateMember().getYear() == proposed.getFixtureDateMember().getYear() &&
+
+                    existing.getFixtureTimeMember().getHours() == proposed.getFixtureTimeMember().getHours() &&
+                    existing.getFixtureTimeMember().getMinutes() == proposed.getFixtureTimeMember().getMinutes() &&
+                    existing.getFixtureTimeMember().getSeconds() == proposed.getFixtureTimeMember().getSeconds();
 
                 const bool sharesTeam =
                     existing.getHomeTeamID() == homeID ||
@@ -143,6 +199,9 @@ class FootballLeague
                     existing.getAwayTeamID() == awayID;
 
                 if (sameKickoff && sharesTeam) {
+                    return false;
+                }
+                if (homeID == awayID) {
                     return false;
                 }
             }

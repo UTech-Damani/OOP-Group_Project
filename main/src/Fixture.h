@@ -107,8 +107,16 @@ class Fixture
             fixtureDate.displayDate();
         }
 
+        Date getFixtureDateMember() const{
+            return fixtureDate;
+        }
+
         void getFixtureTime() const {
             fixtureTime.displayTime();
+        }
+
+        Time getFixtureTimeMember() const {
+            return fixtureTime;
         }
 
         string getFixtureStatus() const {
