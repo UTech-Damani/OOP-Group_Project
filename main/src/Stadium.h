@@ -1,125 +1,112 @@
 #ifndef STADIUM_H
 #define STADIUM_H
-#include "StadiumShop.h"
-
 #include <string>
-#include <vector>
 
-using namespace std;
+class Stadium {
+    int stadiumID = 0;
+    std::string stadiumName;
+    std::string location;
+    int seatingCapacity = 0;
+    std::string fieldCondition;
+    double ticketPrice = 0.0;
+    int occupancy = 0; // Tracks current tickets sold / seats occupied
 
-class Stadium
-{
-    private:
-        int stadiumID;
-        string stadiumName;
-        string location;
-        int seatingCapacity;
-        string fieldCondition;
-        double ticketPrice;
-        int occupancy;
+public:
+    Stadium() = default;
 
-        vector<StadiumShop> shops;
-
-    public:
-        // Default Constructor
-        Stadium() {
-            stadiumID = 0;
-            stadiumName = "";
-            location = "";
-            seatingCapacity = 0;
-            fieldCondition = "";
-            ticketPrice = 0.0;
-            occupancy = 0;
+    Stadium(int id, const std::string& name, const std::string& loc,
+            int capacity, const std::string& condition = "Good",
+            double price = 0.0, int currentOccupancy = 0)
+        : stadiumID(id),
+          stadiumName(name),
+          location(loc),
+          seatingCapacity(capacity >= 0 ? capacity : 0),
+          fieldCondition(condition),
+          ticketPrice(price >= 0.0 ? price : 0.0),
+          occupancy(0) {
+        if (currentOccupancy > 0) {
+            sellTickets(currentOccupancy);
         }
+    }
 
-        // Parameterized Constructor
-        Stadium(int stadiumID, string stadiumName, string location,
-                int seatingCapacity, string fieldCondition,
-                double ticketPrice, int occupancy) {
-            this->stadiumID = stadiumID;
-            this->stadiumName = stadiumName;
-            this->location = location;
-            this->seatingCapacity = seatingCapacity;
-            this->fieldCondition = fieldCondition;
-            this->ticketPrice = ticketPrice;
-            this->occupancy = occupancy;
+    // Getters
+    int getStadiumID() const{ 
+        return stadiumID;
+    }
+    std::string getStadiumName() const{
+        return stadiumName;
+    }
+    std::string getLocation() const{
+        return location;
+    }
+    int getSeatingCapacity() const{
+        return seatingCapacity;
+    }
+    std::string getFieldCondition() const{
+        return fieldCondition;
+    }
+    double getTicketPrice() const{
+        return ticketPrice;
+    }
+    int getOccupancy() const{
+        return occupancy;
+    }
+    int getAvailableSeats() const{
+        return seatingCapacity - occupancy;
+    }
+
+    // Setters
+    void setStadiumID(int id){
+        stadiumID = id;
+    }
+    void setStadiumName(const std::string& name){
+        stadiumName = name;
+    }
+    void setLocation(const std::string& loc){
+        location = loc;
+    }
+    void setFieldCondition(const std::string& condition){
+        fieldCondition = condition;
+    }
+
+    void setSeatingCapacity(int capacity){
+        if (capacity < 0) {
+            return;
         }
-
-        // Getters
-        int getStadiumID() {
-            return stadiumID;
+        seatingCapacity = capacity;
+        if (occupancy > seatingCapacity) {
+            occupancy = seatingCapacity;
         }
+    }
 
-        string getStadiumName() {
-            return stadiumName;
+    void setTicketPrice(double price) {
+        if (price >= 0.0) {
+            ticketPrice = price;
         }
+    }
 
-        string getLocation() {
-            return location;
+    bool canSellTickets(int quantity) const {
+        if (quantity <= 0) {
+            return false;
         }
+        return (occupancy + quantity) <= seatingCapacity;
+    }
 
-        int getSeatingCapacity() {
-            return seatingCapacity;
+    bool sellTickets(int quantity) {
+        if (!canSellTickets(quantity)) {
+            return false; // Exceeds seating capacity or invalid quantity
         }
+        occupancy += quantity;
+        return true;
+    }
 
-        string getFieldCondition() {
-            return fieldCondition;
+    bool releaseTickets(int quantity) {
+        if (quantity <= 0 || quantity > occupancy) {
+            return false;
         }
-
-        double getTicketPrice() {
-            return ticketPrice;
-        }
-
-        int getOccupancy() {
-            return occupancy;
-        }
-
-        // Setters
-        void setStadiumID(int stadiumID) {
-            this->stadiumID = stadiumID;
-        }
-
-        void setStadiumName(string stadiumName) {
-            this->stadiumName = stadiumName;
-        }
-
-        void setLocation(string location) {
-            this->location = location;
-        }
-
-        void setSeatingCapacity(int seatingCapacity) {
-            this->seatingCapacity = seatingCapacity;
-        }
-
-        void setFieldCondition(string fieldCondition) {
-            this->fieldCondition = fieldCondition;
-        }
-
-        void setTicketPrice(double ticketPrice) {
-            this->ticketPrice = ticketPrice;
-        }
-
-        void setOccupancy(int occupancy) {
-            this->occupancy = occupancy;
-        }
-
-        void hasCapacityFor(){
-
-        }
-        void getRemainingSeats(){
-
-        }
-        void isAvailable(){
-
-        }
-        void increaseOccupancy(){
-            
-        }
-
-        void addShop(const StadiumShop& shop) {
-            shops.push_back(shop);
-        }
-
+        occupancy -= quantity;
+        return true;
+    }
 };
 
-#endif // STADIUM_H
+#endif

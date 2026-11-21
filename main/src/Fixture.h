@@ -1,122 +1,57 @@
 #ifndef FIXTURE_H
 #define FIXTURE_H
-#include "Stadium.h"
-#include "MatchResults.h"
-#include "MatchOfficial.h"
-
 #include <string>
-#include <iomanip>
-#include <vector>
 
-using namespace std;
-
-class Fixture
-{
+class Fixture{
     private:
-        int fixtureID;
-        string fixtureDate;
-        string fixtureTime;
-        string fixtureStatus;
-        int attendance;
-
-        // Rule 4: Store IDs so the league can check both team positions.
-        // Zero means a team has not been assigned yet.
-        int homeTeamID = 0;
-        int awayTeamID = 0;
-
-        // Stop the same result from awarding points twice.
-        bool leaguePointsAwarded = false;
-
-        // Let FootballLeague assign teams after its checks pass.
-        friend class FootballLeague;
-
-        Stadium stadium;
-        MatchResult result;
-        vector<MatchOfficial> officials;
+        int fixtureID = 0;
+        std::string fixtureDate;
+        std::string fixtureTime;
+        std::string fixtureStatus;
+        int attendance = 0;
 
     public:
-        // Constructors
-        Fixture(){
-            fixtureID = 0;
-            fixtureDate = "";
-            fixtureTime = "";
-            fixtureStatus = "";
-            attendance = 0;
-        }
-        Fixture(int ID, string Date, string Time, string Status, int attendance){
-            fixtureID = ID;
-            fixtureDate = Date;
-            fixtureTime = Time;
-            fixtureStatus = Status;
-            this->attendance = attendance;
-        }
+        Fixture() = default;
 
-        // Setters
-        void setFixtureID(int id) {
-            fixtureID = id;
-        }
+        Fixture(int id, const std::string& date, const std::string& time, const std::string& status = "Scheduled", int att = 0)
+        : fixtureID(id),fixtureDate(date), fixtureTime(time), fixtureStatus(status), attendance(att){}
 
-        void setFixtureDate(string date) {
-            fixtureDate = date;
-        }
-
-        void setFixtureTime(string time) {
-            fixtureTime = time;
-        }
-
-        void setFixtureStatus(string status) {
-            fixtureStatus = status;
-        }
-
-        void setAttendance(int attend) {
-            attendance = attend;
-        }
-
-        // Getters
-
-        int getFixtureID() const {
+        int getFixtureID() const{
             return fixtureID;
         }
-
-        string getFixtureDate() const {
+        std::string getFixtureDate() const{
             return fixtureDate;
         }
-
-        string getFixtureTime() const {
-            return fixtureTime;
+        std::string getFixtureTime() const{
+        return fixtureTime;
         }
-
-        string getFixtureStatus() const {
+        std::string getFixtureStatus() const{
             return fixtureStatus;
         }
-
-        int getAttendance() const {
+        int getAttendance() const{
             return attendance;
         }
 
-        int getHomeTeamID() const {
-            return homeTeamID;
+        void setFixtureID(int id){
+            fixtureID = id;
         }
-
-        int getAwayTeamID() const {
-            return awayTeamID;
+        void setFixtureDate(const std::string& date){
+            fixtureDate = date;
         }
-
-        void conflictsWith(){
-
+        void setFixtureTime(const std::string& time){
+            fixtureTime = time;
         }
-        void addOfficial(const MatchOfficial& o){
-            officials.push_back(o);
+        void setFixtureStatus(const std::string& status){
+            fixtureStatus = status;
         }
-        void recordResults(){
-
+        void setAttendance(int att){
+            attendance = att;
         }
-        void completeFixture(){
-
+        bool conflictsWith(const Fixture& other) const{
+            if(fixtureStatus == "Cancelled" || other.fixtureStatus == "Cancelled"){
+                return false;
+            }
+            return fixtureDate == other.fixtureDate && fixtureTime == other.fixtureTime;
         }
-        void postpone(){
-            
-        }
-};
-
-#endif // FIXTURE_H
+    };
+#endif

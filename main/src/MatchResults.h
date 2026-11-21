@@ -1,85 +1,72 @@
 #ifndef MATCHRESULTS_H
 #define MATCHRESULTS_H
-
-
-#include <iostream>
 #include <string>
 
-using namespace std;
+class MatchResults {
+    int homeScore = 0;
+    int awayScore = 0;
+    std::string winner;
+    std::string matchStatistics;
 
-class MatchResult {
-    private:
-        int homeScore;
-        int awayScore;
-        string winner;
-        string matchStatistics;
-
-    public:
-        // Default Constructor
-        MatchResult() {
-            homeScore = 0;
-            awayScore = 0;
-            winner = "";
-            matchStatistics = "";
+    void updateWinner() {
+        if (homeScore > awayScore) {
+            winner = "Home";
+        } else if (awayScore > homeScore) {
+            winner = "Away";
+        } else {
+            winner = "Draw";
         }
+    }
 
-        // Parameterized Constructor
-        MatchResult(int homeScore, int awayScore,
-                    string winner, string matchStatistics) {
-            this->homeScore = homeScore;
-            this->awayScore = awayScore;
-            this->winner = winner;
-            this->matchStatistics = matchStatistics;
-        }
+public:
+    MatchResults() = default;
 
-        // Getters
-        int getHomeScore() {
-            return homeScore;
-        }
+    MatchResults(int home, int away, const std::string& stats = "")
+        : homeScore(0), awayScore(0), matchStatistics(stats) {
+        setHomeScore(home);
+        setAwayScore(away);
+        updateWinner();
+    }
 
-        int getAwayScore() {
-            return awayScore;
-        }
+    // Getters
+    int getHomeScore() const{
+        return homeScore;
+    }
+    int getAwayScore() const{
+        return awayScore;
+    }
+    std::string getWinner() const{
+        return winner;
+    }
+    std::string getMatchStatistics() const{
+        return matchStatistics;
+    }
 
-        string getWinner() {
-            return winner;
+    bool setHomeScore(int score) {
+        if (score < 0) {
+            return false; 
         }
+        homeScore = score;
+        updateWinner();
+        return true;
+    }
 
-        string getMatchStatistics() {
-            return matchStatistics;
+    bool setAwayScore(int score) {
+        if (score < 0) {
+            return false; 
         }
+        awayScore = score;
+        updateWinner();
+        return true;
+    }
 
-        // Setters
-        void setHomeScore(int homeScore) {
-            this->homeScore = homeScore;
-        }
+    void setWinner(const std::string& w) {
+        winner = w;
+    }
 
-        void setAwayScore(int awayScore) {
-            this->awayScore = awayScore;
-        }
-
-        void setWinner(string winner) {
-            this->winner = winner;
-        }
-
-        void setMatchStatistics(string matchStatistics) {
-            this->matchStatistics = matchStatistics;
-        }
-
-        void getPointsFor(){
-
-        }
-        void validateScores(){
-            
-        }
-
-        // Display Method
-        void Display() {
-            cout << "\n=== Match Result ===" << endl;
-            cout << "Home Score: " << homeScore << endl;
-            cout << "Away Score: " << awayScore << endl;
-            cout << "Winner: " << winner << endl;
-            cout << "Statistics: " << matchStatistics << endl;
-        }
+    void setMatchStatistics(const std::string& stats) {
+        matchStatistics = stats;
+    }
 };
-#endif // MATCHRESULTS_H
+
+#endif

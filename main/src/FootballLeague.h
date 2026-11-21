@@ -1,159 +1,102 @@
 #ifndef FOOTBALLLEAGUE_H
 #define FOOTBALLLEAGUE_H
 
+#include "Player.h"
 #include <string>
-#include <vector>
 
-#include "Date.h"
-#include "Fixture.h"
-#include "FootballTeam.h"
-#include "Stadium.h"
+class FootballLeague {
+private:
+    int leagueID = 0;
+    std::string leagueName;
+    std::string season;
+    std::string startDate;
+    std::string endDate;
+    int numberOfTeams = 0;
+    std::string currentStatus;
+    int minimumAge = 16;
 
-using namespace std;
+public:
+    FootballLeague() = default;
 
-class FootballLeague
-{
-    private:
-        int leagueID;
-        string leagueName;
-        string season;
-        Date startDate;
-        Date endDate;
-        int numberOfTeams;
-        string currentStatus;
-        int minimumAge;
+    FootballLeague(int id, const std::string& name, const std::string& leagueSeason,
+                   const std::string& start, const std::string& end,
+                   int teams, const std::string& status = "Active", int minAge = 16)
+        : leagueID(id),
+          leagueName(name),
+          season(leagueSeason),
+          startDate(start),
+          endDate(end),
+          numberOfTeams(teams >= 0 ? teams : 0),
+          currentStatus(status),
+          minimumAge(minAge >= 0 ? minAge : 0) {}
 
-        vector <Fixture> fixtures;
-        vector <Stadium> stadiums;
-        vector <FootballTeam> teams;
+    // Getters
+    int getLeagueID() const{
+        return leagueID;
+    }
+    std::string getLeagueName() const{
+        return leagueName;
+    }
+    std::string getSeason() const{
+        return season;
+    }
+    std::string getStartDate() const{
+        return startDate;
+    }
+    std::string getEndDate() const{
+        return endDate;
+    }
+    int getNumberOfTeams() const{
+        return numberOfTeams;
+    }
+    std::string getCurrentStatus() const{
+        return currentStatus;
+    }
+    int getMinimumAge() const{
+        return minimumAge;
+    }
 
-    public:
-        // Default Constructor
-        FootballLeague() {
-            leagueID = 0;
-            leagueName = "";
-            season = "";
-            numberOfTeams = 0;
-            currentStatus = "";
+    // Setters
+    void setLeagueID(int id){
+        leagueID = id;
+    }
+    void setLeagueName(const std::string& name){
+        leagueName = name;
+    }
+    void setSeason(const std::string& leagueSeason){
+        season = leagueSeason;
+    }
+    void setStartDate(const std::string& start){
+        startDate = start;
+    }
+    void setEndDate(const std::string& end){endDate = end;
+    }
+    void setCurrentStatus(const std::string& status){
+        currentStatus = status;
+    }
+
+    void setNumberOfTeams(int teams) {
+        if (teams >= 0) {
+            numberOfTeams = teams;
         }
+    }
 
-        // Parameterized Constructor
-        FootballLeague(int leagueID, string leagueName, string season,
-                       Date startDate, Date endDate,
-                       int numberOfTeams, string currentStatus, int minimumAge) {
-            this->leagueID = leagueID;
-            this->leagueName = leagueName;
-            this->season = season;
-            this->startDate = startDate;
-            this->endDate = endDate;
-            this->numberOfTeams = numberOfTeams;
-            this->currentStatus = currentStatus;
-            this->minimumAge = minimumAge;
-        }
-
-        // Getters
-        int getLeagueID() {
-            return leagueID;
-        }
-
-        string getLeagueName() {
-            return leagueName;
-        }
-
-        string getSeason() {
-            return season;
-        }
-
-        Date getStartDate() {
-            return startDate;
-        }
-
-        Date getEndDate() {
-            return endDate;
-        }
-
-        int getNumberOfTeams() {
-            return numberOfTeams;
-        }
-
-        string getCurrentStatus() {
-            return currentStatus;
-        }
-
-        int getMinimumAge(){
-            return minimumAge;
-        }
-
-        // Setters
-        void setLeagueID(int leagueID) {
-            this->leagueID = leagueID;
-        }
-
-        void setLeagueName(string leagueName) {
-            this->leagueName = leagueName;
-        }
-
-        void setSeason(string season) {
-            this->season = season;
-        }
-
-        void setStartDate(Date startDate) {
-            this->startDate = startDate;
-        }
-
-        void setEndDate(Date endDate) {
-            this->endDate = endDate;
-        }
-
-        void setNumberOfTeams(int numberOfTeams) {
-            this->numberOfTeams = numberOfTeams;
-        }
-
-        void setCurrentStatus(string currentStatus) {
-            this->currentStatus = currentStatus;
-        }
-
-        void setMinimumAge(int minAge){
+    void setMinimumAge(int minAge) {
+        if (minAge >= 0) {
             minimumAge = minAge;
         }
+    }
 
-        void getStandings(){
-            
+    bool meetsMinimumAge(const Player& player) const {
+        return player.getAge() >= minimumAge;
+    }
+
+    bool registerPlayer(const Player& player) const {
+        if (!meetsMinimumAge(player)) {
+            return false; 
         }
-
-        bool scheduleFixture(Fixture proposed, FootballTeam& home, FootballTeam& away) {
-            // Rule 3: Both teams must be registered to play.
-            if (!home.canParticipate() || !away.canParticipate()) {
-                return false;
-            }
-
-            const int homeID = home.getTeamID();
-            const int awayID = away.getTeamID();
-
-            for (const Fixture& existing : fixtures) {
-                // Rule 4: Check whether either team already plays at this kickoff.
-                const bool sameKickoff =
-                    existing.getFixtureDate() == proposed.getFixtureDate() &&
-                    existing.getFixtureTime() == proposed.getFixtureTime();
-
-                const bool sharesTeam =
-                    existing.getHomeTeamID() == homeID ||
-                    existing.getAwayTeamID() == homeID ||
-                    existing.getHomeTeamID() == awayID ||
-                    existing.getAwayTeamID() == awayID;
-
-                if (sameKickoff && sharesTeam) {
-                    return false;
-                }
-            }
-
-            // Save the fixture only after both rules pass.
-            proposed.homeTeamID = homeID;
-            proposed.awayTeamID = awayID;
-            fixtures.push_back(proposed);
-            return true;
-        }
-
+        return true;
+    }
 };
 
-#endif // FOOTBALLLEAGUE_H
+#endif
