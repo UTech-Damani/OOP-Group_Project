@@ -2,6 +2,8 @@
 #define SPECTATOR_H
 
 #include "Person.h"
+#include "InsufficientPaymentException.h"
+
 #include <iostream>
 
 using namespace std;
@@ -9,6 +11,7 @@ using namespace std;
 class Spectator : public Person{
     private:
         int ticketsPurchased;
+        int productsPurchased;
         double totalAmountSpent;
         double balance;
 
@@ -56,15 +59,24 @@ class Spectator : public Person{
             if(bal >= 0){
                 balance = bal;
             }
-            
         }
 
         void buyTicket(){
             ticketsPurchased++;
 
         }
-        void buyProduct(){
+        void buyProduct(double price){
+            productsPurchased++;
+            totalAmountSpent += price;
 
+        }
+        void deductBalance(double amount){
+            if(balance < amount)
+            {
+                throw InsufficientPaymentException();
+            }
+
+            balance -= amount;
         }
         void addToTotalSpent(){
             

@@ -4,14 +4,18 @@
 #include "Fixture.h"
 #include "MatchOfficial.h"
 #include "FootballTeam.h"
+#include "TeamNotEligibleException.h"
+#include "SchedulingConflictException.h"
 
 #include <string>
 #include <iostream>
 
 class LeagueCommissioner : public Person{
-    bool approvalAuthority;
-    int yearsOfService;
-    std::string assignedRegion;
+    private:
+        bool approvalAuthority;
+        int yearsOfService;
+        std::string assignedRegion;
+        vector<Fixture> fixtures;
 
     public:
         LeagueCommissioner(){
@@ -20,7 +24,7 @@ class LeagueCommissioner : public Person{
             assignedRegion = "No region Assigned";
         }
         
-        LeagueCommissioner(bool approvalAuthority, int yearsOfService, string assignedRegion,
+        LeagueCommissioner(int yearsOfService, string assignedRegion,
                             int IdNom, string FullName, int Age, string Gender) : Person(IdNom, FullName, Age, Gender){
                                 this->approvalAuthority = approvalAuthority;
                                 this->yearsOfService = yearsOfService;
@@ -37,9 +41,11 @@ class LeagueCommissioner : public Person{
         std::string getAssignedRegion() const{
             return assignedRegion;
         }
-        std::string getRole() const
-        {
+        std::string getRole() const{
             return "League Commissioner";
+        }
+        vector<Fixture>& getFixtures() {
+            return fixtures;
         }
 
         //Setters - Monecia
@@ -47,16 +53,16 @@ class LeagueCommissioner : public Person{
             approvalAuthority = apr;
         }
         void setYearsOfService(int year){
-             if (year >= 0)
-                {
-                    yearsOfService = year;
-                }
+            if (year >= 0)
+            {
+                yearsOfService = year;
+            }
         }
         void setAssignedRegion(const std::string& region){
             if (region != "")
-                {
-                    assignedRegion = region;
-                }
+            {
+                assignedRegion = region;
+            }
         }
 
         void approveTeam(FootballTeam& team){
@@ -68,7 +74,7 @@ class LeagueCommissioner : public Person{
                 if (player.getAge())
                 {
                     team.setTeamStatus("suspended");
-                    return;
+                    throw TeamNotEligibleException();
                 }
             }
 
@@ -78,11 +84,50 @@ class LeagueCommissioner : public Person{
         void suspendTeam(FootballTeam& team){
             team.setTeamStatus("suspended");
         }
-        void assignOfficial(Fixture& fixture, const MatchOfficial& official){
-            fixture.addOfficial(official);
-            
-            std::cout << official.getFullName() << " assigned to fixture.\n";
+        void reinstateTeam(FootballTeam& team)
+        {
+            team.setTeamStatus("Eligible");
         }
+        void assignOfficial(Fixture& fixture, MatchOfficial& official){
+            if (!official.canAssignFixture(fixture))
+            {
+                throw SchedulingConflictException();
+            }
+
+            fixture.addOfficial(official);
+            official.assignFixture(fixture);
+        }
+
+        void scheduleFixture(Fixture& fixture)
+        {
+            // Fixture must have both teams assigned
+            if (fixture.getHomeTeamID() == 0 ||
+                fixture.getAwayTeamID() == 0)
+            {
+                throw FixtureIncompleteException();
+            }
+
+            // Team cannot play itself
+            if (fixture.getHomeTeamID() ==
+                fixture.getAwayTeamID())
+            {
+                throw TeamNotEligibleException();
+            }
+
+            // Check for fixture conflicts
+            for (Fixture& existing : fixtures)
+            {
+                if (fixture.conflictsWith(existing))
+                {
+                    throw SchedulingConflictException();
+                }
+            }
+
+            fixtures.push_back(fixture);
+
+            cout << "Fixture scheduled successfully." << endl;
+        }
+
 
         void Display() 
         {

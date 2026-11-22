@@ -5,6 +5,7 @@
 #include "MatchOfficial.h"
 #include "Date.h"
 #include "ProjectTime.h"
+#include "FixtureIncompleteException.h"
 
 #include <string>
 #include <iomanip>
@@ -82,12 +83,16 @@ class Fixture
         }
 
         void setFixtureStatus(string status) {
-            if(status != "Scheduled" || status != "In progress" ||
-               status != "Half Time" || status != "Full Time"   ||
-               status != "Postponed" || status != "Cancelled"   ){
-                     cout << "Invalid Status" << endl;
-               }
-               fixtureStatus = status;
+            if(status != "Scheduled" &&
+                status != "In progress" &&
+                status != "Half Time" &&
+                status != "Full Time" &&
+                status != "Postponed" &&
+                status != "Cancelled")
+            {
+                cout << "Invalid Status" << endl;
+            }
+            fixtureStatus = status;
         }
 
         void setAttendance(int attend) {
@@ -157,14 +162,44 @@ class Fixture
         void addOfficial(const MatchOfficial& o){
             officials.push_back(o);
         }
-        void recordResults(){
+        void recordResults(const MatchResult& matchResult){
+            if (fixtureStatus == "Cancelled"){
+                cout << "Cannot record results for a cancelled fixture.\n";
+                return;
+            }
 
+            result = matchResult;
+            fixtureStatus = "Full Time";
         }
         void completeFixture(){
+            if(officials.empty())
+            {
+                throw FixtureIncompleteException();
+            }
+            if (fixtureStatus == "Cancelled"){
+                cout << "Cancelled fixtures cannot be completed.\n";
+                return;
+            }
 
+            if (fixtureStatus == "Postponed"){
+                cout << "Postponed fixtures must be rescheduled first.\n";
+                return;
+            }
+
+            fixtureStatus = "Full Time";
         }
         void postpone(){
-            
+            if (fixtureStatus == "Full Time"){
+                cout << "Completed fixtures cannot be postponed.\n";
+                return;
+            }
+
+            if (fixtureStatus == "Cancelled"){
+                cout << "Cancelled fixtures cannot be postponed.\n";
+                return;
+            }
+
+            fixtureStatus = "Postponed";
         }
 };
 

@@ -7,7 +7,7 @@ class FixtureIncompleteException : public KPFLExceptions
 {
 public:
     FixtureIncompleteException()
-        : KPFLExceptions("Fixture cannot be completed without a valid result.") {}
+        : KPFLExceptions("Fixture cannot be completed without a valid result or an official.") {}
 };
 
 #endif

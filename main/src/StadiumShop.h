@@ -3,6 +3,7 @@
 
 #include "Product.h"
 #include "Spectator.h"
+#include <InsufficientPaymentException.h>
 
 #include <string>
 #include <math.h>
@@ -143,30 +144,26 @@ class StadiumShop
           
         }
 
-        bool transaction(Spectator* spectator, Product* product)
+        void transaction(Spectator* spectator, Product* product)
         {
-            if (spectator->getBalance() >= product->getPrice())
+            if (spectator->getBalance() < product->getPrice())
             {
-                spectator->setBalance(
-                    spectator->getBalance() - product->getPrice()
-                );
-
-                totalProductsSold++;
-                inventoryValue -= product->getPrice();
-
-                for (int i = 0; i < products.size(); i++)
-                {
-                    if (products[i] == product)
-                    {
-                        products.erase(products.begin() + i);
-                        break;
-                    }
-                }
-
-                return true;
+                throw InsufficientPaymentException();
             }
 
-            return false;
+            spectator->setBalance(spectator->getBalance() - product->getPrice());
+
+            totalProductsSold++;
+            inventoryValue -= product->getPrice();
+
+            for (int i = 0; i < products.size(); i++)
+            {
+                if (products[i] == product)
+                {
+                    products.erase(products.begin() + i);
+                    break;
+                }
+            }
         }
 };
 

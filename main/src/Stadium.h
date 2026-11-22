@@ -1,6 +1,7 @@
 #ifndef STADIUM_H
 #define STADIUM_H
 #include "StadiumShop.h"
+#include "CapacityExceededException.h"
 
 #include <string>
 #include <vector>
@@ -136,12 +137,12 @@ class Stadium
             return (occupancy + quantity) <= seatingCapacity;
         }
 
-        bool sellTickets(int quantity) {
+        void sellTickets(int quantity) {
             if (!canSellTickets(quantity)) {
-                return false; // Exceeds seating capacity or invalid quantity
+                throw CapacityExceededException();
             }
             occupancy += quantity;
-            return true;
+            
         }
 
         bool releaseTickets(int quantity) {

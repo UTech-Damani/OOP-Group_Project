@@ -16,11 +16,6 @@ class FoodItems : public Product{
         string category;
 
     public:
-        // Destructor implementation from abstract parent class
-        ~FoodItems() override {
-            cout << "FoodItems destroyed" << endl;
-        }
-
         // Constructors
         FoodItems() {
             category = "";

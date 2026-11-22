@@ -83,20 +83,6 @@ class MatchOfficial : public Person {
             }
         }
 
-          // Set availability
-        void setAvailability(bool ava){
-            availability = ava;
-        }
-
-        // Set years of experience
-        void setYearsExperience(int years)
-        {
-            if (years >= 0) //cannot be anything under 0
-                {
-                    yearsExperience = years;
-                }
-        }
-
         bool canAssignFixture(const Fixture& candidate) const{
             if(!availability){
                 return false;

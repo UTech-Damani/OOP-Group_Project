@@ -6,6 +6,8 @@
 #include "Player.h"
 #include "Coach.h"
 #include "Date.h"
+#include "DuplicateRegistrationException.h"
+#include "CapacityExceededException.h"
 
 using namespace std;
 
@@ -22,6 +24,7 @@ class FootballTeam {
         int goalsFor = 0;
         int goalsAgainst = 0;
         int goalDifference = 0;
+        const int maxPlayers = 24;
 
         string teamStatus;
 
@@ -169,10 +172,29 @@ class FootballTeam {
     }
     // Adding each player object to their respective team
     void addPlayer(Player& p){
+        if(players.size() >= maxPlayers)
+        {
+            throw CapacityExceededException();
+        }
+
+        for(Player player : players){
+            if(p.getIdNom() == player.getIdNom())
+            {
+                throw DuplicateRegistrationException();
+            }
+        }
+        
         players.push_back(p);
         p.setTeam(this);
     }
     void addCoach(Coach& c){
+        for(Coach coach : coaches){
+            if(c.getIdNom() == coach.getIdNom())
+            {
+                throw DuplicateRegistrationException();
+            }
+        }
+
         coaches.push_back(c);
         c.setTeam(this);
     }
@@ -207,6 +229,8 @@ class FootballTeam {
         cout << "-------------------\n";
         }
     }
+
+    
 
     
 };
