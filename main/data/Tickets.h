@@ -5,28 +5,25 @@
 #include <iostream>
 
 #include "Product.h"
+#include "Date.h"
 
 using namespace std;
 
 class Tickets : public Product{
     private:
         string ticketCategory;
-        string matchDate;
+        Date matchDate;
         string seatNumber;
 
     public:
-        // Destructor implementation from abstract parent class
-        ~Tickets() override {
-                cout << "Ticket destroyed" << endl;
-        }
         // Constructors
         Tickets() : Product() {
             ticketCategory = "";
-            matchDate = "";
+            
             seatNumber = "";
         }
 
-        Tickets(string ticketCategory, string matchDate, string seatNumber, int productID,
+        Tickets(string ticketCategory, Date matchDate, string seatNumber, int productID,
             std::string productName, double price, int quantityInStock) : Product(productID, productName, price, quantityInStock){
 
             this->ticketCategory = ticketCategory;
@@ -39,7 +36,7 @@ class Tickets : public Product{
             return ticketCategory;
         }
 
-        string getMatchDate() {
+        Date getMatchDate() {
             return matchDate;
         }
 
@@ -52,7 +49,7 @@ class Tickets : public Product{
             this->ticketCategory = ticketCategory;
         }
 
-        void setMatchDate(string matchDate) {
+        void setMatchDate(Date matchDate) {
             this->matchDate = matchDate;
         }
 
@@ -70,8 +67,9 @@ class Tickets : public Product{
             << "\nPrice:            $" << fixed << setprecision(2) << getPrice()
             << "\nQuantity:         " << getQuantityInStock()
             << "\nTicket Category:             " << ticketCategory
-            << "\nMatch Date:            " << matchDate
-            << "\nSeat Number:           " << seatNumber
+            << "\nMatch Date:            "; 
+            matchDate.displayDate();
+            cout << "\nSeat Number:           " << seatNumber
             << "\n================================\n";
         }
 };

@@ -213,6 +213,18 @@ class FootballLeague
             return true;
         }
 
+        bool meetsMinimumAge(const Player& player) const {
+            return player.getAge() >= minimumAge;
+        }
+
+        bool registerPlayer(const Player& player) const {
+            if (!meetsMinimumAge(player)) {
+                return false; 
+            }
+
+            return true;
+        }
+
 };
 
 #endif // FOOTBALLLEAGUE_H

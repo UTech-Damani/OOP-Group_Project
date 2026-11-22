@@ -23,7 +23,6 @@ class Stadium
     public:
         // Default Constructor
         Stadium() {
-            stadiumID = 0;
             stadiumName = "";
             location = "";
             seatingCapacity = 0;
@@ -33,7 +32,7 @@ class Stadium
         }
 
         // Parameterized Constructor
-        Stadium(int stadiumID, string stadiumName, string location,
+        Stadium(string stadiumName, string location,
                 int seatingCapacity, string fieldCondition,
                 double ticketPrice, int occupancy) {
             this->stadiumID = stadiumID;
@@ -46,31 +45,31 @@ class Stadium
         }
 
         // Getters
-        int getStadiumID() {
+        int getStadiumID() const{
             return stadiumID;
         }
 
-        string getStadiumName() {
+        string getStadiumName() const {
             return stadiumName;
         }
 
-        string getLocation() {
+        string getLocation() const {
             return location;
         }
 
-        int getSeatingCapacity() {
+        int getSeatingCapacity() const {
             return seatingCapacity;
         }
 
-        string getFieldCondition() {
+        string getFieldCondition() const {
             return fieldCondition;
         }
 
-        double getTicketPrice() {
+        double getTicketPrice() const {
             return ticketPrice;
         }
 
-        int getOccupancy() {
+        int getOccupancy() const {
             return occupancy;
         }
 
@@ -103,21 +102,54 @@ class Stadium
             this->occupancy = occupancy;
         }
 
-        void hasCapacityFor(){
-
+        bool hasCapacityFor(int requiredSeats) const {
+            return (seatingCapacity - occupancy) >= requiredSeats;
         }
-        void getRemainingSeats(){
-
+        int getRemainingSeats() const {
+            return seatingCapacity - occupancy;
         }
-        void isAvailable(){
-
+        bool isAvailable() const {
+            return fieldCondition == "Good" && occupancy < seatingCapacity;
         }
-        void increaseOccupancy(){
-            
+        void increaseOccupancy(int spectators) {
+            if (spectators <= 0) {
+                cout << "Invalid number of spectators." << endl;
+                return;
+            }
+
+            if (occupancy + spectators <= seatingCapacity) {
+                occupancy += spectators;
+            }
+            else {
+                cout << "Stadium capacity exceeded." << endl;
+            }
         }
 
         void addShop(const StadiumShop& shop) {
             shops.push_back(shop);
+        }
+
+        bool canSellTickets(int quantity) const {
+            if (quantity <= 0) {
+                return false;
+            }
+            return (occupancy + quantity) <= seatingCapacity;
+        }
+
+        bool sellTickets(int quantity) {
+            if (!canSellTickets(quantity)) {
+                return false; // Exceeds seating capacity or invalid quantity
+            }
+            occupancy += quantity;
+            return true;
+        }
+
+        bool releaseTickets(int quantity) {
+            if (quantity <= 0 || quantity > occupancy) {
+                return false;
+            }
+            occupancy -= quantity;
+            return true;
         }
 
 };

@@ -1,6 +1,10 @@
 #ifndef LEAGUECOMMISSIONER_H
 #define LEAGUECOMMISSIONER_H
 #include "Person.h"
+#include "Fixture.h"
+#include "MatchOfficial.h"
+#include "FootballTeam.h"
+
 #include <string>
 #include <iostream>
 
@@ -33,6 +37,10 @@ class LeagueCommissioner : public Person{
         std::string getAssignedRegion() const{
             return assignedRegion;
         }
+        std::string getRole() const
+        {
+            return "League Commissioner";
+        }
 
         //Setters - Monecia
         void setApprovalAuthority(bool apr){
@@ -51,14 +59,29 @@ class LeagueCommissioner : public Person{
                 }
         }
 
-        void approveTeam(){
-
-        }
-        void suspendTeam(){
-
-        }
-        void assignOffical(){
+        void approveTeam(FootballTeam& team){
+            if (team.getPlayers().size() == 0 || team.getCoaches().size() == 0){
+                team.setTeamStatus("suspended");
+            }
             
+            for (Player& player : team.getPlayers()){
+                if (player.getAge())
+                {
+                    team.setTeamStatus("suspended");
+                    return;
+                }
+            }
+
+            team.setTeamStatus("approved");
+            
+        }
+        void suspendTeam(FootballTeam& team){
+            team.setTeamStatus("suspended");
+        }
+        void assignOfficial(Fixture& fixture, const MatchOfficial& official){
+            fixture.addOfficial(official);
+            
+            std::cout << official.getFullName() << " assigned to fixture.\n";
         }
 
         void Display() 

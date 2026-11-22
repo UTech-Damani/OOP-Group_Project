@@ -4,7 +4,7 @@
 #include "MatchResults.h"
 #include "MatchOfficial.h"
 #include "Date.h"
-#include "Time.h"
+#include "ProjectTime.h"
 
 #include <string>
 #include <iomanip>
@@ -17,7 +17,7 @@ class Fixture
     private:
         int fixtureID;
         Date fixtureDate;
-        Time fixtureTime;
+        ProjectTime fixtureTime;
         string fixtureStatus;
         int attendance; // Number of persons attending
 
@@ -115,7 +115,7 @@ class Fixture
             fixtureTime.displayTime();
         }
 
-        Time getFixtureTimeMember() const {
+        ProjectTime getFixtureTimeMember() const {
             return fixtureTime;
         }
 
@@ -135,9 +135,25 @@ class Fixture
             return awayTeamID;
         }
 
-        void conflictsWith(){
+        bool conflictsWith(const Fixture& other) const{
+            if (fixtureStatus == "Cancelled" || other.fixtureStatus == "Cancelled")
+            {
+                return false;
+            }
+
+            bool sameDate =
+                fixtureDate.getDay() == other.fixtureDate.getDay() &&
+                fixtureDate.getMonth() == other.fixtureDate.getMonth() &&
+                fixtureDate.getYear() == other.fixtureDate.getYear();
+
+            bool sameTime =
+                fixtureTime.getHours() == other.fixtureTime.getHours() &&
+                fixtureTime.getMinutes() == other.fixtureTime.getMinutes();
+
+            return sameDate && sameTime;
 
         }
+
         void addOfficial(const MatchOfficial& o){
             officials.push_back(o);
         }

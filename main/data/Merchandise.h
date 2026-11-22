@@ -15,10 +15,7 @@ class Merchandise : public Product{
         string brand;
 
     public:
-        // Destructor implementation from abstract parent class
-        ~Merchandise() override {
-            cout << "Merchandise destroyed" << endl;
-        }
+
         // Constructors
         Merchandise() {
             sizeOfItem = "";
@@ -26,7 +23,7 @@ class Merchandise : public Product{
         }
 
         Merchandise(string sizeOfItem, string brand, int productID,
-        std::string productName, double price, int quantityInStock) : Product(productID, productName, price, quantityInStock){
+                    string productName, double price, int quantityInStock) : Product(productID, productName, price, quantityInStock){
 
             this->sizeOfItem = sizeOfItem;
             this->brand = brand;
@@ -43,7 +40,7 @@ class Merchandise : public Product{
 
         // Setters
         void setSizeOfItem(string size) {
-            this->sizeOfItem = sizeOfItem;
+            this->sizeOfItem = size;
         }
 
         void setBrand(string brand) {

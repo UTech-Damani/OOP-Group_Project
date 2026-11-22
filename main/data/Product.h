@@ -12,9 +12,6 @@ class Product
         int quantityInStock;
 
     public:
-        // Creates an abstract Destructor which must be implemented by all child class
-        virtual ~Product() = 0;
-
         // Creates an abstract method which must be implemented by all child class
         virtual void Display() = 0;
 
@@ -72,6 +69,16 @@ class Product
         // Returns the quantity of the product in stock
         int getQuantityInStock() const {
             return quantityInStock;
+        }
+
+        void increaseStock(int amount)
+        {
+            quantityInStock += amount;
+        }
+
+        void decreaseStock(int amount)
+        {
+            quantityInStock -= amount;
         }
 
 

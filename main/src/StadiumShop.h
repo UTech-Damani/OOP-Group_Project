@@ -53,6 +53,10 @@ class StadiumShop
             return shopID;
         }
 
+        int getProductCount() const {
+            return products.size();
+        }
+
         string getShopName() {
             return shopName;
         }
@@ -104,7 +108,7 @@ class StadiumShop
 
         // Rule 1: Add 15% GCT to a price that does not include tax yet.
         static double calculatePriceWithGCT(double preTaxPrice) {
-            return std::round(preTaxPrice * 1.15 * 100.0) / 100.0;
+            return round(preTaxPrice * (1 + taxRate / 100.0) * 100.0) / 100.0;
         }
 
         // Store the tax-inclusive price using the product's existing setter.
@@ -118,18 +122,46 @@ class StadiumShop
         }
 
         void addProduct(Product* p){
+            // Check if product already exists
+            for (int i = 0; i < products.size(); i++)
+            {
+                if (products[i] == p)
+                {
+                    return;
+                }
+            }
+
+            // Add GCT to the product price
             setPriceFromPreTax(p, p->getPrice());
+
+            // Add product to inventory
             products.push_back(p);
+
+            // Update shop data
             productCount++;
-            
+            inventoryValue += p->getPrice();
+          
         }
 
-        bool transaction(Spectator* spectator, Product* product){
-            if(spectator->getBalance() >= product->getPrice()){
-                spectator->setBalance(spectator->getBalance() - product->getPrice());
+        bool transaction(Spectator* spectator, Product* product)
+        {
+            if (spectator->getBalance() >= product->getPrice())
+            {
+                spectator->setBalance(
+                    spectator->getBalance() - product->getPrice()
+                );
 
                 totalProductsSold++;
                 inventoryValue -= product->getPrice();
+
+                for (int i = 0; i < products.size(); i++)
+                {
+                    if (products[i] == product)
+                    {
+                        products.erase(products.begin() + i);
+                        break;
+                    }
+                }
 
                 return true;
             }

@@ -87,6 +87,14 @@ class FootballTeam {
     int getGoalsAgainst(){
         return goalsAgainst;
     }
+
+    std::vector<Player>& getPlayers(){
+        return players;
+    }
+    
+    std::vector<Coach>& getCoaches(){
+        return coaches;
+    }
     
     // Setters - Monecia Implementation Starts
     void setTeamID(int teamID) { 
@@ -133,7 +141,8 @@ class FootballTeam {
     void setTeamStatus(string teamStatus) { 
         if (teamStatus == "registered" ||
             teamStatus == "unregistered" ||
-            teamStatus == "suspended")
+            teamStatus == "suspended"    ||
+            teamStatus == "approved")
             {
                 this->teamStatus = teamStatus;
             } 
@@ -178,6 +187,25 @@ class FootballTeam {
 
     void calcGoalDifference(){
         goalDifference = goalsFor - goalDifference;
+    }
+
+    void viewTeamMembers()
+    {
+        cout << "\n===== PLAYERS =====\n";
+
+        for (Player& player : players)
+        {
+        player.Display();
+        cout << "-------------------\n";
+        }
+
+        cout << "\n===== COACHES =====\n";
+
+        for (Coach& coach : coaches)
+        {
+        coach.Display();
+        cout << "-------------------\n";
+        }
     }
 
     

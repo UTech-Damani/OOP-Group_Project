@@ -6,12 +6,13 @@
 #include <iostream>
 
 #include "Product.h"
+#include <Date.h>
 
 using namespace std;
 
 class FoodItems : public Product{
     private:
-        string expiryDate;
+        Date expiryDate;
         string category;
 
     public:
@@ -22,19 +23,18 @@ class FoodItems : public Product{
 
         // Constructors
         FoodItems() {
-            expiryDate = "";
             category = "";
         }
 
-        FoodItems(string expiryDate, string category, int productID,
-        std::string productName, double price, int quantityInStock) : Product(productID, productName, price, quantityInStock) {
+        FoodItems(Date expiryDate, string category, int productID,
+                string productName, double price, int quantityInStock) : Product(productID, productName, price, quantityInStock) {
 
             this->expiryDate = expiryDate;
             this->category = category;
         }
 
         // Getters
-        string getExpiryDate() {
+        Date getExpiryDate() {
             return expiryDate;
         }
 
@@ -43,12 +43,35 @@ class FoodItems : public Product{
         }
 
         // Setters
-        void setExpiryDate(string expiryDate) {
+        void setExpiryDate(Date expiryDate) {
             this->expiryDate = expiryDate;
         }
 
         void setCategory(string category) {
             this->category = category;
+        }
+
+        bool validCategory(string category)
+        {
+            category = toLowerCase(category);
+            return category == "drink" ||
+                category == "popcorn" ||
+                category == "burger" ||
+                category == "pizza" ||
+                category == "chicken" ||
+                category == "ice Cream" ||
+                category == "nachos" ||
+                category == "hot Dog";
+        }
+
+        string toLowerCase(string text)
+        {
+            for (int i = 0; i < text.length(); i++)
+            {
+                text[i] = tolower(text[i]);
+            }
+
+            return text;
         }
 
         // Display method for attributes within the class
@@ -60,8 +83,10 @@ class FoodItems : public Product{
             << "\nProduct Name:     " << getProductName()
             << "\nPrice:            $" << fixed << setprecision(2) << getPrice()
             << "\nQuantity:         " << getQuantityInStock()
-            << "\nExpiry Date:             " << expiryDate
-            << "\nCategory:            " << category
+            << "\nExpiry Date:             ";
+            expiryDate.displayDate();
+
+            cout << "\nCategory:            " << category
             << "\n================================\n";
         }
 };

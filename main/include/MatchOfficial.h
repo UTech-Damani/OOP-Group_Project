@@ -2,6 +2,9 @@
 #define MATCHOFFICIAL_H
 
 #include "Person.h"
+#include "Fixture.h"
+#include <vector>
+
 #include <string>
 
 class MatchOfficial : public Person {
@@ -9,6 +12,7 @@ class MatchOfficial : public Person {
     std::string rank;
     bool availability;
     int yearsExperience;
+    std::vector<const Fixture*> assignedFixtures;
 
     public:
 
@@ -32,7 +36,7 @@ class MatchOfficial : public Person {
             yearsExperience = experience; //Stores years of experience
         }
 
-        //Getters
+        //Getters - Aaron
         std::string getOfficiatingRole() const{
             return officiatingRole;
         }
@@ -46,44 +50,41 @@ class MatchOfficial : public Person {
             return yearsExperience;
         }
 
+        const std::vector<const Fixture*>& getAssignedFixtures() const{
+            return assignedFixtures;
+        }
+
         // Setters with validation - Monecia
 
         // Set officiating role
-        void setOfficiatingRole(const std::string& oRole)
-        {
-            if (oRole != "")
-                {
-                    officiatingRole = oRole;
-                }
+        void setOfficiatingRole(const std::string& oRole){
+            if (oRole != ""){
+                officiatingRole = oRole;
+            }
         }
 
         // Set rank
-        void setRank(const std::string& r)
-        {
-            if (r != "")
-                {
-                    rank = r;
-                }
+        void setRank(const std::string& r){
+            if (r != ""){
+                rank = r;
+            }
         }
 
         // Set availability
-        void setAvailability(bool ava)
-            {
-                availability = ava;
-            }
+        void setAvailability(bool ava){
+            availability = ava;
+        }
 
         // Set years of experience
-        void setYearsExperience(int years)
+        void setYearsExperience(int years){
+            if (years >= 0)
             {
-                if (years >= 0)
-                {
-                    yearsExperience = years;
-                }
+                yearsExperience = years;
             }
+        }
 
           // Set availability
-        void setAvailability(bool ava)
-        {
+        void setAvailability(bool ava){
             availability = ava;
         }
 
@@ -94,6 +95,26 @@ class MatchOfficial : public Person {
                 {
                     yearsExperience = years;
                 }
+        }
+
+        bool canAssignFixture(const Fixture& candidate) const{
+            if(!availability){
+                return false;
+            }
+            for(const Fixture* existing : assignedFixtures){
+                if(existing != nullptr && existing->conflictsWith(candidate)){
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        bool assignFixture(const Fixture& fixture){
+            if(!canAssignFixture(fixture)){
+                return false;
+            }
+            assignedFixtures.push_back(&fixture);
+            return true;
         }
 };
 
