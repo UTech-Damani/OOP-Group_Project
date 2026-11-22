@@ -12,20 +12,21 @@ class Coach : public Person{
     private:
         std::string qualification;
         std::string coachingRole;
-        std::string teamAssignment;
         FootballTeam* team;
+        int yearsExperience;
 
     public:
         Coach(){
             qualification = ""; //No qualification entered
             coachingRole = "";  //No coaching role assigned
-            teamAssignment = ""; //No team assigned
+            yearsExperience = 0;
+            team = nullptr;
         }
 
-        Coach(int id, string name, int a, string g, string qual, string role, string team) : Person(id, name, a, g){
+        Coach(int id, string name, int age, string g, string qual, string role, int yearsExperience) : Person(id, name, age, g){
             qualification = qual;
             coachingRole = role;
-            teamAssignment = team;
+            this->yearsExperience = yearsExperience;
         }
 
         //Getters
@@ -35,8 +36,8 @@ class Coach : public Person{
         std::string getCoachingRole() const{
             return coachingRole;
         }
-        std::string getTeamAssignment() const{
-            return teamAssignment;
+        int getYearsExperience() const{
+            return yearsExperience;
         }
 
     //Setters with validation - Monecia
@@ -66,20 +67,6 @@ class Coach : public Person{
                  cout << "Invalid coaching role." << endl;
             }
         }
-        void setTeamAssignment(const std::string& assigns)
-        {
-            if (assigns == "Harbour FC" ||
-                assigns == "Kingston United" ||
-                assigns == "Clarendon FC")
-                {
-                    teamAssignment = assigns;
-                }
-
-            else
-                {
-                    cout << "Invalid team assignment." << endl;
-                }
-        }
 
         void setTeam(FootballTeam* t)
         {
@@ -89,18 +76,18 @@ class Coach : public Person{
             }
 
         }
+        void setYearsExperience(int experience){
+            if (experience >= 0){
+                yearsExperience = experience;
+            }
+            else{
+                cout << "Invalid Years of Experience." << endl;
+            }
+        }
 
         // Display - Damani
-        void Display() 
-        {
-            cout << "ID: " << getIdNom() << endl;
-            cout << "Name: " << getFullName() << endl;
-            cout << "Age: " << getAge() << endl;
-            cout << "Gender: " << getGender() << endl;
-            cout << "Qualification: " << qualification << endl;
-            cout << "Coaching Role: " << coachingRole << endl;
-            cout << "Team Assignment: " << teamAssignment << endl;
-        }
+        void Display() override;
+        
 
 };
 

@@ -15,6 +15,7 @@ class FootballTeam {
     private:
         int teamID;
         string teamName;
+        string parish;
         Date registrationDate;
         int points; 
         int wins;
@@ -40,11 +41,12 @@ class FootballTeam {
     }
     
     // Parameterized Constructor
-    FootballTeam(int teamID, string teamName,
+    FootballTeam(int teamID, string teamName, string parish,
         int points, int wins, int draws,
         int losses, string teamStatus, int day, int month, int year) {
         this->teamID = teamID;
         this->teamName = teamName;
+        this->parish = parish;
         registrationDate.setDay(day);
         registrationDate.setMonth(month);
         registrationDate.setYear(year);
@@ -61,6 +63,9 @@ class FootballTeam {
     }
     string getTeamName() {
         return teamName; 
+    }
+    string getParish(){
+        return parish;
     }
     void getRegistrationDate() { 
         registrationDate.displayDate(); 
@@ -111,6 +116,10 @@ class FootballTeam {
             {
                 this->teamName = teamName;
             }
+    }
+
+    void setParish(string parish){
+        this->parish = parish;
     }
     void setRegistrationDate(int day, int month, int year) {
         registrationDate.setDay(day);
@@ -234,6 +243,22 @@ class FootballTeam {
 
     
 };
+ 
+inline void Coach::Display()
+{
+    cout << "ID: " << getIdNom() << endl;
+    cout << "Name: " << getFullName() << endl;
+    cout << "Age: " << getAge() << endl;
+    cout << "Gender: " << getGender() << endl;
+    cout << "Qualification: " << qualification << endl;
+    cout << "Coaching Role: " << coachingRole << endl;
+
+    if (team != nullptr) {
+        cout << "Team Assignment: " << team->getTeamName() << endl;
+    }
+    else {
+        cout << "Team Assignment: Not Assigned" << endl;
+    }
+}
 
 #endif // FOOTBALLTEAM_H
- 

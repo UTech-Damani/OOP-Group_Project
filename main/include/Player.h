@@ -13,6 +13,8 @@ class Player : public Person {
         int jerseyNom;
         int goalScored;
         std::string playerStatus;
+        const int MIN_PLAYER_AGE = 16;
+        
         FootballTeam* team;
 
     public:
@@ -109,8 +111,8 @@ class Player : public Person {
 
         }
 
-        void isEligible(){
-
+        bool isEligible() const {
+            return getAge() >= MIN_PLAYER_AGE;
         }
 
         void changeStatus(){

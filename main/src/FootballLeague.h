@@ -73,17 +73,30 @@ class FootballLeague
             return endDate;
         }
 
-        int getNumberOfTeams() {
+        int getNumberOfTeams() const {
             return numberOfTeams;
         }
 
-        string getCurrentStatus() {
+        string getCurrentStatus() const {
             return currentStatus;
         }
 
-        int getMinimumAge(){
+        int getMinimumAge() const {
             return minimumAge;
         }
+
+        vector<Fixture> getFixtures() const {
+            return fixtures;
+        }
+
+        vector<Stadium> getStadiums() const {
+            return stadiums;
+        }
+
+        vector<FootballTeam> getTeams() const {
+            return teams;
+        }
+
 
         // Setters
         void setLeagueID(int leagueID) {
@@ -225,6 +238,21 @@ class FootballLeague
             return true;
         }
 
+        void registerTeam(FootballTeam& NewTeam)
+        {
+            for (FootballTeam& existing : teams)
+            {
+                if (existing.getTeamID() == NewTeam.getTeamID())
+                {
+                    throw DuplicateRegistrationException();
+                }
+            }
+
+            teams.push_back(NewTeam);
+
+            cout << "\nTeam Registered Successfully!\n";
+        }
+
 };
 
-#endif // FOOTBALLLEAGUE_H
+#endif
