@@ -4,7 +4,8 @@
 #include <iostream>
 
 #include "Person.h"
-#include "FootballTeam.h"
+
+class FootballTeam;
 
 class Player : public Person {
     private:

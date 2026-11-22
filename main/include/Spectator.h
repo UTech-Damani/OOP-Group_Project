@@ -2,7 +2,7 @@
 #define SPECTATOR_H
 
 #include "Person.h"
-#include "InsufficientPaymentException.h"
+#include "../exceptions/InsufficientPaymentException.h"
 
 #include <iostream>
 

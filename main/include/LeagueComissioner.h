@@ -1,11 +1,11 @@
 #ifndef LEAGUECOMMISSIONER_H
 #define LEAGUECOMMISSIONER_H
 #include "Person.h"
-#include "Fixture.h"
+#include "../src/Fixture.h"
 #include "MatchOfficial.h"
 #include "FootballTeam.h"
-#include "TeamNotEligibleException.h"
-#include "SchedulingConflictException.h"
+#include "../exceptions/TeamNotEligibleException.h"
+#include "../exceptions/SchedulingConflictException.h"
 
 #include <string>
 #include <iostream>
@@ -89,13 +89,14 @@ class LeagueCommissioner : public Person{
             team.setTeamStatus("Eligible");
         }
         void assignOfficial(Fixture& fixture, MatchOfficial& official){
-            if (!official.canAssignFixture(fixture))
-            {
+            if(!official.canAssignFixture()){
                 throw SchedulingConflictException();
             }
 
-            fixture.addOfficial(official);
+            fixture.addOfficial(&official);
+
             official.assignFixture(fixture);
+
         }
 
         void scheduleFixture(Fixture& fixture)

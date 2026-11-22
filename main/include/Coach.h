@@ -1,12 +1,12 @@
 #ifndef COACH_H
 #define COACH_H
 
-#include "FootballTeam.h"
-
 #include <string>
 #include <iostream>
 
 using namespace std;
+
+class FootballTeam;
 
 class Coach : public Person{
     private:

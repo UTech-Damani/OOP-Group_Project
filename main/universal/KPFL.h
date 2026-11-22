@@ -2,44 +2,44 @@
 #define KPFL_H
 
 // Core Classes
-#include "Person.h"
-#include "Player.h"
-#include "Coach.h"
-#include "Spectator.h"
+#include "../include/Person.h"
+#include "../include/Player.h"
+#include "../include/Coach.h"
+#include "../include/Spectator.h"
 
 // Football Classes
-#include "FootballTeam.h"
-#include "Fixture.h"
-#include "FootballLeague.h"
-#include "LeagueComissioner.h"
-#include "MatchOfficial.h"
-#include "MatchResults.h"
+#include "../include/FootballTeam.h"
+#include "../src/Fixture.h"
+#include "../src/FootballLeague.h"
+#include "../include/LeagueComissioner.h"
+#include "../include/MatchOfficial.h"
+#include "../src/MatchResults.h"
 
 // Stadium Classes
-#include "Stadium.h"
-#include "StadiumShop.h"
+#include "../src/Stadium.h"
+#include "../src/StadiumShop.h"
 
 // Shop Classes
-#include "Product.h"
-#include "FoodItems.h"
-#include "Merchandise.h"
-#include "Tickets.h"
+#include "../data/Product.h"
+#include "../data/FoodItems.h"
+#include "../data/Merchandise.h"
+#include "../data/Tickets.h"
 
 // Utility Classes
 #include "Date.h"
 #include "ProjectTime.h"
 
 // Exceptions
-#include "KPFLExceptions.h"
-#include "CapacityExceededException.h"
-#include "DataFileException.h"
-#include "DuplicateRegistrationException.h"
-#include "FixtureIncompleteException.h"
-#include "InsufficientPaymentException.h"
-#include "InsufficientStockException.h"
-#include "InvalidScoreException.h"
-#include "SchedulingConflictException.h"
-#include "TeamNotEligibleException.h"
-#include "UnderageExceptions.h"
+#include "../exceptions/KPFLExceptions.h"
+#include "../exceptions/CapacityExceededException.h"
+#include "../exceptions/DataFileException.h"
+#include "../exceptions/DuplicateRegistrationException.h"
+#include "../exceptions/FixtureIncompleteException.h"
+#include "../exceptions/InsufficientPaymentException.h"
+#include "../exceptions/InsufficientStockException.h"
+#include "../exceptions/InvalidScoreException.h"
+#include "../exceptions/SchedulingConflictException.h"
+#include "../exceptions/TeamNotEligibleException.h"
+#include "../exceptions/UnderageExceptions.h"
 
 #endif

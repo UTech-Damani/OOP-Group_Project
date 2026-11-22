@@ -1,7 +1,8 @@
 #ifndef STADIUM_H
 #define STADIUM_H
+
 #include "StadiumShop.h"
-#include "CapacityExceededException.h"
+#include "../exceptions/CapacityExceededException.h"
 
 #include <string>
 #include <vector>

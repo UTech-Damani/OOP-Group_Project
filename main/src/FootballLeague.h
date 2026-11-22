@@ -5,9 +5,9 @@
 #include <vector>
 #include <iomanip>
 
-#include "Date.h"
+#include "../universal/Date.h"
 #include "Fixture.h"
-#include "FootballTeam.h"
+#include "../include/FootballTeam.h"
 #include "Stadium.h"
 
 using namespace std;

@@ -1,9 +1,9 @@
 #ifndef STADIUMSHOP_H
 #define STADIUMSHOP_H
 
-#include "Product.h"
-#include "Spectator.h"
-#include <InsufficientPaymentException.h>
+#include "../data/Product.h"
+#include "../include/Spectator.h"
+#include "../exceptions/InsufficientPaymentException.h"
 
 #include <string>
 #include <math.h>
@@ -20,7 +20,7 @@ class StadiumShop
         string location;
         double inventoryValue;
         int totalProductsSold;
-        static const double taxRate = 15;
+        const double taxRate = 15;
 
         vector<Product*> products;
 
@@ -108,17 +108,17 @@ class StadiumShop
         }
 
         // Rule 1: Add 15% GCT to a price that does not include tax yet.
-        static double calculatePriceWithGCT(double preTaxPrice) {
+        double calculatePriceWithGCT(double preTaxPrice) {
             return round(preTaxPrice * (1 + taxRate / 100.0) * 100.0) / 100.0;
         }
 
         // Store the tax-inclusive price using the product's existing setter.
-        static void setPriceFromPreTax(Product* product, double preTaxPrice) {
+        void setPriceFromPreTax(Product* product, double preTaxPrice) {
             product->setPrice(calculatePriceWithGCT(preTaxPrice));
         }
 
         // Find the tax already included in a selling price for a receipt.
-        static double calculateIncludedGCT(double sellingPrice) {
+        double calculateIncludedGCT(double sellingPrice) {
             return std::round(sellingPrice * (taxRate / 115.0) * 100.0) / 100.0;
         }
 

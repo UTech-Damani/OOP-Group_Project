@@ -5,9 +5,9 @@
 
 #include "Player.h"
 #include "Coach.h"
-#include "Date.h"
-#include "DuplicateRegistrationException.h"
-#include "CapacityExceededException.h"
+#include "../universal/Date.h"
+#include "../exceptions/DuplicateRegistrationException.h"
+#include "../exceptions/CapacityExceededException.h"
 
 using namespace std;
 
@@ -16,7 +16,7 @@ class FootballTeam {
         int teamID;
         string teamName;
         Date registrationDate;
-        int points;
+        int points; 
         int wins;
         int draws;
         int losses;

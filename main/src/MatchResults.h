@@ -2,7 +2,7 @@
 #ifndef MATCHRESULTS_H
 #define MATCHRESULTS_H
 
-#include "FootballTeam.h"
+#include "../include/FootballTeam.h"
 
 #include <iostream>
 #include <string>

@@ -2,10 +2,12 @@
 #define MATCHOFFICIAL_H
 
 #include "Person.h"
-#include "Fixture.h"
+#include "../src/Fixture.h"
 #include <vector>
 
 #include <string>
+
+class Fixture;
 
 class MatchOfficial : public Person {
     std::string officiatingRole;
@@ -83,25 +85,21 @@ class MatchOfficial : public Person {
             }
         }
 
-        bool canAssignFixture(const Fixture& candidate) const{
-            if(!availability){
-                return false;
-            }
-            for(const Fixture* existing : assignedFixtures){
-                if(existing != nullptr && existing->conflictsWith(candidate)){
-                    return false;
-                }
-            }
-            return true;
+        bool canAssignFixture() const{
+            return availability;
         }
 
         bool assignFixture(const Fixture& fixture){
-            if(!canAssignFixture(fixture)){
-                return false;
-            }
             assignedFixtures.push_back(&fixture);
             return true;
         }
+        void Display(){
+            cout << "\nOfficial ID: " << getIdNom();
+            cout << "\nName: " << getFullName();
+            cout << "\nRole: " << officiatingRole;
+            cout << "\nRank: " << rank;
+            cout << "\nExperience: " << yearsExperience;
+        }
 };
 
-#endif // MATCHOFFICIAL_H
+#endif 

@@ -2,10 +2,10 @@
 #define FIXTURE_H
 #include "Stadium.h"
 #include "MatchResults.h"
-#include "MatchOfficial.h"
-#include "Date.h"
-#include "ProjectTime.h"
-#include "FixtureIncompleteException.h"
+#include "../include/MatchOfficial.h"
+#include "../universal/Date.h"
+#include "../universal/ProjectTime.h"
+#include "../exceptions/FixtureIncompleteException.h"
 
 #include <string>
 #include <iomanip>
@@ -35,7 +35,7 @@ class Fixture
 
         Stadium* stadium;
         MatchResult result;
-        vector<MatchOfficial> officials;
+        vector<MatchOfficial*> officials;
 
     public:
         // Constructors
@@ -159,7 +159,7 @@ class Fixture
 
         }
 
-        void addOfficial(const MatchOfficial& o){
+        void addOfficial(MatchOfficial* o){
             officials.push_back(o);
         }
         void recordResults(const MatchResult& matchResult){
