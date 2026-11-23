@@ -1,4 +1,5 @@
 #include <iostream>
+#include <windows.h>
 
 #include <string>
 #include <vector>
@@ -15,6 +16,7 @@ int generateRandomID();
 void teamManagement(FootballLeague& league);
 void playerManagement(FootballLeague& league);
 void coachManagement(FootballLeague& league);
+void testExceptions();
 
 int main()
 {
@@ -73,7 +75,7 @@ int main()
             break;
 
         case 12:
-            
+            testExceptions();
             break;
 
         case 0:
@@ -1090,20 +1092,76 @@ void footballLeagueMenu(){
     cout << "\nChoice ==> ";
 }
 
-void exceptionMenu(){
-    cout << "\n========== TEST EXCEPTIONS ==========";
-    cout << "\n1. UnderageException";
-    cout << "\n2. DuplicateRegistrationException";
-    cout << "\n3. TeamNotEligibleException";
-    cout << "\n4. SchedulingConflictException";
-    cout << "\n5. FixtureIncompleteException";
-    cout << "\n6. InvalidScoreException";
-    cout << "\n7. InsufficientPaymentException";
-    cout << "\n8. InsufficientStockException";
-    cout << "\n9. CapacityExceededException";
-    cout << "\n10. DataFileException";
-    cout << "\n0. Back";
-    cout << "\nChoice ==> ";
+void testExceptions() {
+
+    int choice;
+
+    do {
+        cout << "\n========== TEST EXCEPTIONS ==========";
+        cout << "\n1. UnderageException";
+        cout << "\n2. DuplicateRegistrationException";
+        cout << "\n3. TeamNotEligibleException";
+        cout << "\n4. SchedulingConflictException";
+        cout << "\n5. FixtureIncompleteException";
+        cout << "\n6. InvalidScoreException";
+        cout << "\n7. InsufficientPaymentException";
+        cout << "\n8. InsufficientStockException";
+        cout << "\n9. CapacityExceededException";
+        cout << "\n10. DataFileException";
+        cout << "\n0. Back";
+        cout << "\nChoice ==> ";
+        cin >> choice;
+
+        try {
+
+            switch (choice) {
+
+                case 1:
+                    throw UnderageException();
+
+                case 2:
+                    throw DuplicateRegistrationException();
+
+                case 3:
+                    throw TeamNotEligibleException();
+
+                case 4:
+                    throw SchedulingConflictException();
+
+                case 5:
+                    throw FixtureIncompleteException();
+
+                case 6:
+                    throw InvalidScoreException();
+
+                case 7:
+                    throw InsufficientPaymentException();
+
+                case 8:
+                    throw InsufficientStockException();
+
+                case 9:
+                    throw CapacityExceededException();
+
+                case 10:
+                    throw DataFileException();
+
+                case 0:
+                    cout << "\nReturning to previous menu...\n";
+                    break;
+
+                default:
+                    cout << "\nInvalid choice. Try again.\n";
+            }
+
+        }
+        catch (const KPFLExceptions& e) {
+            cout << "\nException successfully caught!";
+            cout << "\nError Message: " << e.getMessage() << "\n";
+            Sleep(3000);
+        }
+
+    } while (choice != 0);
 }
 
 int displayMainMenu(){
