@@ -30,8 +30,8 @@ public:
     // Parameterized constructor
     MatchResult(int homeScore, int awayScore,
                 string winner, string matchStatistics) {
-        this->homeScore = homeScore;
-        this->awayScore = awayScore;
+        setHomeScore(homeScore);
+        setAwayScore(awayScore);
         this->winner = winner;
         this->matchStatistics = matchStatistics;
     }
@@ -54,23 +54,21 @@ public:
     }
 
     // Setters
-    bool setHomeScore(int homeScore) {
+    void setHomeScore(int homeScore) {
         if (homeScore < 0) {
-            return false; 
+            throw InvalidScoreException();
         }
 
         this->homeScore = homeScore;
-        
-        return true;
+
     }
 
-    bool setAwayScore(int awayScore) {
+    void setAwayScore(int awayScore) {
         if (awayScore < 0) {
-            return false; 
+            throw InvalidScoreException();
         }
         this->awayScore = awayScore;
 
-        return true;
     }
 
     void setMatchStatistics(string matchStatistics) {
@@ -83,16 +81,28 @@ public:
             winner = home.getTeamName();
             home.updateLeaguePoints("win");
             away.updateLeaguePoints("loss");
+            home.addGoalsFor(homeScore);
+            away.addGoalsFor(awayScore);
+            home.addGoalsAgainst(awayScore);
+            away.addGoalsAgainst(homeScore);
         }
         else if (awayScore > homeScore) {
             winner = away.getTeamName();
             away.updateLeaguePoints("win");
             home.updateLeaguePoints("loss");
+            home.addGoalsFor(homeScore);
+            away.addGoalsFor(awayScore);
+            home.addGoalsAgainst(awayScore);
+            away.addGoalsAgainst(homeScore);
         }
         else {
             winner = "Draw";
             home.updateLeaguePoints("draw");
             away.updateLeaguePoints("draw");
+            home.addGoalsFor(homeScore);
+            away.addGoalsFor(awayScore);
+            home.addGoalsAgainst(awayScore);
+            away.addGoalsAgainst(homeScore);
         }
     }
 

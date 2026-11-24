@@ -93,7 +93,10 @@ class FootballLeague
             return stadiums;
         }
 
-        vector<FootballTeam> getTeams() const {
+        const vector<FootballTeam>& getTeams() const {
+            return teams;
+        }
+        vector<FootballTeam>& getTeams() {
             return teams;
         }
 
@@ -185,10 +188,10 @@ class FootballLeague
             cout << "============================================================\n";
         }
 
-        bool scheduleFixture(Fixture proposed, FootballTeam& home, FootballTeam& away) {
+        void createFixture(Fixture proposed, FootballTeam& home, FootballTeam& away) {
             // Rule 3: Both teams must be registered to play.
             if (!home.canParticipate() || !away.canParticipate()) {
-                return false;
+                throw TeamNotEligibleException();
             }
 
             const int homeID = home.getTeamID();
@@ -212,10 +215,10 @@ class FootballLeague
                     existing.getAwayTeamID() == awayID;
 
                 if (sameKickoff && sharesTeam) {
-                    return false;
+                    throw TeamNotEligibleException();
                 }
                 if (homeID == awayID) {
-                    return false;
+                    throw TeamNotEligibleException();
                 }
             }
 
@@ -223,7 +226,7 @@ class FootballLeague
             proposed.homeTeamID = homeID;
             proposed.awayTeamID = awayID;
             fixtures.push_back(proposed);
-            return true;
+            
         }
 
         bool meetsMinimumAge(const Player& player) const {

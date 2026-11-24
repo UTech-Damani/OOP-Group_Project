@@ -34,7 +34,7 @@ class Stadium
         }
 
         // Parameterized Constructor
-        Stadium(string stadiumName, string location,
+        Stadium(int stadiumID, string stadiumName, string location,
                 int seatingCapacity, string fieldCondition,
                 double ticketPrice, int occupancy) {
             this->stadiumID = stadiumID;

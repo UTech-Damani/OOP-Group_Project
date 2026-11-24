@@ -6,6 +6,7 @@
 #include "../universal/Date.h"
 #include "../universal/ProjectTime.h"
 #include "../exceptions/FixtureIncompleteException.h"
+#include "../universal/FileManager.h"
 
 #include <string>
 #include <iomanip>
@@ -13,7 +14,7 @@
 
 using namespace std;
 
-class Fixture
+class Fixture : public Persistable
 {
     private:
         int fixtureID;
@@ -177,13 +178,12 @@ class Fixture
                 throw FixtureIncompleteException();
             }
             if (fixtureStatus == "Cancelled"){
-                cout << "Cancelled fixtures cannot be completed.\n";
-                return;
+                throw FixtureIncompleteException();
             }
 
             if (fixtureStatus == "Postponed"){
-                cout << "Postponed fixtures must be rescheduled first.\n";
-                return;
+                throw FixtureIncompleteException();
+                
             }
 
             fixtureStatus = "Full Time";

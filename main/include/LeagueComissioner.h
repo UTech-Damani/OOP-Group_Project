@@ -71,7 +71,7 @@ class LeagueCommissioner : public Person{
             }
             
             for (Player& player : team.getPlayers()){
-                if (player.getAge())
+                if (player.isEligible() == false)
                 {
                     team.setTeamStatus("suspended");
                     throw TeamNotEligibleException();

@@ -54,10 +54,6 @@ class StadiumShop
             return shopID;
         }
 
-        int getProductCount() const {
-            return products.size();
-        }
-
         string getShopName() {
             return shopName;
         }
@@ -144,26 +140,27 @@ class StadiumShop
           
         }
 
-        void transaction(Spectator* spectator, Product* product)
-        {
-            if (spectator->getBalance() < product->getPrice())
-            {
-                throw InsufficientPaymentException();
+        void transaction(Spectator* spectator, Product* product){
+            if (spectator == nullptr || product == nullptr) {
+                return;
             }
 
-            spectator->setBalance(spectator->getBalance() - product->getPrice());
+            // Check that the product is available first.
+            if (!product->isInStock()) {
+                throw InsufficientStockException();
+            }
+
+            // Deduct payment. Throws if the spectator
+            // does not have sufficient funds.
+            spectator->deductBalance(product->getPrice());
+
+            // Reduce stock by one unit.
+            product->decreaseStock(1);
 
             totalProductsSold++;
             inventoryValue -= product->getPrice();
 
-            for (int i = 0; i < products.size(); i++)
-            {
-                if (products[i] == product)
-                {
-                    products.erase(products.begin() + i);
-                    break;
-                }
-            }
+            product->Display();
         }
 };
 

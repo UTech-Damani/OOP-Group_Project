@@ -2,8 +2,10 @@
 #define PRODUCT_H
 #include <string>
 
+#include "../universal/FileManager.h"
+
 // Since this class contains abstract methods/destructor, it is now an abstract class
-class Product
+class Product : public Persistable
 {
     private:
         int productID;
@@ -71,6 +73,10 @@ class Product
             return quantityInStock;
         }
 
+        bool isInStock() const {
+            return quantityInStock > 0;
+        }
+
         void increaseStock(int amount)
         {
             quantityInStock += amount;
@@ -78,6 +84,13 @@ class Product
 
         void decreaseStock(int amount)
         {
+            if (amount <= 0) {
+                throw InvalidScoreException();
+            }
+
+            if (amount > quantityInStock) {
+                throw InsufficientStockException();
+            }
             quantityInStock -= amount;
         }
 

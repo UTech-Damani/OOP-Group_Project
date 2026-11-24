@@ -8,10 +8,11 @@
 #include "../universal/Date.h"
 #include "../exceptions/DuplicateRegistrationException.h"
 #include "../exceptions/CapacityExceededException.h"
+#include "../universal/FileManager.h"
 
 using namespace std;
 
-class FootballTeam {
+class FootballTeam : public Persistable {
     private:
         int teamID;
         string teamName;
@@ -38,6 +39,11 @@ class FootballTeam {
         goalsFor = 0;
         goalsAgainst = 0;
         goalDifference = 0;
+        teamID = 0;
+        points = 0;
+        wins = 0;
+        draws = 0;
+        losses = 0;
     }
     
     // Parameterized Constructor
@@ -183,7 +189,10 @@ class FootballTeam {
     void addPlayer(Player& p){
         if(players.size() >= maxPlayers)
         {
-            throw CapacityExceededException();
+            throw CapacityExceededException("max");
+        }
+        if(p.isEligible() == false){
+            throw UnderageException();
         }
 
         for(Player player : players){
@@ -217,7 +226,7 @@ class FootballTeam {
     }
 
     void calcGoalDifference(){
-        goalDifference = goalsFor - goalDifference;
+        goalDifference = goalsFor - goalsAgainst;
     }
 
     void viewTeamMembers()

@@ -8,6 +8,7 @@
 #include <ctime>
 
 #include "universal/KPFL.h"
+#include "universal/FileManager.h"
 
 using namespace std;
 
@@ -23,68 +24,71 @@ int main()
     srand(time(NULL));
 
     FootballLeague league;
+    int choice;
 
     cout << "Za Wurldo!" << endl;
 
-    int choice = displayMainMenu();
+    do{
+        int choice = displayMainMenu();
 
-    switch (choice)
-    {
-        case 1:
-            teamManagement(league);
-            break;
+        switch (choice)
+        {
+            case 1:
+                teamManagement(league);
+                break;
 
-        case 2:
-            playerManagement(league);
-            break;
+            case 2:
+                playerManagement(league);
+                break;
 
-        case 3:
-            coachManagement(league);
-            break;
+            case 3:
+                coachManagement(league);
+                break;
 
-        case 4:
+            case 4:
+                officialMenu();
+                break;
+
+            case 5:
+                fixtureManagementMenu();
+                break;
+
+            case 6:
+                commissionerMenu();
+                break;
+
+            case 7:
+                resultsMenu();
+                break;
+
+            case 8:
+                stadiumMenu();
+                break;
+
+            case 9:
+                stadiumShopMenu();
+                break;
+
+            case 10:
+                spectatorMenu();
+                break;
+
+            case 11:
+                footballLeagueMenu();
+                break;
+
+            case 12:
+                testExceptions();
+                break;
+
+            case 0:
+                cout << "You are now exiting the KPFL Demo program..." << endl;
+                break;
             
-            break;
-
-        case 5:
-            
-            break;
-
-        case 6:
-            
-            break;
-
-        case 7:
-            
-            break;
-
-        case 8:
-
-            break;
-
-        case 9:
-
-            break;
-
-        case 10:
-            
-            break;
-
-        case 11:
-            
-            break;
-
-        case 12:
-            testExceptions();
-            break;
-
-        case 0:
-            
-            break;
-        
-        default:
-            break;
-    }
+            default:
+                break;
+        }
+    }while(choice != 0);
 
     return 0;
 }
@@ -1161,6 +1165,141 @@ void testExceptions() {
             Sleep(3000);
         }
 
+    } while (choice != 0);
+}
+
+void fileManagement(FootballLeague& league){
+    int choice;
+    FileManager fileManager("data");
+
+    do {
+        cout << "\n===== FILE MANAGER =====\n";
+        cout << "\n 1. Save Teams";
+        cout << "\n 2. Load Teams";
+        cout << "\n 3. Save Fixtures";
+        cout << "\n 4. Load Fixtures";
+        cout << "\n 5. Save People";
+        cout << "\n 6. Load People";
+        cout << "\n 0. Back";
+        cout << "\nChoice ==> ";
+        cin >> choice;
+
+        try {
+            switch(choice){
+                case 1: {
+                    vector<FootballTeam>& teams = league.getTeams();
+                    vector<Persistable*> teamRecords;
+                    teamRecords.reserve(teams.size());
+
+                    for (FootballTeam& team : teams)
+                        teamRecords.push_back(&team);
+
+                    fileManager.saveTeams(teamRecords.data(), teamRecords.size());
+                    cout << "\nTeams saved successfully.\n";
+                    break;
+                }
+
+                case 2: {
+                    unique_ptr<FootballTeam> teams[100];
+                    int count = fileManager.loadTeams(teams, 100);
+
+                    league.getTeams().clear();
+                    for (int i = 0; i < count; ++i)
+                        league.registerTeam(*teams[i]);
+
+                    cout << "\n" << count << "Team(s) loaded successfully.\n";
+                    break;
+                }
+
+                case 3: {
+                    vector<Fixture> fixtures = league.getFixtures();
+                    vector<Persistable*> fixtureRecords;
+                    fixtureRecords.reserve(fixtures.size());
+
+                    for (Fixture& fixture : fixtures)
+                        fixtureRecords.push_back(&fixture);
+
+                    fileManager.saveFixtures(fixtureRecords.data(), fixtureRecords.size());
+                    cout << "\nFixtures saved successfully.\n";
+                    break;
+                }
+
+                case 4: {
+                    unique_ptr<Fixture> fixtures[100];
+                    int count = fileManager.loadFixtures(fixtures, 100);
+                    league.getFixtures().clear();
+
+                    for (int i = 0; i < count; ++i)
+                        league.getFixtures().push_back(*fixtures[i]);
+
+                    cout << "\n" << count << "Fixture(s) loaded successfully.\n";
+                    break;
+                }
+
+                case 5: {
+                    int count = 0;
+
+                    for (FootballTeam& team : league.getTeams()) {
+                        for (Player& player : team.getPlayers()) {
+                            string record = "Player|" +
+                                to_string(player.getIdNom()) + "|" +
+                                player.getFullName() + "|" +
+                                to_string(player.getAge()) + "|" +
+                                player.getGender() + "|" +
+                                player.getPositionOnField() + "|" +
+                                to_string(player.getJerseyNom());
+
+                            fileManager.appendLine(FileManager::PEOPLE_FILE, record);
+                            ++count;
+                        }
+
+                        for (Coach& coach : team.getCoaches()) {
+                            string record = "Coach|" +
+                                to_string(coach.getIdNom()) + "|" +
+                                coach.getFullName() + "|" +
+                                to_string(coach.getAge()) + "|" +
+                                coach.getGender() + "|" +
+                                coach.getQualification() + "|" +
+                                to_string(coach.getYearsExperience());
+
+                            fileManager.appendLine(FileManager::PEOPLE_FILE, record);
+                            ++count;
+                        }
+                    }
+
+                    cout << "\n" << count << " person record(s) saved successfully.\n";
+                    break;
+                }
+
+                case 6: {
+                    ifstream input(string("data/") + FileManager::PEOPLE_FILE);
+                    if (!input)
+                        throw DataFileException();
+                    string line;
+                    int count = 0;
+                    cout << "\nPeople Records:\n";
+                    while (getline(input, line)) {
+                        if (!line.empty()){
+                            cout << line << '\n';
+                            ++count;
+                        }
+                    }
+                    cout << count << " person record(s) loaded.\n";
+                    break;
+                }
+
+                case 0:
+                    cout << "\nReturning to previous menu...\n";
+                    break;
+
+                default:
+                    cout << "\nInvalid choice. Try again.\n";
+            }
+        }
+        catch (const KPFLExceptions& exception){
+            cout << "\nFile operation failed: "
+                 << exception.getMessage() << '\n';
+        }
     } while (choice != 0);
 }
 
