@@ -18,6 +18,15 @@ void teamManagement(FootballLeague& league);
 void playerManagement(FootballLeague& league);
 void coachManagement(FootballLeague& league);
 void testExceptions();
+void officialMenu();
+void fixtureManagementMenu();
+void commissionerMenu();
+void resultsMenu();
+void stadiumMenu();
+void stadiumShopMenu();
+void spectatorMenu();
+void footballLeagueMenu();
+void fileManagement(FootballLeague& league);
 
 int main()
 {
@@ -79,6 +88,10 @@ int main()
 
             case 12:
                 testExceptions();
+                break;
+            
+            case 13:
+                fileManagement(league);
                 break;
 
             case 0:

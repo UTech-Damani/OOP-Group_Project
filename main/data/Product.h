@@ -3,6 +3,7 @@
 #include <string>
 
 #include "../universal/FileManager.h"
+#include "../exceptions/InsufficientStockException.h"
 
 // Since this class contains abstract methods/destructor, it is now an abstract class
 class Product : public Persistable
@@ -85,7 +86,7 @@ class Product : public Persistable
         void decreaseStock(int amount)
         {
             if (amount <= 0) {
-                throw InvalidScoreException();
+                throw InsufficientStockException();
             }
 
             if (amount > quantityInStock) {

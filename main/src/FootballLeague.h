@@ -9,6 +9,7 @@
 #include "Fixture.h"
 #include "../include/FootballTeam.h"
 #include "Stadium.h"
+#include "../exceptions/TeamNotEligibleException.h"
 
 using namespace std;
 

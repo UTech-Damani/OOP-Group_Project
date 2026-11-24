@@ -3,7 +3,7 @@
 
 #include "../data/Product.h"
 #include "../include/Spectator.h"
-#include "../exceptions/InsufficientPaymentException.h"
+#include "../exceptions/InsufficientStockException.h"
 
 #include <string>
 #include <math.h>

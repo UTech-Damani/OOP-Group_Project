@@ -3,6 +3,7 @@
 #define MATCHRESULTS_H
 
 #include "../include/FootballTeam.h"
+#include "../exceptions/InvalidScoreException.h"
 
 #include <iostream>
 #include <string>

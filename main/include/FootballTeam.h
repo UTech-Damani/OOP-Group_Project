@@ -6,8 +6,9 @@
 #include "Player.h"
 #include "Coach.h"
 #include "../universal/Date.h"
-#include "../exceptions/DuplicateRegistrationException.h"
 #include "../exceptions/CapacityExceededException.h"
+#include "../exceptions/UnderageExceptions.h"
+#include "../exceptions/DuplicateRegistrationException.h"
 #include "../universal/FileManager.h"
 
 using namespace std;
