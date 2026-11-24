@@ -43,15 +43,15 @@ int main()
             break;
 
         case 4:
-            
+             officialMenu(league);
             break;
 
         case 5:
-            
+             fixtureManagementMenu(league);
             break;
 
         case 6:
-            
+            commissionerMenu(league);
             break;
 
         case 7:
@@ -1010,7 +1010,11 @@ void coachManagement(FootballLeague& league) {
     }
 }
 
-void officialMenu(){
+void officialMenu(FootballLeague& league){
+
+    int choice; 
+    do
+        {
     cout << "\n========== MATCH OFFICIALS ==========";
     cout << "\n1. Register Official";
     cout << "\n2. Assign Official";
@@ -1018,28 +1022,137 @@ void officialMenu(){
     cout << "\n4. View Assigned Fixtures";
     cout << "\n0. Back";
     cout << "\nChoice ==> ";
+            cin >> choice;
+            switch(choice)
+        {
+            case 1:
+                cout << "\nRegister Official selected.";
+                break;
+
+            case 2:
+                cout << "\nAssign Official selected.";
+                break;
+
+            case 3:
+                cout << "\nDisplay Official selected.";
+                break;
+
+            case 4:
+                cout << "\nView Assigned Fixtures selected.";
+                break;
+
+            case 0:
+                cout << "\nReturning to Main Menu...";
+                break;
+
+            default:
+                cout << "\nInvalid choice. Try again.";
+        }
+
+    } while(choice != 0);
+
+}
+        
+
+
+void fixtureManagementMenu(FootballLeague& league)
+{
+    int choice;
+
+    do
+    {
+        cout << "\n========= FIXTURE MANAGEMENT =========\n";
+        cout << "1. Schedule Fixture\n";
+        cout << "2. Assign Official\n";
+        cout << "3. Record Result\n";
+        cout << "4. Complete Fixture\n";
+        cout << "0. Back\n";
+        cout << "\nChoice ==> ";
+
+        cin >> choice;
+
+        switch(choice)
+        {
+            case 1:
+                cout << "\nSchedule Fixture selected.";
+                break;
+
+            case 2:
+                cout << "\nAssign Official selected.";
+                break;
+
+            case 3:
+                cout << "\nRecord Result selected.";
+                break;
+
+            case 4:
+                cout << "\nComplete Fixture selected.";
+                break;
+
+            case 0:
+                cout << "\nReturning to Main Menu...";
+                break;
+
+            default:
+                cout << "\nInvalid choice. Try again.";
+        }
+
+    } while(choice != 0);
 }
 
-void fixtureManagementMenu(){
-    cout << "\n========= FIXTURE MANAGEMENT =========\n";
-    cout << "1. Schedule Fixture\n";
-    cout << "2. Assign Official\n";
-    cout << "3. Record Result\n";
-    cout << "4. Complete Fixture\n";
-    cout << "0. Back\n";
-    cout << "\nChoice ==> ";
-}
+void commissionerMenu(FootballLeague& league)
+{
+    int choice;
 
-void commissionerMenu(){
-    cout << "\n========== LEAGUE COMMISSIONER ==========";
-    cout << "\n1. Approve Team";
-    cout << "\n2. Suspend Team";
-    cout << "\n3. Reinstate Team";
-    cout << "\n4. Schedule Fixture";
-    cout << "\n5. Assign Official";
-    cout << "\n6. Inspect Match Preparation";
-    cout << "\n0. Back";
-    cout << "\nChoice ==> ";
+    do
+    {
+        cout << "\n========== LEAGUE COMMISSIONER ==========";
+        cout << "\n1. Approve Team";
+        cout << "\n2. Suspend Team";
+        cout << "\n3. Reinstate Team";
+        cout << "\n4. Schedule Fixture";
+        cout << "\n5. Assign Official";
+        cout << "\n6. Inspect Match Preparation";
+        cout << "\n0. Back";
+        cout << "\nChoice ==> ";
+
+        cin >> choice;
+
+        switch(choice)
+        {
+            case 1:
+                cout << "\nApprove Team selected.";
+                break;
+
+            case 2:
+                cout << "\nSuspend Team selected.";
+                break;
+
+            case 3:
+                cout << "\nReinstate Team selected.";
+                break;
+
+            case 4:
+                cout << "\nSchedule Fixture selected.";
+                break;
+
+            case 5:
+                cout << "\nAssign Official selected.";
+                break;
+
+            case 6:
+                cout << "\nInspect Match Preparation selected.";
+                break;
+
+            case 0:
+                cout << "\nReturning to Main Menu...";
+                break;
+
+            default:
+                cout << "\nInvalid choice. Try again.";
+        }
+
+    } while(choice != 0);
 }
 
 void stadiumMenu(){
