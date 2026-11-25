@@ -249,8 +249,35 @@ class FootballTeam : public Persistable {
         }
     }
 
-    
+    string toFileString() const{
+        stringstream ss;
 
+        ss << teamID << ","
+        << teamName << ","
+        << parish << ","
+        << points << ","
+        << wins << ","
+        << draws << ","
+        << losses << ","
+        << teamStatus << ","
+        << registrationDate.getDay() << ","
+        << registrationDate.getMonth() << ","
+        << registrationDate.getYear();
+
+        return ss.str();
+    }
+    static FootballTeam fromFileString(const string& data)
+    {
+        stringstream ss(data);
+
+        int id, points, wins, draws, losses;
+        int day, month, year;
+
+        string name, parish, status;
+
+        getline(ss, name, ',');
+
+    }
     
 };
  

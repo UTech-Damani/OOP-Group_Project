@@ -7,9 +7,11 @@
 #include <string>
 #include <vector>
 
+class Fixture;
+
 using namespace std;
 
-class Stadium
+class Stadium : public Persistable
 {
     private:
         int stadiumID;
@@ -21,6 +23,7 @@ class Stadium
         int occupancy;
 
         vector<StadiumShop> shops;
+        vector<Fixture*> fixtures;
 
     public:
         // Default Constructor
@@ -74,6 +77,8 @@ class Stadium
         int getOccupancy() const {
             return occupancy;
         }
+
+        vector<Fixture*>& Stadium::getFixtures();
 
         // Setters
         void setStadiumID(int stadiumID) {
@@ -153,7 +158,64 @@ class Stadium
             occupancy -= quantity;
             return true;
         }
+        void addFixture(Fixture* fixture);
+
+        string toFileString() const override
+        {
+            stringstream ss;
+
+            ss << stadiumID << ","
+            << stadiumName << ","
+            << location << ","
+            << seatingCapacity << ","
+            << fieldCondition << ","
+            << ticketPrice << ","
+            << occupancy;
+
+            return ss.str();
+        }
+
+        static Stadium fromFileString(const string& data)
+        {
+            stringstream ss(data);
+
+            int id, capacity, occupancy;
+            double price;
+            string name, location, condition;
+
+            char comma;
+
+            ss >> id >> comma;
+            getline(ss, name, ',');
+
+            getline(ss, location, ',');
+
+            getline(ss, condition, ',');
+
+            ss >> capacity >> comma
+            >> price >> comma
+            >> occupancy;
+
+            return Stadium(
+                id, name, location,
+                capacity, condition,
+                price, occupancy
+            );
+        }
 
 };
 
-#endif // STADIUM_H
+inline vector<Fixture*>& Stadium::getFixtures()
+{
+    return fixtures;
+}
+
+inline void Stadium::addFixture(Fixture* fixture)
+{
+    if (fixture != nullptr)
+    {
+        fixtures.push_back(fixture);
+    }
+}
+
+#endif //

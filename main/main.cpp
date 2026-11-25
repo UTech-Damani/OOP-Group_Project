@@ -12,15 +12,20 @@
 
 using namespace std;
 
+vector<MatchOfficial> officials;
+vector<Fixture> fixtures;
+LeagueCommissioner commissioner;
+
+
 int displayMainMenu();
 int generateRandomID();
 void teamManagement(FootballLeague& league);
 void playerManagement(FootballLeague& league);
 void coachManagement(FootballLeague& league);
 void testExceptions();
-void officialMenu();
-void fixtureManagementMenu();
-void commissionerMenu();
+void officialMenu(FootballLeague& league);
+void fixtureManagementMenu(FootballLeague& league);
+void commissionerMenu(FootballLeague& league);
 void resultsMenu();
 void stadiumMenu();
 void stadiumShopMenu();
@@ -55,15 +60,15 @@ int main()
                 break;
 
             case 4:
-                officialMenu();
+                officialMenu(league);
                 break;
 
             case 5:
-                fixtureManagementMenu();
+                fixtureManagementMenu(league);
                 break;
 
             case 6:
-                commissionerMenu();
+                commissionerMenu(league);
                 break;
 
             case 7:
@@ -1027,36 +1032,630 @@ void coachManagement(FootballLeague& league) {
     }
 }
 
-void officialMenu(){
-    cout << "\n========== MATCH OFFICIALS ==========";
-    cout << "\n1. Register Official";
-    cout << "\n2. Assign Official";
-    cout << "\n3. Display Official";
-    cout << "\n4. View Assigned Fixtures";
-    cout << "\n0. Back";
-    cout << "\nChoice ==> ";
+void officialMenu(FootballLeague& league)
+{
+    int choice;
+
+    do
+    {
+        cout << "\n========== MATCH OFFICIALS ==========";
+        cout << "\n1. Register Official";
+        cout << "\n2. Assign Official";
+        cout << "\n3. Display Official";
+        cout << "\n4. View Assigned Fixtures";
+        cout << "\n0. Back";
+        cout << "\nChoice ==> ";
+
+        cin >> choice;
+
+        switch(choice)
+        {
+            case 1:
+            {
+                int id, age, experience, available;
+                string name, gender, role, rank;
+
+                cout << "\nOfficial ID: ";
+                cin >> id;
+
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                cout << "Official Name: ";
+                getline(cin, name);
+
+                cout << "Age: ";
+                cin >> age;
+
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                cout << "Gender: ";
+                getline(cin, gender);
+
+                cout << "Officiating Role: ";
+                getline(cin, role);
+
+                cout << "Rank: ";
+                getline(cin, rank);
+
+                cout << "Availability (1 = Available, 0 = Unavailable): ";
+                cin >> available;
+
+                cout << "Years of Experience: ";
+                cin >> experience;
+
+                if(id <= 0 || age < 0 || experience < 0 ||
+                   (available != 0 && available != 1))
+                {
+                    cout << "\nInvalid information entered.\n";
+                    break;
+                }
+
+                MatchOfficial official(id, name, age, gender,
+                                       role, rank, available == 1,
+                                       experience);
+
+                officials.push_back(official);
+
+                cout << "\nOfficial registered successfully!\n";
+                break;
+            }
+
+            case 2:
+            {
+                if(officials.empty() || fixtures.empty())
+                {
+                    cout << "\nOfficials or fixtures are unavailable.\n";
+                    break;
+                }
+
+                int officialChoice, fixtureChoice;
+
+                cout << "\nREGISTERED OFFICIALS\n";
+
+                for(int i = 0; i < officials.size(); i++)
+                {
+                    cout << "\n" << i + 1 << ". "
+                         << officials[i].getFullName();
+                }
+
+                cout << "\nSelect Official: ";
+                cin >> officialChoice;
+
+                if(officialChoice < 1 || officialChoice > officials.size())
+                {
+                    cout << "\nInvalid official selection.\n";
+                    break;
+                }
+
+                cout << "\nAVAILABLE FIXTURES\n";
+
+                for(int i = 0; i < fixtures.size(); i++)
+                {
+                    cout << "\n" << i + 1
+                         << ". Fixture ID: "
+                         << fixtures[i].getFixtureID();
+                }
+
+                cout << "\nSelect Fixture: ";
+                cin >> fixtureChoice;
+
+                if(fixtureChoice < 1 || fixtureChoice > fixtures.size())
+                {
+                    cout << "\nInvalid fixture selection.\n";
+                    break;
+                }
+
+                if(!officials[officialChoice - 1].canAssignFixture())
+                {
+                    cout << "\nOfficial is unavailable.\n";
+                    break;
+                }
+
+                commissioner.assignOfficial(
+                    fixtures[fixtureChoice - 1],
+                    officials[officialChoice - 1]
+                );
+
+                cout << "\nOfficial assigned successfully!\n";
+                break;
+            }
+
+            case 3:
+            {
+                if(officials.empty())
+                {
+                    cout << "\nNo registered officials.\n";
+                    break;
+                }
+
+                for(int i = 0; i < officials.size(); i++)
+                {
+                    cout << "\nOfficial " << i + 1;
+                    officials[i].Display();
+                    cout << "\n";
+                }
+
+                break;
+            }
+
+            case 4:
+            {
+                int officialChoice;
+
+                if(officials.empty())
+                {
+                    cout << "\nNo registered officials.\n";
+                    break;
+                }
+
+                for(int i = 0; i < officials.size(); i++)
+                {
+                    cout << "\n" << i + 1 << ". "
+                         << officials[i].getFullName();
+                }
+
+                cout << "\nSelect Official: ";
+                cin >> officialChoice;
+
+                if(officialChoice < 1 || officialChoice > officials.size())
+                {
+                    cout << "\nInvalid selection.\n";
+                    break;
+                }
+
+                vector<Fixture*>& assigned = officials[officialChoice - 1].getAssignedFixtures();
+
+                if(assigned.empty())
+                {
+                    cout << "\nNo assigned fixtures.\n";
+                    break;
+                }
+
+                for(Fixture* fixture : assigned)
+                {
+                    cout << "\nFixture ID: " << fixture->getFixtureID();
+                    cout << "\nStatus: " << fixture->getFixtureStatus();
+                    cout << "\nDate: ";
+                    fixture->getFixtureDate();
+                    cout << "\n";
+                }
+
+                break;
+            }
+
+            case 0:
+                cout << "\nReturning to Main Menu...\n";
+                break;
+
+            default:
+                cout << "\nInvalid choice.\n";
+        }
+
+    } while(choice != 0);
 }
 
-void fixtureManagementMenu(){
-    cout << "\n========= FIXTURE MANAGEMENT =========\n";
-    cout << "1. Schedule Fixture\n";
-    cout << "2. Assign Official\n";
-    cout << "3. Record Result\n";
-    cout << "4. Complete Fixture\n";
-    cout << "0. Back\n";
-    cout << "\nChoice ==> ";
+
+void fixtureManagementMenu(FootballLeague& league)
+{
+    int choice;
+
+    do
+    {
+        cout << "\n========= FIXTURE MANAGEMENT =========";
+        cout << "\n1. Schedule Fixture";
+        cout << "\n2. Assign Official";
+        cout << "\n3. Record Result";
+        cout << "\n4. Complete Fixture";
+        cout << "\n0. Back";
+        cout << "\nChoice ==> ";
+
+        cin >> choice;
+
+        switch(choice)
+        {
+            case 1:
+            {
+                vector<FootballTeam> teams = league.getTeams();
+
+                if(teams.size() < 2)
+                {
+                    cout << "\nAt least two teams are required.\n";
+                    break;
+                }
+
+                cout << "\nREGISTERED TEAMS\n";
+
+                for(int i = 0; i < teams.size(); i++)
+                {
+                    cout << "\n" << i + 1 << ". "
+                         << teams[i].getTeamName();
+                }
+
+                int home, away;
+
+                cout << "\nSelect Home Team: ";
+                cin >> home;
+
+                cout << "Select Away Team: ";
+                cin >> away;
+
+                if(home < 1 || home > teams.size() ||
+                   away < 1 || away > teams.size() || home == away)
+                {
+                    cout << "\nInvalid team selection.\n";
+                    break;
+                }
+
+                int id, day, month, year;
+                int hours, minutes, seconds;
+
+                cout << "\nFixture ID: ";
+                cin >> id;
+
+                cout << "Day: ";
+                cin >> day;
+
+                cout << "Month: ";
+                cin >> month;
+
+                cout << "Year: ";
+                cin >> year;
+
+                cout << "Hours: ";
+                cin >> hours;
+
+                cout << "Minutes: ";
+                cin >> minutes;
+
+                cout << "Seconds: ";
+                cin >> seconds;
+
+                Fixture proposed;
+
+                proposed.setFixtureID(id);
+                proposed.setFixtureDate(day, month, year);
+                proposed.setFixtureTime(hours, minutes, seconds);
+                proposed.setFixtureStatus("Scheduled");
+
+                try{
+                    league.createFixture(proposed, teams[home - 1], teams[away - 1]);
+                } catch(const KPFLExceptions& e){
+                    e.getMessage();
+                }
+
+                break;
+            }
+
+            case 2:
+            {
+                if(officials.empty() || fixtures.empty())
+                {
+                    cout << "\nOfficials or fixtures are unavailable.\n";
+                    break;
+                }
+
+                int officialChoice, fixtureChoice;
+
+                for(int i = 0; i < officials.size(); i++)
+                {
+                    cout << "\n" << i + 1 << ". "
+                         << officials[i].getFullName();
+                }
+
+                cout << "\nSelect Official: ";
+                cin >> officialChoice;
+
+                if(officialChoice < 1 || officialChoice > officials.size())
+                {
+                    cout << "\nInvalid official selection.\n";
+                    break;
+                }
+
+                for(int i = 0; i < fixtures.size(); i++)
+                {
+                    cout << "\n" << i + 1
+                         << ". Fixture ID: "
+                         << fixtures[i].getFixtureID();
+                }
+
+                cout << "\nSelect Fixture: ";
+                cin >> fixtureChoice;
+
+                if(fixtureChoice < 1 || fixtureChoice > fixtures.size())
+                {
+                    cout << "\nInvalid fixture selection.\n";
+                    break;
+                }
+
+                if(!officials[officialChoice - 1].canAssignFixture())
+                {
+                    cout << "\nOfficial is unavailable.\n";
+                    break;
+                }
+
+                commissioner.assignOfficial(
+                    fixtures[fixtureChoice - 1],
+                    officials[officialChoice - 1]
+                );
+
+                cout << "\nOfficial assigned successfully!\n";
+                break;
+            }
+
+            case 3:
+            {
+                cout << "\nTo record the result, the MatchResult "
+                     << "class methods are needed.\n";
+                break;
+            }
+
+            case 4:
+            {
+                if(fixtures.empty())
+                {
+                    cout << "\nNo fixtures available.\n";
+                    break;
+                }
+
+                int fixtureChoice;
+
+                for(int i = 0; i < fixtures.size(); i++)
+                {
+                    cout << "\n" << i + 1
+                         << ". Fixture ID: "
+                         << fixtures[i].getFixtureID();
+                }
+
+                cout << "\nSelect Fixture: ";
+                cin >> fixtureChoice;
+
+                if(fixtureChoice < 1 || fixtureChoice > fixtures.size())
+                {
+                    cout << "\nInvalid fixture selection.\n";
+                    break;
+                }
+
+                try
+                {
+                    fixtures[fixtureChoice - 1].completeFixture();
+                    cout << "\nFixture completed successfully!\n";
+                }
+                catch(...)
+                {
+                    cout << "\nFixture could not be completed. "
+                         << "Check that an official has been assigned.\n";
+                }
+
+                break;
+            }
+
+            case 0:
+                cout << "\nReturning to Main Menu...\n";
+                break;
+
+            default:
+                cout << "\nInvalid choice.\n";
+        }
+
+    } while(choice != 0);
 }
 
-void commissionerMenu(){
-    cout << "\n========== LEAGUE COMMISSIONER ==========";
-    cout << "\n1. Approve Team";
-    cout << "\n2. Suspend Team";
-    cout << "\n3. Reinstate Team";
-    cout << "\n4. Schedule Fixture";
-    cout << "\n5. Assign Official";
-    cout << "\n6. Inspect Match Preparation";
-    cout << "\n0. Back";
-    cout << "\nChoice ==> ";
+
+void commissionerMenu(FootballLeague& league)
+{
+    int choice;
+
+    do
+    {
+        cout << "\n========== LEAGUE COMMISSIONER ==========";
+        cout << "\n1. Approve Team";
+        cout << "\n2. Suspend Team";
+        cout << "\n3. Reinstate Team";
+        cout << "\n4. Schedule Fixture";
+        cout << "\n5. Assign Official";
+        cout << "\n6. Inspect Match Preparation";
+        cout << "\n0. Back";
+        cout << "\nChoice ==> ";
+
+        cin >> choice;
+
+        switch(choice)
+        {
+            case 1:
+            case 2:
+            case 3:
+            {
+                vector<FootballTeam> teams = league.getTeams();
+
+                if(teams.empty())
+                {
+                    cout << "\nNo registered teams available.\n";
+                    break;
+                }
+
+                cout << "\nREGISTERED TEAMS\n";
+
+                for(int i = 0; i < teams.size(); i++)
+                {
+                    cout << "\n" << i + 1 << ". "
+                         << teams[i].getTeamName();
+                }
+
+                int teamChoice;
+
+                cout << "\nSelect Team: ";
+                cin >> teamChoice;
+
+                if(teamChoice < 1 || teamChoice > teams.size())
+                {
+                    cout << "\nInvalid team selection.\n";
+                    break;
+                }
+
+                try
+                {
+                    if(choice == 1)
+                    {
+                        commissioner.approveTeam(teams[teamChoice - 1]);
+                        cout << "\nTeam approval completed.\n";
+                    }
+                    else if(choice == 2)
+                    {
+                        commissioner.suspendTeam(teams[teamChoice - 1]);
+                        cout << "\nTeam suspended successfully.\n";
+                    }
+                    else if(choice == 3)
+                    {
+                        commissioner.reinstateTeam(teams[teamChoice - 1]);
+                        cout << "\nTeam reinstated successfully.\n";
+                    }
+                }
+                catch(...)
+                {
+                    cout << "\nTeam could not be approved.\n";
+                }
+
+                cout << "\nNote: The league returns a copy of its teams, "
+                     << "so these changes are not saved to the original team.\n";
+
+                break;
+            }
+
+            case 4:
+            {
+                if(fixtures.empty())
+                {
+                    cout << "\nNo fixtures available.\n";
+                    break;
+                }
+
+                int fixtureChoice;
+
+                for(int i = 0; i < fixtures.size(); i++)
+                {
+                    cout << "\n" << i + 1
+                         << ". Fixture ID: "
+                         << fixtures[i].getFixtureID();
+                }
+
+                cout << "\nSelect Fixture: ";
+                cin >> fixtureChoice;
+
+                if(fixtureChoice < 1 || fixtureChoice > fixtures.size())
+                {
+                    cout << "\nInvalid fixture selection.\n";
+                    break;
+                }
+
+                try
+                {
+                    commissioner.scheduleFixture(
+                        fixtures[fixtureChoice - 1]
+                    );
+
+                    cout << "\nCommissioner scheduled the fixture.\n";
+                }
+                catch(...)
+                {
+                    cout << "\nFixture could not be scheduled.\n";
+                }
+
+                break;
+            }
+
+            case 5:
+            {
+                if(officials.empty() || fixtures.empty())
+                {
+                    cout << "\nOfficials or fixtures are unavailable.\n";
+                    break;
+                }
+
+                int officialChoice, fixtureChoice;
+
+                for(int i = 0; i < officials.size(); i++)
+                {
+                    cout << "\n" << i + 1 << ". "
+                         << officials[i].getFullName();
+                }
+
+                cout << "\nSelect Official: ";
+                cin >> officialChoice;
+
+                if(officialChoice < 1 || officialChoice > officials.size())
+                {
+                    cout << "\nInvalid official selection.\n";
+                    break;
+                }
+
+                for(int i = 0; i < fixtures.size(); i++)
+                {
+                    cout << "\n" << i + 1
+                         << ". Fixture ID: "
+                         << fixtures[i].getFixtureID();
+                }
+
+                cout << "\nSelect Fixture: ";
+                cin >> fixtureChoice;
+
+                if(fixtureChoice < 1 || fixtureChoice > fixtures.size())
+                {
+                    cout << "\nInvalid fixture selection.\n";
+                    break;
+                }
+
+                if(!officials[officialChoice - 1].canAssignFixture())
+                {
+                    cout << "\nOfficial is unavailable.\n";
+                    break;
+                }
+
+                commissioner.assignOfficial(
+                    fixtures[fixtureChoice - 1],
+                    officials[officialChoice - 1]
+                );
+
+                cout << "\nOfficial assigned successfully!\n";
+                break;
+            }
+
+            case 6:
+            {
+                if(fixtures.empty())
+                {
+                    cout << "\nNo fixtures available for inspection.\n";
+                    break;
+                }
+
+                for(int i = 0; i < fixtures.size(); i++)
+                {
+                    cout << "\nFixture ID: "
+                         << fixtures[i].getFixtureID();
+
+                    cout << "\nDate: ";
+                    fixtures[i].getFixtureDate();
+
+                    cout << "\nTime: ";
+                    fixtures[i].getFixtureTime();
+
+                    cout << "\nStatus: "
+                         << fixtures[i].getFixtureStatus();
+
+                    cout << "\n";
+                }
+
+                break;
+            }
+
+            case 0:
+                cout << "\nReturning to Main Menu...\n";
+                break;
+
+            default:
+                cout << "\nInvalid choice.\n";
+        }
+
+    } while(choice != 0);
 }
 
 void stadiumMenu(){
