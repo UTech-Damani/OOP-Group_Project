@@ -11,6 +11,7 @@
 #include <string>
 #include <iomanip>
 #include <vector>
+#include <sstream>
 
 using namespace std;
 
@@ -200,6 +201,48 @@ class Fixture : public Persistable
             }
 
             fixtureStatus = "Postponed";
+        }
+
+        string toFileString() const override
+        {
+            stringstream ss;
+            ss << fixtureID << ","
+               << fixtureDate.getDay() << ","
+               << fixtureDate.getMonth() << ","
+               << fixtureDate.getYear() << ","
+               << fixtureTime.getHours() << ","
+               << fixtureTime.getMinutes() << ","
+               << fixtureTime.getSeconds() << ","
+               << fixtureStatus << ","
+               << attendance << ","
+               << homeTeamID << ","
+               << awayTeamID;
+            return ss.str();
+        }
+
+        static Fixture fromFileString(const string& data)
+        {
+            stringstream ss(data);
+            Fixture fixture;
+            int id, day, month, year, hours, minutes, seconds;
+            int attend, homeID, awayID;
+            string status;
+            char comma;
+
+            ss >> id >> comma;
+            ss >> day >> comma >> month >> comma >> year >> comma;
+            ss >> hours >> comma >> minutes >> comma >> seconds >> comma;
+            getline(ss, status, ',');
+            ss >> attend >> comma >> homeID >> comma >> awayID;
+
+            fixture.setFixtureID(id);
+            fixture.setFixtureDate(day, month, year);
+            fixture.setFixtureTime(hours, minutes, seconds);
+            fixture.setFixtureStatus(status);
+            fixture.setAttendance(attend);
+            fixture.homeTeamID = homeID;
+            fixture.awayTeamID = awayID;
+            return fixture;
         }
 };
 

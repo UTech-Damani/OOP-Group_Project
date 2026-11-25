@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 
 class Fixture;
 
@@ -78,7 +79,7 @@ class Stadium : public Persistable
             return occupancy;
         }
 
-        vector<Fixture*>& Stadium::getFixtures();
+        vector<Fixture*>& getFixtures();
 
         // Setters
         void setStadiumID(int stadiumID) {

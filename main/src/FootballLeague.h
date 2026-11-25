@@ -86,7 +86,11 @@ class FootballLeague
             return minimumAge;
         }
 
-        vector<Fixture> getFixtures() const {
+        vector<Fixture>& getFixtures() {
+            return fixtures;
+        }
+
+        const vector<Fixture>& getFixtures() const {
             return fixtures;
         }
 
@@ -198,6 +202,10 @@ class FootballLeague
             const int homeID = home.getTeamID();
             const int awayID = away.getTeamID();
 
+            if (homeID == awayID) {
+                throw TeamNotEligibleException();
+            }
+
             for (const Fixture& existing : fixtures) {
                 // Rule 4: Check whether either team already plays at this kickoff.
                 const bool sameKickoff =
@@ -216,9 +224,6 @@ class FootballLeague
                     existing.getAwayTeamID() == awayID;
 
                 if (sameKickoff && sharesTeam) {
-                    throw TeamNotEligibleException();
-                }
-                if (homeID == awayID) {
                     throw TeamNotEligibleException();
                 }
             }
@@ -252,6 +257,7 @@ class FootballLeague
                 }
             }
 
+            NewTeam.setTeamStatus("registered");
             teams.push_back(NewTeam);
 
             cout << "\nTeam Registered Successfully!\n";

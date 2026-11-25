@@ -81,12 +81,10 @@ class Person : public Persistable{
         }
 
         // Set gender
-        void setGender(int g)
+        void setGender(const string& g)
         {
-            if (g >= 0)
-                {
-                    Gender = g;
-                }
+            if (!g.empty())
+                Gender = g;
         }
 };
 inline Person::~Person(){}

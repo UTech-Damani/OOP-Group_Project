@@ -18,8 +18,8 @@ class Spectator : public Person{
     public:
         Spectator() : Person()
         {
-            //initialized to zero as nothing has been stored yet
             ticketsPurchased = 0;
+            productsPurchased = 0;
             totalAmountSpent =  0.0;
             balance = 0.0;
         }
@@ -29,6 +29,7 @@ class Spectator : public Person{
                     : Person(id, name, a, g) //Sends information to Person
         {
             ticketsPurchased = tickets; //Stores the number of tickets purchased
+            productsPurchased = 0;
             totalAmountSpent = amount;  //Stores the total money spent
             this->balance = balance;
         }
@@ -63,12 +64,10 @@ class Spectator : public Person{
 
         void buyTicket(){
             ticketsPurchased++;
-
         }
         void buyProduct(double price){
             productsPurchased++;
             totalAmountSpent += price;
-
         }
         void deductBalance(double amount){
             if(balance < amount)
@@ -78,8 +77,10 @@ class Spectator : public Person{
 
             balance -= amount;
         }
-        void addToTotalSpent(){
-            
+        void addToTotalSpent(double amount){
+            if (amount >= 0) {
+                totalAmountSpent += amount;
+            }
         }
 
         void Display(){

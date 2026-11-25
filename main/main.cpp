@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <cstdlib>
 #include <ctime>
+#include <limits>
 
 #include "universal/KPFL.h"
 #include "universal/FileManager.h"
@@ -13,12 +14,14 @@
 using namespace std;
 
 vector<MatchOfficial> officials;
-vector<Fixture> fixtures;
+vector<Spectator> spectators;
 LeagueCommissioner commissioner;
 
 
 int displayMainMenu();
 int generateRandomID();
+bool readInt(int& value);
+bool readDouble(double& value);
 void teamManagement(FootballLeague& league);
 void playerManagement(FootballLeague& league);
 void coachManagement(FootballLeague& league);
@@ -29,9 +32,41 @@ void commissionerMenu(FootballLeague& league);
 void resultsMenu();
 void stadiumMenu();
 void stadiumShopMenu();
-void spectatorMenu();
+void spectatorManagement();
 void footballLeagueMenu();
 void fileManagement(FootballLeague& league);
+
+bool readInt(int& value)
+{
+    cin >> value;
+    if (!cin) {
+        if (cin.eof()) {
+            value = 0;
+            return false;
+        }
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        value = 0;
+        return false;
+    }
+    return true;
+}
+
+bool readDouble(double& value)
+{
+    cin >> value;
+    if (!cin) {
+        if (cin.eof()) {
+            value = 0.0;
+            return false;
+        }
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        value = 0.0;
+        return false;
+    }
+    return true;
+}
 
 int main()
 {
@@ -43,7 +78,7 @@ int main()
     cout << "Za Wurldo!" << endl;
 
     do{
-        int choice = displayMainMenu();
+        choice = displayMainMenu();
 
         switch (choice)
         {
@@ -84,7 +119,7 @@ int main()
                 break;
 
             case 10:
-                spectatorMenu();
+                spectatorManagement();
                 break;
 
             case 11:
@@ -128,7 +163,10 @@ void teamManagement(FootballLeague& league){
         cout << "\n==================================================";
         cout << "\nChoice ==> ";
         
-        cin >> choice;
+        if (!readInt(choice)) {
+            cout << "\nInvalid choice. Enter a number.\n";
+            continue;
+        }
         
         switch(choice){
             case 1: {
@@ -171,7 +209,7 @@ void teamManagement(FootballLeague& league){
                 
                 cout << "\nRegistered Teams\n";
                 
-                for(int i = 0; i < league.getTeams().size(); i++){
+                for(size_t i = 0; i < league.getTeams().size(); ++i){
                     cout << i + 1 << ". "
                     << league.getTeams()[i].getTeamName()
                     << endl;
@@ -239,7 +277,7 @@ void teamManagement(FootballLeague& league){
                 
                 cout << "\nRegistered Teams\n";
 
-                for(int i = 0; i < league.getTeams().size(); i++){
+                for(size_t i = 0; i < league.getTeams().size(); ++i){
                     cout << i + 1 << ". "
                     << league.getTeams()[i].getTeamName()
                     << endl;
@@ -301,7 +339,7 @@ void teamManagement(FootballLeague& league){
                 
                 cout << "\nRegistered Teams\n";
                 
-                for(int i = 0; i < league.getTeams().size(); i++){
+                for(size_t i = 0; i < league.getTeams().size(); ++i){
                     cout << i + 1 << ". "
                     << league.getTeams()[i].getTeamName()
                     << endl;
@@ -364,7 +402,10 @@ void playerManagement(FootballLeague& league) {
         cout << "=======================================\n";
         cout << "Choice ==> ";
         
-        cin >> choice;
+        if (!readInt(choice)) {
+            cout << "\nInvalid choice. Enter a number.\n";
+            continue;
+        }
 
         switch (choice) {
 
@@ -378,7 +419,7 @@ void playerManagement(FootballLeague& league) {
 
                 cout << "\n========== REGISTER PLAYER ==========\n";
 
-                for (int i = 0; i < league.getTeams().size(); i++) {
+                for (size_t i = 0; i < league.getTeams().size(); ++i) {
                     cout << i + 1 << ". "
                          << league.getTeams()[i].getTeamName()
                          << endl;
@@ -392,7 +433,7 @@ void playerManagement(FootballLeague& league) {
                 teamChoice--;
 
                 if (teamChoice < 0 ||
-                    teamChoice >= league.getTeams().size()) {
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
 
                     cout << "\nInvalid Team Selection!\n";
                     break;
@@ -458,7 +499,7 @@ void playerManagement(FootballLeague& league) {
 
                 cout << "\n========== SELECT TEAM ==========\n";
 
-                for (int i = 0; i < league.getTeams().size(); i++) {
+                for (size_t i = 0; i < league.getTeams().size(); ++i) {
                     cout << i + 1 << ". "
                          << league.getTeams()[i].getTeamName()
                          << endl;
@@ -470,7 +511,7 @@ void playerManagement(FootballLeague& league) {
                 teamChoice--;
 
                 if (teamChoice < 0 ||
-                    teamChoice >= league.getTeams().size()) {
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
 
                     cout << "\nInvalid Team Selection!\n";
                     break;
@@ -634,7 +675,7 @@ void playerManagement(FootballLeague& league) {
 
                 int teamChoice;
 
-                for (int i = 0; i < league.getTeams().size(); i++) {
+                for (size_t i = 0; i < league.getTeams().size(); ++i) {
                     cout << i + 1 << ". "
                          << league.getTeams()[i].getTeamName()
                          << endl;
@@ -646,7 +687,7 @@ void playerManagement(FootballLeague& league) {
                 teamChoice--;
 
                 if (teamChoice < 0 ||
-                    teamChoice >= league.getTeams().size()) {
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
 
                     cout << "\nInvalid Team Selection!\n";
                     break;
@@ -687,7 +728,7 @@ void playerManagement(FootballLeague& league) {
                     break;
                 }
 
-                for (int i = 0; i < league.getTeams().size(); i++) {
+                for (size_t i = 0; i < league.getTeams().size(); ++i) {
                     cout << i + 1 << ". "
                          << league.getTeams()[i].getTeamName()
                          << endl;
@@ -699,7 +740,7 @@ void playerManagement(FootballLeague& league) {
                 teamChoice--;
 
                 if (teamChoice < 0 ||
-                    teamChoice >= league.getTeams().size()) {
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
 
                     cout << "\nInvalid Team Selection!\n";
                     break;
@@ -757,7 +798,10 @@ void coachManagement(FootballLeague& league) {
         cout << "======================================\n";
         cout << "Choice ==> ";
 
-        cin >> choice;
+        if (!readInt(choice)) {
+            cout << "\nInvalid choice. Enter a number.\n";
+            continue;
+        }
 
         switch (choice) {
 
@@ -771,7 +815,7 @@ void coachManagement(FootballLeague& league) {
 
                 cout << "\n========== REGISTER COACH ==========\n";
 
-                for (int i = 0; i < league.getTeams().size(); i++) {
+                for (size_t i = 0; i < league.getTeams().size(); ++i) {
                     cout << i + 1 << ". "
                          << league.getTeams()[i].getTeamName()
                          << endl;
@@ -785,7 +829,7 @@ void coachManagement(FootballLeague& league) {
                 teamChoice--;
 
                 if (teamChoice < 0 ||
-                    teamChoice >= league.getTeams().size()) {
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
 
                     cout << "\nInvalid Team Selection!\n";
                     break;
@@ -892,7 +936,7 @@ void coachManagement(FootballLeague& league) {
 
                 cout << "\n========== SELECT TEAM ==========\n";
 
-                for (int i = 0; i < league.getTeams().size(); i++) {
+                for (size_t i = 0; i < league.getTeams().size(); ++i) {
                     cout << i + 1 << ". "
                          << league.getTeams()[i].getTeamName()
                          << endl;
@@ -906,7 +950,7 @@ void coachManagement(FootballLeague& league) {
                 teamChoice--;
 
                 if (teamChoice < 0 ||
-                    teamChoice >= league.getTeams().size()) {
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
 
                     cout << "\nInvalid Team Selection!\n";
                     break;
@@ -953,7 +997,7 @@ void coachManagement(FootballLeague& league) {
 
                 cout << "\n========== SELECT TEAM ==========\n";
 
-                for (int i = 0; i < league.getTeams().size(); i++) {
+                for (size_t i = 0; i < league.getTeams().size(); ++i) {
                     cout << i + 1 << ". "
                          << league.getTeams()[i].getTeamName()
                          << endl;
@@ -967,7 +1011,7 @@ void coachManagement(FootballLeague& league) {
                 teamChoice--;
 
                 if (teamChoice < 0 ||
-                    teamChoice >= league.getTeams().size()) {
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
 
                     cout << "\nInvalid Team Selection!\n";
                     break;
@@ -1035,6 +1079,7 @@ void coachManagement(FootballLeague& league) {
 void officialMenu(FootballLeague& league)
 {
     int choice;
+    vector<Fixture>& fixtures = league.getFixtures();
 
     do
     {
@@ -1046,7 +1091,10 @@ void officialMenu(FootballLeague& league)
         cout << "\n0. Back";
         cout << "\nChoice ==> ";
 
-        cin >> choice;
+        if (!readInt(choice)) {
+            cout << "\nInvalid choice. Enter a number.\n";
+            continue;
+        }
 
         switch(choice)
         {
@@ -1112,7 +1160,7 @@ void officialMenu(FootballLeague& league)
 
                 cout << "\nREGISTERED OFFICIALS\n";
 
-                for(int i = 0; i < officials.size(); i++)
+                for(size_t i = 0; i < officials.size(); ++i)
                 {
                     cout << "\n" << i + 1 << ". "
                          << officials[i].getFullName();
@@ -1121,7 +1169,7 @@ void officialMenu(FootballLeague& league)
                 cout << "\nSelect Official: ";
                 cin >> officialChoice;
 
-                if(officialChoice < 1 || officialChoice > officials.size())
+                if(officialChoice < 1 || static_cast<size_t>(officialChoice) > officials.size())
                 {
                     cout << "\nInvalid official selection.\n";
                     break;
@@ -1129,7 +1177,7 @@ void officialMenu(FootballLeague& league)
 
                 cout << "\nAVAILABLE FIXTURES\n";
 
-                for(int i = 0; i < fixtures.size(); i++)
+                for(size_t i = 0; i < fixtures.size(); ++i)
                 {
                     cout << "\n" << i + 1
                          << ". Fixture ID: "
@@ -1139,7 +1187,7 @@ void officialMenu(FootballLeague& league)
                 cout << "\nSelect Fixture: ";
                 cin >> fixtureChoice;
 
-                if(fixtureChoice < 1 || fixtureChoice > fixtures.size())
+                if(fixtureChoice < 1 || static_cast<size_t>(fixtureChoice) > fixtures.size())
                 {
                     cout << "\nInvalid fixture selection.\n";
                     break;
@@ -1168,7 +1216,7 @@ void officialMenu(FootballLeague& league)
                     break;
                 }
 
-                for(int i = 0; i < officials.size(); i++)
+                for(size_t i = 0; i < officials.size(); ++i)
                 {
                     cout << "\nOfficial " << i + 1;
                     officials[i].Display();
@@ -1188,7 +1236,7 @@ void officialMenu(FootballLeague& league)
                     break;
                 }
 
-                for(int i = 0; i < officials.size(); i++)
+                for(size_t i = 0; i < officials.size(); ++i)
                 {
                     cout << "\n" << i + 1 << ". "
                          << officials[i].getFullName();
@@ -1197,7 +1245,7 @@ void officialMenu(FootballLeague& league)
                 cout << "\nSelect Official: ";
                 cin >> officialChoice;
 
-                if(officialChoice < 1 || officialChoice > officials.size())
+                if(officialChoice < 1 || static_cast<size_t>(officialChoice) > officials.size())
                 {
                     cout << "\nInvalid selection.\n";
                     break;
@@ -1238,6 +1286,7 @@ void officialMenu(FootballLeague& league)
 void fixtureManagementMenu(FootballLeague& league)
 {
     int choice;
+    vector<Fixture>& fixtures = league.getFixtures();
 
     do
     {
@@ -1249,13 +1298,16 @@ void fixtureManagementMenu(FootballLeague& league)
         cout << "\n0. Back";
         cout << "\nChoice ==> ";
 
-        cin >> choice;
+        if (!readInt(choice)) {
+            cout << "\nInvalid choice. Enter a number.\n";
+            continue;
+        }
 
         switch(choice)
         {
             case 1:
             {
-                vector<FootballTeam> teams = league.getTeams();
+                vector<FootballTeam>& teams = league.getTeams();
 
                 if(teams.size() < 2)
                 {
@@ -1265,7 +1317,7 @@ void fixtureManagementMenu(FootballLeague& league)
 
                 cout << "\nREGISTERED TEAMS\n";
 
-                for(int i = 0; i < teams.size(); i++)
+                for(size_t i = 0; i < teams.size(); ++i)
                 {
                     cout << "\n" << i + 1 << ". "
                          << teams[i].getTeamName();
@@ -1279,8 +1331,8 @@ void fixtureManagementMenu(FootballLeague& league)
                 cout << "Select Away Team: ";
                 cin >> away;
 
-                if(home < 1 || home > teams.size() ||
-                   away < 1 || away > teams.size() || home == away)
+                if(home < 1 || static_cast<size_t>(home) > teams.size() ||
+                   away < 1 || static_cast<size_t>(away) > teams.size() || home == away)
                 {
                     cout << "\nInvalid team selection.\n";
                     break;
@@ -1320,7 +1372,7 @@ void fixtureManagementMenu(FootballLeague& league)
                 try{
                     league.createFixture(proposed, teams[home - 1], teams[away - 1]);
                 } catch(const KPFLExceptions& e){
-                    e.getMessage();
+                    cout << "\n" << e.getMessage() << '\n';
                 }
 
                 break;
@@ -1336,7 +1388,7 @@ void fixtureManagementMenu(FootballLeague& league)
 
                 int officialChoice, fixtureChoice;
 
-                for(int i = 0; i < officials.size(); i++)
+                for(size_t i = 0; i < officials.size(); ++i)
                 {
                     cout << "\n" << i + 1 << ". "
                          << officials[i].getFullName();
@@ -1345,13 +1397,13 @@ void fixtureManagementMenu(FootballLeague& league)
                 cout << "\nSelect Official: ";
                 cin >> officialChoice;
 
-                if(officialChoice < 1 || officialChoice > officials.size())
+                if(officialChoice < 1 || static_cast<size_t>(officialChoice) > officials.size())
                 {
                     cout << "\nInvalid official selection.\n";
                     break;
                 }
 
-                for(int i = 0; i < fixtures.size(); i++)
+                for(size_t i = 0; i < fixtures.size(); ++i)
                 {
                     cout << "\n" << i + 1
                          << ". Fixture ID: "
@@ -1361,7 +1413,7 @@ void fixtureManagementMenu(FootballLeague& league)
                 cout << "\nSelect Fixture: ";
                 cin >> fixtureChoice;
 
-                if(fixtureChoice < 1 || fixtureChoice > fixtures.size())
+                if(fixtureChoice < 1 || static_cast<size_t>(fixtureChoice) > fixtures.size())
                 {
                     cout << "\nInvalid fixture selection.\n";
                     break;
@@ -1399,7 +1451,7 @@ void fixtureManagementMenu(FootballLeague& league)
 
                 int fixtureChoice;
 
-                for(int i = 0; i < fixtures.size(); i++)
+                for(size_t i = 0; i < fixtures.size(); ++i)
                 {
                     cout << "\n" << i + 1
                          << ". Fixture ID: "
@@ -1409,7 +1461,7 @@ void fixtureManagementMenu(FootballLeague& league)
                 cout << "\nSelect Fixture: ";
                 cin >> fixtureChoice;
 
-                if(fixtureChoice < 1 || fixtureChoice > fixtures.size())
+                if(fixtureChoice < 1 || static_cast<size_t>(fixtureChoice) > fixtures.size())
                 {
                     cout << "\nInvalid fixture selection.\n";
                     break;
@@ -1420,10 +1472,10 @@ void fixtureManagementMenu(FootballLeague& league)
                     fixtures[fixtureChoice - 1].completeFixture();
                     cout << "\nFixture completed successfully!\n";
                 }
-                catch(...)
+                catch (const KPFLExceptions& exception)
                 {
                     cout << "\nFixture could not be completed. "
-                         << "Check that an official has been assigned.\n";
+                         << exception.getMessage() << '\n';
                 }
 
                 break;
@@ -1444,6 +1496,7 @@ void fixtureManagementMenu(FootballLeague& league)
 void commissionerMenu(FootballLeague& league)
 {
     int choice;
+    vector<Fixture>& fixtures = league.getFixtures();
 
     do
     {
@@ -1457,7 +1510,10 @@ void commissionerMenu(FootballLeague& league)
         cout << "\n0. Back";
         cout << "\nChoice ==> ";
 
-        cin >> choice;
+        if (!readInt(choice)) {
+            cout << "\nInvalid choice. Enter a number.\n";
+            continue;
+        }
 
         switch(choice)
         {
@@ -1465,7 +1521,7 @@ void commissionerMenu(FootballLeague& league)
             case 2:
             case 3:
             {
-                vector<FootballTeam> teams = league.getTeams();
+                vector<FootballTeam>& teams = league.getTeams();
 
                 if(teams.empty())
                 {
@@ -1475,7 +1531,7 @@ void commissionerMenu(FootballLeague& league)
 
                 cout << "\nREGISTERED TEAMS\n";
 
-                for(int i = 0; i < teams.size(); i++)
+                for(size_t i = 0; i < teams.size(); ++i)
                 {
                     cout << "\n" << i + 1 << ". "
                          << teams[i].getTeamName();
@@ -1486,7 +1542,7 @@ void commissionerMenu(FootballLeague& league)
                 cout << "\nSelect Team: ";
                 cin >> teamChoice;
 
-                if(teamChoice < 1 || teamChoice > teams.size())
+                if(teamChoice < 1 || static_cast<size_t>(teamChoice) > teams.size())
                 {
                     cout << "\nInvalid team selection.\n";
                     break;
@@ -1510,13 +1566,11 @@ void commissionerMenu(FootballLeague& league)
                         cout << "\nTeam reinstated successfully.\n";
                     }
                 }
-                catch(...)
+                catch (const KPFLExceptions& exception)
                 {
-                    cout << "\nTeam could not be approved.\n";
+                    cout << "\nTeam could not be approved: "
+                         << exception.getMessage() << '\n';
                 }
-
-                cout << "\nNote: The league returns a copy of its teams, "
-                     << "so these changes are not saved to the original team.\n";
 
                 break;
             }
@@ -1531,7 +1585,7 @@ void commissionerMenu(FootballLeague& league)
 
                 int fixtureChoice;
 
-                for(int i = 0; i < fixtures.size(); i++)
+                for(size_t i = 0; i < fixtures.size(); ++i)
                 {
                     cout << "\n" << i + 1
                          << ". Fixture ID: "
@@ -1541,7 +1595,7 @@ void commissionerMenu(FootballLeague& league)
                 cout << "\nSelect Fixture: ";
                 cin >> fixtureChoice;
 
-                if(fixtureChoice < 1 || fixtureChoice > fixtures.size())
+                if(fixtureChoice < 1 || static_cast<size_t>(fixtureChoice) > fixtures.size())
                 {
                     cout << "\nInvalid fixture selection.\n";
                     break;
@@ -1555,9 +1609,10 @@ void commissionerMenu(FootballLeague& league)
 
                     cout << "\nCommissioner scheduled the fixture.\n";
                 }
-                catch(...)
+                catch (const KPFLExceptions& exception)
                 {
-                    cout << "\nFixture could not be scheduled.\n";
+                    cout << "\nFixture could not be scheduled: "
+                         << exception.getMessage() << '\n';
                 }
 
                 break;
@@ -1573,7 +1628,7 @@ void commissionerMenu(FootballLeague& league)
 
                 int officialChoice, fixtureChoice;
 
-                for(int i = 0; i < officials.size(); i++)
+                for(size_t i = 0; i < officials.size(); ++i)
                 {
                     cout << "\n" << i + 1 << ". "
                          << officials[i].getFullName();
@@ -1582,13 +1637,13 @@ void commissionerMenu(FootballLeague& league)
                 cout << "\nSelect Official: ";
                 cin >> officialChoice;
 
-                if(officialChoice < 1 || officialChoice > officials.size())
+                if(officialChoice < 1 || static_cast<size_t>(officialChoice) > officials.size())
                 {
                     cout << "\nInvalid official selection.\n";
                     break;
                 }
 
-                for(int i = 0; i < fixtures.size(); i++)
+                for(size_t i = 0; i < fixtures.size(); ++i)
                 {
                     cout << "\n" << i + 1
                          << ". Fixture ID: "
@@ -1598,7 +1653,7 @@ void commissionerMenu(FootballLeague& league)
                 cout << "\nSelect Fixture: ";
                 cin >> fixtureChoice;
 
-                if(fixtureChoice < 1 || fixtureChoice > fixtures.size())
+                if(fixtureChoice < 1 || static_cast<size_t>(fixtureChoice) > fixtures.size())
                 {
                     cout << "\nInvalid fixture selection.\n";
                     break;
@@ -1627,7 +1682,7 @@ void commissionerMenu(FootballLeague& league)
                     break;
                 }
 
-                for(int i = 0; i < fixtures.size(); i++)
+                for(size_t i = 0; i < fixtures.size(); ++i)
                 {
                     cout << "\nFixture ID: "
                          << fixtures[i].getFixtureID();
@@ -1658,22 +1713,134 @@ void commissionerMenu(FootballLeague& league)
     } while(choice != 0);
 }
 
+
+void spectatorManagement(){
+    int choice;
+
+    do {
+        cout << "\n========== SPECTATOR MANAGEMENT ==========";
+        cout << "\n1. Register Spectator";
+        cout << "\n2. Purchase Ticket";
+        cout << "\n3. Display Spectators";
+        cout << "\n4. Add Funds";
+        cout << "\n0. Back";
+        cout << "\nChoice ==> ";
+        if (!readInt(choice)) {
+            cout << "\nInvalid choice. Enter a number.\n";
+            continue;
+        }
+
+        switch (choice) {
+            case 1: {
+                int id, age;
+                string name, gender;
+
+                cout << "Spectator ID: ";
+                cin >> id;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Name: ";
+                getline(cin, name);
+                cout << "Age: ";
+                cin >> age;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Gender: ";
+                getline(cin, gender);
+
+                spectators.push_back(Spectator(id, name, age, gender, 0, 0.0, 0.0));
+                cout << "Spectator registered successfully.\n";
+                break;
+            }
+            case 2: {
+                if (spectators.empty()) {
+                    cout << "No spectators registered.\n";
+                    break;
+                }
+
+                for (size_t i = 0; i < spectators.size(); ++i)
+                    cout << i + 1 << ". " << spectators[i].getFullName() << '\n';
+
+                int spectatorChoice;
+                cout << "Select Spectator: ";
+                if (!readInt(spectatorChoice)) {
+                    cout << "Invalid selection.\n";
+                    break;
+                }
+
+                if (spectatorChoice < 1 ||
+                    static_cast<size_t>(spectatorChoice) > spectators.size()) {
+                    cout << "Invalid selection.\n";
+                    break;
+                }
+
+                try {
+                    Spectator& spectator = spectators[spectatorChoice - 1];
+                    spectator.deductBalance(100.0);
+                    spectator.buyTicket();
+                    spectator.setTotalAmountSpent(spectator.getTotalAmountSpent() + 100.0);
+                    cout << "Ticket purchased successfully.\n";
+                } catch (const KPFLExceptions& exception) {
+                    cout << exception.getMessage() << '\n';
+                }
+                break;
+            }
+            case 3:
+                if (spectators.empty()) {
+                    cout << "No spectators registered.\n";
+                } else {
+                    for (Spectator& spectator : spectators) {
+                        spectator.Display();
+                        cout << "Balance: $" << spectator.getBalance() << "\n\n";
+                    }
+                }
+                break;
+            case 4: {
+                if (spectators.empty()) {
+                    cout << "No spectators registered.\n";
+                    break;
+                }
+
+                for (size_t i = 0; i < spectators.size(); ++i)
+                    cout << i + 1 << ". " << spectators[i].getFullName() << '\n';
+
+                int spectatorChoice;
+                double amount;
+                cout << "Select Spectator: ";
+                if (!readInt(spectatorChoice)) {
+                    cout << "Invalid selection.\n";
+                    break;
+                }
+                cout << "Amount: ";
+                if (!readDouble(amount) || amount < 0) {
+                    cout << "Invalid amount.\n";
+                    break;
+                }
+
+                if (spectatorChoice < 1 ||
+                    static_cast<size_t>(spectatorChoice) > spectators.size()) {
+                    cout << "Invalid selection.\n";
+                    break;
+                }
+
+                Spectator& spectator = spectators[spectatorChoice - 1];
+                spectator.setBalance(spectator.getBalance() + amount);
+                cout << "Funds added successfully.\n";
+                break;
+            }
+            case 0:
+                cout << "\nReturning to previous menu...\n";
+                break;
+            default:
+                cout << "\nInvalid choice. Try again.\n";
+        }
+    } while (choice != 0);
+}
+
 void stadiumMenu(){
     cout << "\n========== STADIUM MANAGEMENT ==========";
     cout << "\n1. Add Stadium";
     cout << "\n2. Display Stadium";
     cout << "\n3. Check Capacity";
     cout << "\n4. View Scheduled Fixtures";
-    cout << "\n0. Back";
-    cout << "\nChoice ==> ";
-}
-
-void spectatorMenu(){
-    cout << "\n========== SPECTATOR MANAGEMENT ==========";
-    cout << "\n1. Register Spectator";
-    cout << "\n2. Purchase Ticket";
-    cout << "\n3. Display Spectator";
-    cout << "\n4. Add Funds";
     cout << "\n0. Back";
     cout << "\nChoice ==> ";
 }
@@ -1726,7 +1893,10 @@ void testExceptions() {
         cout << "\n10. DataFileException";
         cout << "\n0. Back";
         cout << "\nChoice ==> ";
-        cin >> choice;
+        if (!readInt(choice)) {
+            cout << "\nInvalid choice. Enter a number.\n";
+            continue;
+        }
 
         try {
 
@@ -1794,7 +1964,10 @@ void fileManagement(FootballLeague& league){
         cout << "\n 6. Load People";
         cout << "\n 0. Back";
         cout << "\nChoice ==> ";
-        cin >> choice;
+        if (!readInt(choice)) {
+            cout << "\nInvalid choice. Enter a number.\n";
+            continue;
+        }
 
         try {
             switch(choice){
@@ -1933,10 +2106,17 @@ int displayMainMenu(){
     cout << "\n10. Spectator Management";
     cout << "\n11. View League Summary";
     cout << "\n12. Test Exceptions";
+    cout << "\n13. File Management";
     cout << "\n 0. Exit";
     cout << "\n==================================================";
     cout << "\nEnter option: ";
-    cin >> choice;
+    if (!readInt(choice)) {
+        if (cin.eof()) {
+            return 0;
+        }
+        cout << "\nInvalid choice. Enter a number.\n";
+        return -1;
+    }
 
     return choice;
 }
