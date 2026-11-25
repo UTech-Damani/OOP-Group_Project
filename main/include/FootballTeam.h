@@ -2,6 +2,7 @@
 #define FOOTBALLTEAM_H
 #include <string>
 #include <vector>
+#include <sstream>
 
 #include "Player.h"
 #include "Coach.h"
@@ -184,11 +185,11 @@ class FootballTeam : public Persistable {
     // Rule 3: Accept only registered teams.
     // "unregistered" and "suspended" both return false.
     bool canParticipate() const {
-        return teamStatus == "registered";
+        return teamStatus == "registered" || teamStatus == "approved";
     }
     // Adding each player object to their respective team
     void addPlayer(Player& p){
-        if(players.size() >= maxPlayers)
+        if(players.size() >= static_cast<size_t>(maxPlayers))
         {
             throw CapacityExceededException("max");
         }
@@ -272,11 +273,23 @@ class FootballTeam : public Persistable {
 
         int id, points, wins, draws, losses;
         int day, month, year;
-
         string name, parish, status;
+        char comma;
 
+        ss >> id >> comma;
         getline(ss, name, ',');
+        getline(ss, parish, ',');
+        ss >> points >> comma
+           >> wins >> comma
+           >> draws >> comma
+           >> losses >> comma;
+        getline(ss, status, ',');
+        ss >> day >> comma
+           >> month >> comma
+           >> year;
 
+        return FootballTeam(id, name, parish, points, wins, draws,
+                            losses, status, day, month, year);
     }
     
 };

@@ -120,7 +120,7 @@ class StadiumShop
 
         void addProduct(Product* p){
             // Check if product already exists
-            for (int i = 0; i < products.size(); i++)
+            for (size_t i = 0; i < products.size(); ++i)
             {
                 if (products[i] == p)
                 {
@@ -156,6 +156,7 @@ class StadiumShop
 
             // Reduce stock by one unit.
             product->decreaseStock(1);
+            spectator->buyProduct(product->getPrice());
 
             totalProductsSold++;
             inventoryValue -= product->getPrice();

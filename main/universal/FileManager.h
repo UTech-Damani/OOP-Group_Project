@@ -16,7 +16,7 @@ class Persistable
 {
 public:
     virtual ~Persistable() = default;
-    virtual string toFileString() const;
+    virtual string toFileString() const { return ""; }
 };
 
 class FileManager
@@ -170,8 +170,7 @@ public:
     int loadRecords(
         const string& fileName,
         unique_ptr<T> records[],
-        int maxRecords,
-        unique_ptr<T> (*create)(const string&)) const
+        int maxRecords) const
     {
         const string path = getPath(fileName);
         ifstream inFile(path);
@@ -194,7 +193,8 @@ public:
 
             try
             {
-                records[count] = create(line);
+                records[count] = unique_ptr<T>(
+                    new T(T::fromFileString(line)));
                 if (!records[count])
                     throw DataFileException();
             }
@@ -210,20 +210,6 @@ public:
             throw DataFileException();
 
         return count;
-    }
-
-    template <typename T>
-    int loadRecords(
-        const string& fileName,
-        unique_ptr<T> records[],
-        int maxRecords) const
-    {
-        return loadRecords(
-            fileName,
-            records,
-            maxRecords,
-            &T::fromFileString
-        );
     }
 
     template <typename T>

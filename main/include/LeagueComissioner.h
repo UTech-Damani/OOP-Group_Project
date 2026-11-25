@@ -26,7 +26,7 @@ class LeagueCommissioner : public Person{
         
         LeagueCommissioner(int yearsOfService, string assignedRegion,
                             int IdNom, string FullName, int Age, string Gender) : Person(IdNom, FullName, Age, Gender){
-                                this->approvalAuthority = approvalAuthority;
+                                this->approvalAuthority = true;
                                 this->yearsOfService = yearsOfService;
                                 this->assignedRegion = assignedRegion;
                             }
@@ -68,6 +68,7 @@ class LeagueCommissioner : public Person{
         void approveTeam(FootballTeam& team){
             if (team.getPlayers().size() == 0 || team.getCoaches().size() == 0){
                 team.setTeamStatus("suspended");
+                throw TeamNotEligibleException();
             }
             
             for (Player& player : team.getPlayers()){
@@ -86,7 +87,7 @@ class LeagueCommissioner : public Person{
         }
         void reinstateTeam(FootballTeam& team)
         {
-            team.setTeamStatus("Eligible");
+            team.setTeamStatus("registered");
         }
         void assignOfficial(Fixture& fixture, MatchOfficial& official){
             if(!official.canAssignFixture()){

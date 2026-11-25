@@ -9,7 +9,7 @@ public:
     CapacityExceededException()
         : KPFLExceptions("Ticket sales exceed stadium capacity.") {}
 
-    CapacityExceededException(std::string max)
+    CapacityExceededException(std::string)
         : KPFLExceptions("Maximum number of player limit has been exceeded/reached") {}
 };
 
