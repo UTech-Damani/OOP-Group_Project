@@ -3,11 +3,12 @@
 
 #include <string>
 #include <iostream>
+#include "../universal/FileManager.h"
 
 using namespace std;
 
 // Since this class contains abstract methods/destructor, it is now an abstract class
-class Person{
+class Person : public Persistable{
     private:
         int IdNom;
         string FullName;
@@ -80,12 +81,10 @@ class Person{
         }
 
         // Set gender
-        void setGender(int g)
+        void setGender(const string& g)
         {
-            if (g >= 0)
-                {
-                    Gender = g;
-                }
+            if (!g.empty())
+                Gender = g;
         }
 };
 inline Person::~Person(){}

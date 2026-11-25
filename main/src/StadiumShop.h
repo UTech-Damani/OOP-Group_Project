@@ -3,7 +3,7 @@
 
 #include "../data/Product.h"
 #include "../include/Spectator.h"
-#include "../exceptions/InsufficientPaymentException.h"
+#include "../exceptions/InsufficientStockException.h"
 
 #include <string>
 #include <math.h>
@@ -52,10 +52,6 @@ class StadiumShop
         // Getters
         int getShopID() {
             return shopID;
-        }
-
-        int getProductCount() const {
-            return products.size();
         }
 
         string getShopName() {
@@ -124,7 +120,7 @@ class StadiumShop
 
         void addProduct(Product* p){
             // Check if product already exists
-            for (int i = 0; i < products.size(); i++)
+            for (size_t i = 0; i < products.size(); ++i)
             {
                 if (products[i] == p)
                 {
@@ -144,26 +140,28 @@ class StadiumShop
           
         }
 
-        void transaction(Spectator* spectator, Product* product)
-        {
-            if (spectator->getBalance() < product->getPrice())
-            {
-                throw InsufficientPaymentException();
+        void transaction(Spectator* spectator, Product* product){
+            if (spectator == nullptr || product == nullptr) {
+                return;
             }
 
-            spectator->setBalance(spectator->getBalance() - product->getPrice());
+            // Check that the product is available first.
+            if (!product->isInStock()) {
+                throw InsufficientStockException();
+            }
+
+            // Deduct payment. Throws if the spectator
+            // does not have sufficient funds.
+            spectator->deductBalance(product->getPrice());
+
+            // Reduce stock by one unit.
+            product->decreaseStock(1);
+            spectator->buyProduct(product->getPrice());
 
             totalProductsSold++;
             inventoryValue -= product->getPrice();
 
-            for (int i = 0; i < products.size(); i++)
-            {
-                if (products[i] == product)
-                {
-                    products.erase(products.begin() + i);
-                    break;
-                }
-            }
+            product->Display();
         }
 };
 

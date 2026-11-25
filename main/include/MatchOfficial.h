@@ -14,7 +14,7 @@ class MatchOfficial : public Person {
     std::string rank;
     bool availability;
     int yearsExperience;
-    std::vector<const Fixture*> assignedFixtures;
+    std::vector<Fixture*> assignedFixtures;
 
     public:
 
@@ -52,7 +52,7 @@ class MatchOfficial : public Person {
             return yearsExperience;
         }
 
-        const std::vector<const Fixture*>& getAssignedFixtures() const{
+        std::vector<Fixture*>& getAssignedFixtures(){
             return assignedFixtures;
         }
 
@@ -89,7 +89,7 @@ class MatchOfficial : public Person {
             return availability;
         }
 
-        bool assignFixture(const Fixture& fixture){
+        bool assignFixture(Fixture& fixture){
             assignedFixtures.push_back(&fixture);
             return true;
         }

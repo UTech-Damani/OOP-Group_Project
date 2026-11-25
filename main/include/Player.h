@@ -36,6 +36,7 @@ class Player : public Person {
             jerseyNom = jersey;        //Stores the player's jersey number
             goalScored = goals;        //Stores the number of goals scored
             playerStatus = status;     //Stores the player's current status
+            team = nullptr;
         }
 
         //Getters

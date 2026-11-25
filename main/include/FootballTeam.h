@@ -2,16 +2,19 @@
 #define FOOTBALLTEAM_H
 #include <string>
 #include <vector>
+#include <sstream>
 
 #include "Player.h"
 #include "Coach.h"
 #include "../universal/Date.h"
-#include "../exceptions/DuplicateRegistrationException.h"
 #include "../exceptions/CapacityExceededException.h"
+#include "../exceptions/UnderageExceptions.h"
+#include "../exceptions/DuplicateRegistrationException.h"
+#include "../universal/FileManager.h"
 
 using namespace std;
 
-class FootballTeam {
+class FootballTeam : public Persistable {
     private:
         int teamID;
         string teamName;
@@ -38,6 +41,11 @@ class FootballTeam {
         goalsFor = 0;
         goalsAgainst = 0;
         goalDifference = 0;
+        teamID = 0;
+        points = 0;
+        wins = 0;
+        draws = 0;
+        losses = 0;
     }
     
     // Parameterized Constructor
@@ -177,13 +185,16 @@ class FootballTeam {
     // Rule 3: Accept only registered teams.
     // "unregistered" and "suspended" both return false.
     bool canParticipate() const {
-        return teamStatus == "registered";
+        return teamStatus == "registered" || teamStatus == "approved";
     }
     // Adding each player object to their respective team
     void addPlayer(Player& p){
-        if(players.size() >= maxPlayers)
+        if(players.size() >= static_cast<size_t>(maxPlayers))
         {
-            throw CapacityExceededException();
+            throw CapacityExceededException("max");
+        }
+        if(p.isEligible() == false){
+            throw UnderageException();
         }
 
         for(Player player : players){
@@ -217,7 +228,7 @@ class FootballTeam {
     }
 
     void calcGoalDifference(){
-        goalDifference = goalsFor - goalDifference;
+        goalDifference = goalsFor - goalsAgainst;
     }
 
     void viewTeamMembers()
@@ -239,8 +250,47 @@ class FootballTeam {
         }
     }
 
-    
+    string toFileString() const{
+        stringstream ss;
 
+        ss << teamID << ","
+        << teamName << ","
+        << parish << ","
+        << points << ","
+        << wins << ","
+        << draws << ","
+        << losses << ","
+        << teamStatus << ","
+        << registrationDate.getDay() << ","
+        << registrationDate.getMonth() << ","
+        << registrationDate.getYear();
+
+        return ss.str();
+    }
+    static FootballTeam fromFileString(const string& data)
+    {
+        stringstream ss(data);
+
+        int id, points, wins, draws, losses;
+        int day, month, year;
+        string name, parish, status;
+        char comma;
+
+        ss >> id >> comma;
+        getline(ss, name, ',');
+        getline(ss, parish, ',');
+        ss >> points >> comma
+           >> wins >> comma
+           >> draws >> comma
+           >> losses >> comma;
+        getline(ss, status, ',');
+        ss >> day >> comma
+           >> month >> comma
+           >> year;
+
+        return FootballTeam(id, name, parish, points, wins, draws,
+                            losses, status, day, month, year);
+    }
     
 };
  
