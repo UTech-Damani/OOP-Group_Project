@@ -23,7 +23,7 @@ class Stadium : public Persistable
         double ticketPrice;
         int occupancy;
 
-        vector<StadiumShop> shops;
+        vector<StadiumShop*> shops;
         vector<Fixture*> fixtures;
 
     public:
@@ -133,7 +133,7 @@ class Stadium : public Persistable
             }
         }
 
-        void addShop(const StadiumShop& shop) {
+        void addShop(StadiumShop* shop){
             shops.push_back(shop);
         }
 

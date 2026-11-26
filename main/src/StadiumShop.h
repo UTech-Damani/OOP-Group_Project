@@ -4,12 +4,15 @@
 #include "../data/Product.h"
 #include "../include/Spectator.h"
 #include "../exceptions/InsufficientStockException.h"
+#include "Stadium.h"
 
 #include <string>
 #include <math.h>
 #include <vector>
 
 using namespace std;
+
+class Stadium;
 
 class StadiumShop
 {
@@ -141,6 +144,7 @@ class StadiumShop
         }
 
         void transaction(Spectator* spectator, Product* product){
+            
             if (spectator == nullptr || product == nullptr) {
                 return;
             }
