@@ -216,6 +216,10 @@ public:
             {
                 throw DuplicateRegistrationException();
             }
+            if (existing.getTeamName() == newTeam.getTeamName())
+            {
+                throw DuplicateRegistrationException();
+            }
         }
 
         newTeam.setTeamStatus("registered");

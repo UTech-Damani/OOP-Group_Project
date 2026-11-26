@@ -7,7 +7,7 @@ class DuplicateRegistrationException : public KPFLExceptions
 {
     public:
         DuplicateRegistrationException()
-            : KPFLExceptions("A team registration number or ID already exists.") {
+            : KPFLExceptions("A team registration number or name already exists.") {
             }
 
 };

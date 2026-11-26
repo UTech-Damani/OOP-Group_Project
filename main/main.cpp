@@ -5,7 +5,7 @@ Monecia Hamilton - 2409578
 Aaron Elliston - 2409567
 Jamelia Freeman - 2407243
 
-Group Name: Imperial Top Strikaz
+Group Name: Imperial Strikaz
 
 Business Name: Kingston Premier Football League (KPFL)
 
@@ -15,7 +15,7 @@ Course: CIT2004 - Object-Oriented Programming
 
 Teacher: Oral Robinson
 
-Occurrence: UDC: 8 am - 11 am
+Occurrence: UDC: 8am - 11am
 
 Due Date: Novemeber 27, 2026
 
@@ -75,6 +75,7 @@ void spectatorManagement();
 void footballLeagueMenu(FootballLeague& league);
 void fileManagement(FootballLeague& league);
 void reportsMenu(FootballLeague& league);
+void liveMatchMenu(FootballLeague& league);
 
 bool readInt(int& value)
 {
@@ -207,8 +208,8 @@ void teamManagement(FootballLeague& league){
         cout << "\n 3. Add Coach";
         cout << "\n 4. Display Team";
         cout << "\n 5. Display All Teams";
-        cout << "\n 6. Update Team"; // Need to do
-        cout << "\n 7. Search Team"; // Need to do
+        cout << "\n 6. Update Team";
+        cout << "\n 7. Search Team"; 
         cout << "\n 0. Back";
         cout << "\n==================================================";
         cout << "\nChoice ==> ";
@@ -220,7 +221,7 @@ void teamManagement(FootballLeague& league){
         
         switch(choice){
             case 1: {
-                int id = generateRandomID();
+                int id;
                 string name;
                 string parish;
                 
@@ -231,6 +232,9 @@ void teamManagement(FootballLeague& league){
                 
                 cout << "Parish: ";
                 getline(cin,parish);
+
+                cout << "Registration Number (ID): ";
+                cin >> id;
                 
                 FootballTeam team;
                 
@@ -429,7 +433,8 @@ void teamManagement(FootballLeague& league){
                 
                 cout << endl;
                 
-                league.getTeams()[teamChoice].viewTeamMembers();
+                
+                league.getTeams()[teamChoice].Display();
                 
                 break;
             }
@@ -442,7 +447,7 @@ void teamManagement(FootballLeague& league){
                 
                 for(FootballTeam& team : league.getTeams()){
                     cout << "\n------------------------------------\n";
-                    team.viewTeamMembers();
+                    team.Display();
                 }
                 
                 break;
@@ -1479,7 +1484,25 @@ void officialMenu(FootballLeague& league)
             case 1:
             {
                 int id, age, experience, available;
+                int roleChoice, rankChoice;
+
                 string name, gender, role, rank;
+
+                vector<string> roles =
+                {
+                    "Referee",
+                    "Assistant Referee",
+                    "Fourth Official",
+                    "Video Assistant Referee (VAR)"
+                };
+
+                vector<string> ranks =
+                {
+                    "Level 1",
+                    "Level 2",
+                    "Level 3",
+                    "Elite"
+                };
 
                 cout << "\nOfficial ID: ";
                 cin >> id;
@@ -1497,28 +1520,49 @@ void officialMenu(FootballLeague& league)
                 cout << "Gender: ";
                 getline(cin, gender);
 
-                cout << "Officiating Role: ";
-                getline(cin, role);
+                // Select officiating role
+                cout << "\n--- Select Officiating Role ---\n";
 
-                cout << "Rank: ";
-                getline(cin, rank);
+                for(int i = 0; i < roles.size(); i++)
+                {
+                    cout << i + 1 << ". " << roles[i] << endl;
+                }
 
-                cout << "Availability (1 = Available, 0 = Unavailable): ";
+                cout << "Enter choice: ";
+                cin >> roleChoice;
+
+                // Select rank
+                cout << "\n--- Select Official Rank ---\n";
+
+                for(int i = 0; i < ranks.size(); i++)
+                {
+                    cout << i + 1 << ". " << ranks[i] << endl;
+                }
+
+                cout << "Enter choice: ";
+                cin >> rankChoice;
+
+                cout << "\nAvailability (1 = Available, 0 = Unavailable): ";
                 cin >> available;
 
                 cout << "Years of Experience: ";
                 cin >> experience;
 
                 if(id <= 0 || age < 0 || experience < 0 ||
-                   (available != 0 && available != 1))
+                (available != 0 && available != 1) ||
+                roleChoice < 1 || roleChoice > roles.size() ||
+                rankChoice < 1 || rankChoice > ranks.size())
                 {
                     cout << "\nInvalid information entered.\n";
                     break;
                 }
 
+                role = roles[roleChoice - 1];
+                rank = ranks[rankChoice - 1];
+
                 MatchOfficial official(id, name, age, gender,
-                                       role, rank, available == 1,
-                                       experience);
+                                    role, rank, available == 1,
+                                    experience);
 
                 officials.push_back(official);
 
@@ -1673,6 +1717,7 @@ void fixtureManagementMenu(FootballLeague& league)
         cout << "\n2. Assign Official";
         cout << "\n3. Record Result";
         cout << "\n4. Complete Fixture";
+        cout << "\n5. Manage Live Match";
         cout << "\n0. Back";
         cout << "\nChoice ==> ";
 
@@ -1885,6 +1930,10 @@ void fixtureManagementMenu(FootballLeague& league)
 
                 break;
             }
+
+            case 5:
+                liveMatchMenu(league);
+                break;
 
             case 0:
                 cout << "\nReturning to Main Menu...\n";
@@ -3359,7 +3408,7 @@ void fileManagement(FootballLeague& league){
                     for (int i = 0; i < count; ++i)
                         league.registerTeam(*teams[i]);
 
-                    cout << "\n" << count << "Team(s) loaded successfully.\n";
+                    cout << "\n" << count << " Team(s) loaded successfully.\n";
                     break;
                 }
 
@@ -3390,6 +3439,7 @@ void fileManagement(FootballLeague& league){
 
                 case 5: {
                     int count = 0;
+                    fileManager.clearFile(FileManager::PEOPLE_FILE);
 
                     for (FootballTeam& team : league.getTeams()) {
                         for (Player& player : team.getPlayers()) {
@@ -3424,17 +3474,11 @@ void fileManagement(FootballLeague& league){
                 }
 
                 case 6: {
-                    ifstream input(string("data/") + FileManager::PEOPLE_FILE);
-                    if (!input)
-                        throw DataFileException();
-                    string line;
                     int count = 0;
                     cout << "\nPeople Records:\n";
-                    while (getline(input, line)) {
-                        if (!line.empty()){
-                            cout << line << '\n';
-                            ++count;
-                        }
+                    for (const string& line : fileManager.readLines(FileManager::PEOPLE_FILE)) {
+                        cout << line << '\n';
+                        ++count;
                     }
                     cout << count << " person record(s) loaded.\n";
                     break;
@@ -3600,4 +3644,272 @@ void reportsMenu(FootballLeague& league){
 
     }while(choice != 0);
 
+}
+
+void liveMatchMenu(FootballLeague& league)
+{
+    vector<Fixture>& fixtures = league.getFixtures();
+    vector<FootballTeam>& teams = league.getTeams();
+
+    if(fixtures.empty())
+    {
+        cout << "\nNo fixtures available.\n";
+        return;
+    }
+
+    cout << "\n========== AVAILABLE FIXTURES ==========\n";
+
+    for(size_t i = 0; i < fixtures.size(); i++)
+    {
+        cout << "\n" << i + 1
+             << ". Fixture ID: " << fixtures[i].getFixtureID()
+             << " | Status: " << fixtures[i].getFixtureStatus();
+    }
+
+    int choice;
+
+    cout << "\n\nSelect Fixture: ";
+
+    if(!readInt(choice) || choice < 1 ||
+       static_cast<size_t>(choice) > fixtures.size())
+    {
+        cout << "\nInvalid fixture selection.\n";
+        return;
+    }
+
+    Fixture& fixture = fixtures[choice - 1];
+
+    // Find the participating teams
+    FootballTeam* home = nullptr;
+    FootballTeam* away = nullptr;
+
+    for(FootballTeam& team : teams)
+    {
+        if(team.getTeamID() == fixture.getHomeTeamID())
+        {
+            home = &team;
+        }
+
+        if(team.getTeamID() == fixture.getAwayTeamID())
+        {
+            away = &team;
+        }
+    }
+
+    if(home == nullptr || away == nullptr)
+    {
+        cout << "\nUnable to locate the participating teams.\n";
+        return;
+    }
+
+    int option = -1;
+
+    do
+    {
+        cout << "\n\n========== LIVE MATCH MANAGEMENT ==========";
+
+        cout << "\n\n" << home->getTeamName()
+             << " " << fixture.getLiveHomeScore()
+             << " - " << fixture.getLiveAwayScore()
+             << " " << away->getTeamName();
+
+        cout << "\nMatch Minute: "
+             << fixture.getCurrentMinute() << "'";
+
+        cout << "\nMatch Status: "
+             << fixture.getFixtureStatus();
+
+        cout << "\n\n1. Start Match";
+        cout << "\n2. Update Match Minute";
+        cout << "\n3. Record Home Team Goal";
+        cout << "\n4. Record Away Team Goal";
+        cout << "\n5. Half-Time";
+        cout << "\n6. Resume Match";
+        cout << "\n7. View Match Events";
+        cout << "\n8. End Match";
+        cout << "\n0. Return";
+
+        cout << "\n\nChoice ==> ";
+
+        if(!readInt(option))
+        {
+            cout << "\nInvalid input.\n";
+            continue;
+        }
+
+        try
+        {
+            switch(option)
+            {
+                // START MATCH
+                case 1:
+                {
+                    fixture.startMatch();
+
+                    cout << "\nMatch started successfully!\n";
+
+                    break;
+                }
+
+                // UPDATE MATCH MINUTE
+                case 2:
+                {
+                    int minute;
+
+                    cout << "\nEnter Current Match Minute: ";
+
+                    if(!readInt(minute))
+                    {
+                        cout << "\nInvalid minute.\n";
+                        break;
+                    }
+
+                    fixture.updateMatchMinute(minute);
+
+                    cout << "\nMatch minute updated successfully!\n";
+
+                    break;
+                }
+
+                // HOME TEAM GOAL
+                case 3:
+                {
+                    fixture.recordLiveGoal(
+                        true,
+                        home->getTeamName()
+                    );
+
+                    cout << "\nGoal recorded for "
+                         << home->getTeamName() << "!\n";
+
+                    break;
+                }
+
+                // AWAY TEAM GOAL
+                case 4:
+                {
+                    fixture.recordLiveGoal(
+                        false,
+                        away->getTeamName()
+                    );
+
+                    cout << "\nGoal recorded for "
+                         << away->getTeamName() << "!\n";
+
+                    break;
+                }
+
+                // HALF-TIME
+                case 5:
+                {
+                    fixture.startHalfTime();
+
+                    cout << "\nHalf-time!\n";
+
+                    break;
+                }
+
+                // RESUME MATCH
+                case 6:
+                {
+                    fixture.resumeMatch();
+
+                    cout << "\nSecond half has started!\n";
+
+                    break;
+                }
+
+                // VIEW MATCH EVENTS
+                case 7:
+                {
+                    cout << "\n========== MATCH EVENTS ==========\n";
+
+                    const vector<string>& events =
+                        fixture.getMatchEvents();
+
+                    if(events.empty())
+                    {
+                        cout << "\nNo match events recorded.\n";
+                    }
+                    else
+                    {
+                        for(const string& event : events)
+                        {
+                            cout << "\n" << event;
+                        }
+                    }
+
+                    break;
+                }
+
+                // END MATCH
+                case 8:
+                {
+                    fixture.finishLiveMatch();
+
+                    MatchResult result;
+
+                    result.setHomeScore(
+                        fixture.getLiveHomeScore()
+                    );
+
+                    result.setAwayScore(
+                        fixture.getLiveAwayScore()
+                    );
+
+                    // Combine match events into the statistics
+                    string statistics;
+
+                    for(const string& event :
+                        fixture.getMatchEvents())
+                    {
+                        statistics += event + "\n";
+                    }
+
+                    result.setMatchStatistics(statistics);
+
+                    // Record the final result
+                    fixture.recordResults(result);
+
+                    // Update league points and goal statistics
+                    result.determineWinner(*home, *away);
+
+                    // Complete the fixture
+                    fixture.completeFixture();
+
+                    cout << "\n========== FULL-TIME ==========\n";
+
+                    cout << "\n" << home->getTeamName()
+                         << " " << result.getHomeScore()
+                         << " - " << result.getAwayScore()
+                         << " " << away->getTeamName();
+
+                    cout << "\nWinner: "
+                         << result.getWinner();
+
+                    cout << "\n\nFixture completed successfully!\n";
+
+                    break;
+                }
+
+                case 0:
+                {
+                    cout << "\nReturning to Fixture Management...\n";
+
+                    break;
+                }
+
+                default:
+                {
+                    cout << "\nInvalid option.\n";
+                }
+            }
+        }
+        catch(const KPFLExceptions& e)
+        {
+            cout << "\nOperation failed: "
+                 << e.getMessage() << "\n";
+        }
+
+    } while(option != 0);
 }
