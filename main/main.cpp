@@ -73,7 +73,11 @@ int main()
 {
     srand(time(NULL));
 
-    FootballLeague league;
+    Date startDate(1, 12, 2026);
+    
+    Date endDate(31, 12, 2027);
+    
+    FootballLeague league(1,"Kingston Premier Football League","2026 Season",startDate,endDate,0,"Active");
     int choice;
 
     cout << "Za Wurldo!" << endl;
@@ -2423,14 +2427,34 @@ void stadiumShopMenu(){
 
                 if (typeChoice == 1) {
                     string category;
+                    int day, month, year;
+
                     cout << "Food Category: ";
                     getline(cin, category);
+
+                    cout << "Expiry Day: ";
+                    cin >> day;
+
+                    cout << "Expiry Month: ";
+                    cin >> month;
+
+                    cout << "Expiry Year: ";
+                    cin >> year;
+
                     FoodItems* item = new FoodItems();
                     item->setProductID(id);
                     item->setProductName(name);
                     item->setPrice(preTaxPrice);
                     item->setQuantityInStock(qty);
                     item->setCategory(category);
+
+                    Date expiryDate;
+                    expiryDate.setDay(day);
+                    expiryDate.setMonth(month);
+                    expiryDate.setYear(year);
+
+                    item->setExpiryDate(expiryDate);
+                    
                     prod = item;
                 } else if (typeChoice == 2) {
                     string size, brand;
