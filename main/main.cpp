@@ -1,3 +1,41 @@
+/*
+Group Members:
+Damani Williams - 2007591
+Monecia Hamilton - 2409578
+Aaron Elliston - 2409567
+Jamelia Freeman - 2407243
+
+Group Name: Imperial Top Strikaz
+
+Business Name: Kingston Premier Football League (KPFL)
+
+Business Type: Sports / Football League Administration
+
+Course: CIT2004 - Object-Oriented Programming
+
+Teacher: Oral Robinson
+
+Occurrence: UDC: 8 am - 11 am
+
+Due Date: Novemeber 27, 2026
+
+Project Title:
+Kingston Premier Football League (KPFL)
+Football League and Match-Day Management System
+
+Project Description:
+This project involves developing a C++ Football League and
+Match-Day Management System for the Kingston Premier Football
+League (KPFL). It manages teams, players, coaches, officials,
+stadiums, fixtures, match results, ticket sales and stadium-shop
+transactions.
+
+The system applies object-oriented programming concepts,
+collections, file handling and custom exception handling to
+streamline league operations, maintain records and ensure
+reliable match-day management.
+*/
+
 #include <iostream>
 #include <windows.h>
 
