@@ -28,7 +28,7 @@ class FootballTeam : public Persistable {
         int goalsFor = 0;
         int goalsAgainst = 0;
         int goalDifference = 0;
-        const int maxPlayers = 24;
+        static const int maxPlayers = 24;
 
         string teamStatus;
 
@@ -66,41 +66,41 @@ class FootballTeam : public Persistable {
     }
     
     // Getters
-    int getTeamID() { 
+    int getTeamID() const { 
         return teamID; 
     }
-    string getTeamName() {
+    string getTeamName() const {
         return teamName; 
     }
-    string getParish(){
+    string getParish() const {
         return parish;
     }
     void getRegistrationDate() { 
         registrationDate.displayDate(); 
     }
-    int getPoints() {
+    int getPoints() const {
         return points; 
     }
-    int getWins() { 
+    int getWins() const { 
         return wins; 
     }
-    int getDraws() { 
+    int getDraws() const { 
         return draws; 
     }
-    int getLosses() { 
+    int getLosses() const { 
         return losses; 
     }
-    string getTeamStatus() { 
+    string getTeamStatus() const { 
         return teamStatus; 
     }
 
-    int getGoalDifference(){
+    int getGoalDifference() const {
         return goalDifference;
     }
-    int getGoalsFor(){
+    int getGoalsFor() const {
         return goalsFor;
     }
-    int getGoalsAgainst(){
+    int getGoalsAgainst() const {
         return goalsAgainst;
     }
 
@@ -205,7 +205,7 @@ class FootballTeam : public Persistable {
         }
         
         players.push_back(p);
-        p.setTeam(this);
+        players.back().setTeam(this);
     }
     void addCoach(Coach& c){
         for(Coach coach : coaches){
@@ -216,7 +216,70 @@ class FootballTeam : public Persistable {
         }
 
         coaches.push_back(c);
-        c.setTeam(this);
+        coaches.back().setTeam(this);
+    }
+
+    void rebindMembers()
+    {
+        for (Player& player : players) player.setTeam(this);
+        for (Coach& coach : coaches) coach.setTeam(this);
+    }
+
+    bool updateTeamDetails(const string& name, const string& teamParish)
+    {
+        if (name.empty() || teamParish.empty()) return false;
+        teamName = name;
+        parish = teamParish;
+        return true;
+    }
+
+    Player* findPlayer(int playerID)
+    {
+        for (Player& player : players)
+            if (player.getIdNom() == playerID) return &player;
+        return nullptr;
+    }
+
+    Coach* findCoach(int coachID)
+    {
+        for (Coach& coach : coaches)
+            if (coach.getIdNom() == coachID) return &coach;
+        return nullptr;
+    }
+
+    bool removePlayer(int playerID)
+    {
+        for (vector<Player>::iterator it = players.begin(); it != players.end(); ++it)
+            if (it->getIdNom() == playerID) { players.erase(it); return true; }
+        return false;
+    }
+
+    bool removeCoach(int coachID)
+    {
+        for (vector<Coach>::iterator it = coaches.begin(); it != coaches.end(); ++it)
+            if (it->getIdNom() == coachID) { coaches.erase(it); return true; }
+        return false;
+    }
+
+    bool updatePlayer(int playerID, const string& position, int jersey, const string& status)
+    {
+        Player* player = findPlayer(playerID);
+        if (!player || jersey < 0) return false;
+        player->setPositionOnField(position);
+        player->setJerseyNom(jersey);
+        player->setPlayerStatus(status);
+        return true;
+    }
+
+    bool updateCoach(int coachID, const string& qualification,
+                     const string& role, int experience)
+    {
+        Coach* coach = findCoach(coachID);
+        if (!coach || experience < 0) return false;
+        coach->setQualification(qualification);
+        coach->setCoachingRole(role);
+        coach->setYearsExperience(experience);
+        return true;
     }
 
     void addGoalsFor(int goal){
@@ -263,7 +326,8 @@ class FootballTeam : public Persistable {
         << teamStatus << ","
         << registrationDate.getDay() << ","
         << registrationDate.getMonth() << ","
-        << registrationDate.getYear();
+        << registrationDate.getYear() << ","
+        << goalsFor << "," << goalsAgainst << "," << goalDifference;
 
         return ss.str();
     }
@@ -284,12 +348,17 @@ class FootballTeam : public Persistable {
            >> draws >> comma
            >> losses >> comma;
         getline(ss, status, ',');
-        ss >> day >> comma
-           >> month >> comma
-           >> year;
-
-        return FootballTeam(id, name, parish, points, wins, draws,
-                            losses, status, day, month, year);
+        ss >> day >> comma >> month >> comma >> year;
+        FootballTeam team(id, name, parish, points, wins, draws,
+                          losses, status, day, month, year);
+        int gf=0, ga=0, gd=0;
+        if (ss.peek()==',') ss >> comma >> gf;
+        if (ss.peek()==',') ss >> comma >> ga;
+        if (ss.peek()==',') ss >> comma >> gd;
+        team.addGoalsFor(gf);
+        team.addGoalsAgainst(ga);
+        team.calcGoalDifference();
+        return team;
     }
     
 };

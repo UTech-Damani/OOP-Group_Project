@@ -76,6 +76,8 @@ public:
         this->matchStatistics = matchStatistics;
     }
 
+    void setWinner(const string& value) { winner = value; }
+
     // Determine the winner
     void determineWinner(FootballTeam& home, FootballTeam& away) {
         if (homeScore > awayScore) {
@@ -105,6 +107,8 @@ public:
             home.addGoalsAgainst(awayScore);
             away.addGoalsAgainst(homeScore);
         }
+        home.calcGoalDifference();
+        away.calcGoalDifference();
     }
 
     // Randomize match scores

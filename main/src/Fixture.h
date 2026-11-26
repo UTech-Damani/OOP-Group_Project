@@ -6,6 +6,7 @@
 #include "../universal/Date.h"
 #include "../universal/ProjectTime.h"
 #include "../exceptions/FixtureIncompleteException.h"
+#include "../exceptions/SchedulingConflictException.h"
 #include "../universal/FileManager.h"
 
 #include <string>
@@ -31,6 +32,8 @@ class Fixture : public Persistable
 
         // Stop the same result from awarding points twice.
         bool leaguePointsAwarded = false;
+        bool resultRecorded = false;
+        int stadiumID = 0;
 
         // Let FootballLeague assign teams after its checks pass.
         friend class FootballLeague;
@@ -38,6 +41,7 @@ class Fixture : public Persistable
         Stadium* stadium;
         MatchResult result;
         vector<MatchOfficial*> officials;
+        vector<int> officialIDs;
 
     public:
         // Constructors
@@ -56,10 +60,18 @@ class Fixture : public Persistable
             attendance = 0;
 
             stadium = nullptr;
+            stadiumID = 0;
+            resultRecorded = false;
+            leaguePointsAwarded = false;
         }
         Fixture(int day, int month, int year, int hours, int minutes, int seconds, string Status, int attendance,
                 Stadium &stadium){
             this->stadium = &stadium;
+            this->stadiumID = stadium.getStadiumID();
+            resultRecorded = false;
+            leaguePointsAwarded = false;
+            homeTeamID = 0;
+            awayTeamID = 0;
 
             setFixtureDate(day, month, year);
             setFixtureTime(hours, minutes, seconds);
@@ -85,23 +97,17 @@ class Fixture : public Persistable
         }
 
         void setFixtureStatus(string status) {
-            if(status != "Scheduled" &&
-                status != "In progress" &&
-                status != "Half Time" &&
-                status != "Full Time" &&
-                status != "Postponed" &&
-                status != "Cancelled")
-            {
+            if(status != "Scheduled" && status != "In progress" &&
+               status != "Half Time" && status != "Full Time" &&
+               status != "Postponed" && status != "Cancelled") {
                 cout << "Invalid Status" << endl;
+                return;
             }
             fixtureStatus = status;
         }
 
         void setAttendance(int attend) {
-            if(attend <= 0){
-
-            }
-            attendance = attend;
+            if(attend >= 0) attendance = attend;
         }
 
         // Getters
@@ -143,7 +149,8 @@ class Fixture : public Persistable
         }
 
         bool conflictsWith(const Fixture& other) const{
-            if (fixtureStatus == "Cancelled" || other.fixtureStatus == "Cancelled")
+            if (fixtureStatus == "Cancelled" || fixtureStatus == "Postponed" ||
+                other.fixtureStatus == "Cancelled" || other.fixtureStatus == "Postponed")
             {
                 return false;
             }
@@ -155,38 +162,44 @@ class Fixture : public Persistable
 
             bool sameTime =
                 fixtureTime.getHours() == other.fixtureTime.getHours() &&
-                fixtureTime.getMinutes() == other.fixtureTime.getMinutes();
+                fixtureTime.getMinutes() == other.fixtureTime.getMinutes() &&
+                fixtureTime.getSeconds() == other.fixtureTime.getSeconds();
 
             return sameDate && sameTime;
 
         }
 
         void addOfficial(MatchOfficial* o){
+            if (o == nullptr) throw SchedulingConflictException();
+            for (MatchOfficial* assigned : officials)
+                if (assigned == o) throw SchedulingConflictException();
             officials.push_back(o);
+            bool idStored=false;
+            for(int id : officialIDs) if(id==o->getIdNom()) idStored=true;
+            if(!idStored) officialIDs.push_back(o->getIdNom());
         }
         void recordResults(const MatchResult& matchResult){
-            if (fixtureStatus == "Cancelled"){
-                cout << "Cannot record results for a cancelled fixture.\n";
-                return;
-            }
-
+            if (fixtureStatus == "Cancelled" || fixtureStatus == "Postponed" ||
+                fixtureStatus == "Full Time" || resultRecorded || !matchResult.validateScores())
+                throw FixtureIncompleteException();
             result = matchResult;
-            fixtureStatus = "Full Time";
+            resultRecorded = true;
         }
+        bool hasResult() const { return resultRecorded; }
+        bool pointsAwarded() const { return leaguePointsAwarded; }
+        MatchResult getResult() const { return result; }
+        int getStadiumID() const { return stadiumID; }
+        void setStadium(Stadium* selected) {
+            stadium = selected;
+            if (selected) stadiumID = selected->getStadiumID();
+        }
+        Stadium* getStadium() const { return stadium; }
+        const vector<int>& getAssignedOfficialIDs() const { return officialIDs; }
+        void assignStadiumID(int id) { if (id > 0) stadiumID = id; }
         void completeFixture(){
-            if(officials.empty())
-            {
+            if (officials.empty() || !resultRecorded ||
+                fixtureStatus == "Cancelled" || fixtureStatus == "Postponed")
                 throw FixtureIncompleteException();
-            }
-            if (fixtureStatus == "Cancelled"){
-                throw FixtureIncompleteException();
-            }
-
-            if (fixtureStatus == "Postponed"){
-                throw FixtureIncompleteException();
-                
-            }
-
             fixtureStatus = "Full Time";
         }
         void postpone(){
@@ -203,6 +216,17 @@ class Fixture : public Persistable
             fixtureStatus = "Postponed";
         }
 
+        void Display() const {
+            cout << "\nFixture ID: " << fixtureID
+                 << " | Date: "; fixtureDate.displayDate();
+            cout << " | Time: "; fixtureTime.displayTime();
+            cout << "Status: " << fixtureStatus
+                 << " | Home Team: " << homeTeamID
+                 << " | Away Team: " << awayTeamID
+                 << " | Stadium ID: " << stadiumID << '\n';
+            if (resultRecorded) result.Display();
+        }
+
         string toFileString() const override
         {
             stringstream ss;
@@ -216,7 +240,18 @@ class Fixture : public Persistable
                << fixtureStatus << ","
                << attendance << ","
                << homeTeamID << ","
-               << awayTeamID;
+               << awayTeamID << ","
+               << stadiumID << ","
+               << resultRecorded << ","
+               << leaguePointsAwarded << ","
+               << result.getHomeScore() << ","
+               << result.getAwayScore() << ","
+               << result.getWinner() << ","
+               << result.getMatchStatistics() << ",";
+            for (size_t i=0;i<officialIDs.size();++i) {
+                if(i) ss << ";";
+                ss << officialIDs[i];
+            }
             return ss.str();
         }
 
@@ -224,26 +259,66 @@ class Fixture : public Persistable
         {
             stringstream ss(data);
             Fixture fixture;
-            int id, day, month, year, hours, minutes, seconds;
-            int attend, homeID, awayID;
             string status;
             char comma;
-
-            ss >> id >> comma;
-            ss >> day >> comma >> month >> comma >> year >> comma;
-            ss >> hours >> comma >> minutes >> comma >> seconds >> comma;
+            int id=0, day=0, month=0, year=0, hours=0, minutes=0, seconds=0;
+            int attend=0, homeID=0, awayID=0, stadium=0, recorded=0, awarded=0;
+            int homeScore=0, awayScore=0;
+            string winner, statistics, officialsText;
+            ss >> id >> comma >> day >> comma >> month >> comma >> year
+               >> comma >> hours >> comma >> minutes >> comma >> seconds >> comma;
             getline(ss, status, ',');
             ss >> attend >> comma >> homeID >> comma >> awayID;
-
+            if (ss.peek()==',') ss >> comma >> stadium;
+            if (ss.peek()==',') ss >> comma >> recorded;
+            if (ss.peek()==',') ss >> comma >> awarded;
+            if (ss.peek()==',') ss >> comma >> homeScore;
+            if (ss.peek()==',') ss >> comma >> awayScore;
+            if (ss.peek()==',') {
+                ss.get(comma);
+                getline(ss,winner,',');
+                getline(ss,statistics,',');
+                getline(ss,officialsText);
+            }
             fixture.setFixtureID(id);
             fixture.setFixtureDate(day, month, year);
             fixture.setFixtureTime(hours, minutes, seconds);
             fixture.setFixtureStatus(status);
             fixture.setAttendance(attend);
-            fixture.homeTeamID = homeID;
-            fixture.awayTeamID = awayID;
+            fixture.homeTeamID=homeID; fixture.awayTeamID=awayID;
+            fixture.stadiumID=stadium;
+            fixture.resultRecorded=(recorded!=0);
+            fixture.leaguePointsAwarded=(awarded!=0);
+            if (fixture.resultRecorded) {
+                fixture.result.setHomeScore(homeScore);
+                fixture.result.setAwayScore(awayScore);
+                fixture.result.setWinner(winner);
+                fixture.result.setMatchStatistics(statistics);
+            }
+            if (!officialsText.empty()) {
+                stringstream ids(officialsText); string idText;
+                while(getline(ids,idText,';')) if(!idText.empty()) fixture.officialIDs.push_back(stoi(idText));
+            }
             return fixture;
         }
 };
+
+inline bool MatchOfficial::assignFixture(Fixture& fixture)
+{
+    if (!availability) return false;
+    for (Fixture* existing : assignedFixtures) {
+        if (!existing) continue;
+        if (existing == &fixture) return false;
+        if (existing->getFixtureDateMember().getDay() == fixture.getFixtureDateMember().getDay() &&
+            existing->getFixtureDateMember().getMonth() == fixture.getFixtureDateMember().getMonth() &&
+            existing->getFixtureDateMember().getYear() == fixture.getFixtureDateMember().getYear() &&
+            existing->getFixtureTimeMember().getHours() == fixture.getFixtureTimeMember().getHours() &&
+            existing->getFixtureTimeMember().getMinutes() == fixture.getFixtureTimeMember().getMinutes() &&
+            existing->getFixtureTimeMember().getSeconds() == fixture.getFixtureTimeMember().getSeconds())
+            return false;
+    }
+    assignedFixtures.push_back(&fixture);
+    return true;
+}
 
 #endif // FIXTURE_H
