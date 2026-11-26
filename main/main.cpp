@@ -36,6 +36,7 @@ void stadiumShopMenu();
 void spectatorManagement();
 void footballLeagueMenu(FootballLeague& league);
 void fileManagement(FootballLeague& league);
+void reportsMenu(FootballLeague& league);
 
 bool readInt(int& value)
 {
@@ -77,7 +78,7 @@ int main()
     
     Date endDate(31, 12, 2027);
     
-    FootballLeague league(1,"Kingston Premier Football League","2026 Season",startDate,endDate,0,"Active");
+    FootballLeague league(1,"Kingston Premier Football League","2026 Season",startDate,endDate, 0,"Active");
     int choice;
 
     cout << "Za Wurldo!" << endl;
@@ -137,6 +138,10 @@ int main()
             
             case 13:
                 fileManagement(league);
+                break;
+
+            case 14:
+                reportsMenu(league);
                 break;
 
             case 0:
@@ -1702,13 +1707,40 @@ void fixtureManagementMenu(FootballLeague& league)
                 proposed.setFixtureID(id);
                 proposed.setFixtureDate(day, month, year);
                 proposed.setFixtureTime(hours, minutes, seconds);
+
+                if(stadiums.empty())
+                    {
+                        cout << "\nNo stadiums registered.\n";
+                        break;
+                    }
+                    
+                    cout << "\nREGISTERED STADIUMS\n";
+                    
+                    for(size_t i = 0; i < stadiums.size(); i++)
+                    {
+                        cout << "\n" << i + 1 << ". " << stadiums[i].getStadiumName();
+                    }
+                    
+                    int stadiumChoice;
+                    
+                    cout << "\nSelect Stadium: ";
+                    cin >> stadiumChoice;
+                    
+                    if(stadiumChoice < 1 || static_cast<size_t>(stadiumChoice) > stadiums.size()){
+                        cout << "\nInvalid stadium selection.\n";
+                        break;
+                    }
                 proposed.setFixtureStatus("Scheduled");
+
+                proposed.setStadium(&stadiums[stadiumChoice - 1]);
 
                 try{
                     league.createFixture(proposed, teams[home - 1], teams[away - 1]);
                 } catch(const KPFLExceptions& e){
                     cout << "\n" << e.getMessage() << '\n';
                 }
+
+                cout << "\nFixture Created Successfully!\n";
 
                 break;
             }
@@ -1771,8 +1803,8 @@ void fixtureManagementMenu(FootballLeague& league)
 
             case 3:
             {
-                cout << "\nTo record the result, the MatchResult "
-                     << "class methods are needed.\n";
+                resultsMenu(league);
+
                 break;
             }
 
@@ -1891,17 +1923,17 @@ void commissionerMenu(FootballLeague& league)
                 {
                     if(choice == 1)
                     {
-                        commissioner.approveTeam(teams[teamChoice - 1]);
+                        commissioner.approveTeam(teams[teamChoice]);
                         cout << "\nTeam approval completed.\n";
                     }
                     else if(choice == 2)
                     {
-                        commissioner.suspendTeam(teams[teamChoice - 1]);
+                        commissioner.suspendTeam(teams[teamChoice]);
                         cout << "\nTeam suspended successfully.\n";
                     }
                     else if(choice == 3)
                     {
-                        commissioner.reinstateTeam(teams[teamChoice - 1]);
+                        commissioner.reinstateTeam(teams[teamChoice]);
                         cout << "\nTeam reinstated successfully.\n";
                     }
                 }
@@ -2454,7 +2486,7 @@ void stadiumShopMenu(){
                     expiryDate.setYear(year);
 
                     item->setExpiryDate(expiryDate);
-                    
+
                     prod = item;
                 } else if (typeChoice == 2) {
                     string size, brand;
@@ -2652,7 +2684,7 @@ void resultsMenu(FootballLeague& league){
         MatchResult result;
     };
 
-    vector<RecordedFixtureResult> recordedResults;
+    static vector<RecordedFixtureResult> recordedResults;
 
     do {
         cout << "\n========== MATCH RESULTS ==========";
@@ -2921,6 +2953,37 @@ void footballLeagueMenu(FootballLeague& league)
                 fixture.setFixtureTime(hours, minutes, seconds);
                 fixture.setFixtureStatus("Scheduled");
 
+                if(stadiums.empty())
+                {
+                    cout << "\nNo stadiums registered.\n";
+                    break;
+                }
+
+                cout << "\nREGISTERED STADIUMS\n";
+
+                for(size_t i = 0; i < stadiums.size(); i++)
+                {
+                    cout << "\n" << i + 1
+                        << ". "
+                        << stadiums[i].getStadiumName();
+                }
+
+                int stadiumChoice;
+
+                cout << "\nSelect Stadium: ";
+                cin >> stadiumChoice;
+
+                if(stadiumChoice < 1 ||
+                static_cast<size_t>(stadiumChoice) > stadiums.size())
+                {
+                    cout << "\nInvalid stadium selection.\n";
+                    break;
+                }
+
+                fixture.setStadium(
+                    &stadiums[stadiumChoice - 1]
+                );
+
                 try
                 {
                     league.createFixture(
@@ -3110,6 +3173,11 @@ void footballLeagueMenu(FootballLeague& league)
 
                     cout << "\nHome Team: " << homeName;
                     cout << "\nAway Team: " << awayName;
+
+                    if(fixture.getStadium() != nullptr)
+                    {
+                        cout << "\nStadium: " << fixture.getStadium()->getStadiumName();
+                    }
 
                     cout << "\nDate: ";
                     fixture.getFixtureDate();
@@ -3368,6 +3436,7 @@ int displayMainMenu(){
     cout << "\n11. View League Summary";
     cout << "\n12. Test Exceptions";
     cout << "\n13. File Management";
+    cout << "\n14. Reports";
     cout << "\n 0. Exit";
     cout << "\n==================================================";
     cout << "\nEnter option: ";
@@ -3384,4 +3453,113 @@ int displayMainMenu(){
 
 int generateRandomID() {
     return (rand() % 10000) + 1;
+}
+
+void reportsMenu(FootballLeague& league){
+    
+    int choice;
+
+    do{
+        cout << "\n========== MANAGEMENT REPORTS ==========";
+        cout << "\n1. League Standings Report";
+        cout << "\n2. Fixture Report";
+        cout << "\n3. Stadium Report";
+        cout << "\n0. Back";
+        cout << "\nChoice ==> ";
+
+        cin >> choice;
+
+        switch(choice)
+        {
+            case 1:
+            {
+                cout << "\n========== LEAGUE STANDINGS ==========\n";
+
+                league.getStandings();
+
+                break;
+            }
+
+            case 2:
+            {
+                cout << "\n========== FIXTURE REPORT ==========\n";
+
+                if(league.getFixtures().empty())
+                {
+                    cout << "\nNo fixtures available.\n";
+                    break;
+                }
+
+                for(Fixture& fixture : league.getFixtures())
+                {
+                    cout << "\nFixture ID: "
+                        << fixture.getFixtureID();
+
+                    cout << "\nStatus: "
+                        << fixture.getFixtureStatus();
+
+                    cout << "\nDate: ";
+                    fixture.getFixtureDate();
+
+                    cout << "\nTime: ";
+                    fixture.getFixtureTime();
+
+                    if(fixture.getStadium() != nullptr)
+                    {
+                        cout << "\nStadium: "
+                            << fixture.getStadium()->getStadiumName();
+                    }
+
+                    cout << "\n----------------------------------\n";
+                }
+
+                break;
+            }
+
+            case 3:
+            {
+                cout << "\n========== STADIUM REPORT ==========\n";
+
+                if(stadiums.empty())
+                {
+                    cout << "\nNo stadiums registered.\n";
+                    break;
+                }
+
+                for(Stadium& stadium : stadiums)
+                {
+                    cout << "\nStadium ID: "
+                        << stadium.getStadiumID();
+
+                    cout << "\nName: "
+                        << stadium.getStadiumName();
+
+                    cout << "\nCapacity: "
+                        << stadium.getSeatingCapacity();
+
+                    cout << "\nOccupancy: "
+                        << stadium.getOccupancy();
+
+                    cout << "\nRemaining Seats: "
+                        << stadium.getRemainingSeats();
+
+                    cout << "\nTicket Price: $"
+                        << stadium.getTicketPrice();
+
+                    cout << "\n----------------------------------\n";
+                }
+
+                break;
+            }
+
+            case 0:
+                cout << "\nReturning...\n";
+                break;
+
+            default:
+                cout << "\nInvalid Option!\n";
+        }
+
+    }while(choice != 0);
+
 }

@@ -100,6 +100,11 @@ public:
         fixtureID = id;
     }
 
+    void setStadium(Stadium* stadium)
+    {
+        this->stadium = stadium;
+    }
+
     void setFixtureDate(int day, int month, int year)
     {
         fixtureDate.setDay(day);

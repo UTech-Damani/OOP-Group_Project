@@ -302,11 +302,11 @@ public:
 
     // RECORD RESULT AND UPDATE STANDINGS
 
-    void recordFixtureResult(int fixtureID,
-                             const MatchResult& matchResult)
+    void recordFixtureResult(int fixtureID, const MatchResult& matchResult)
     {
         Fixture* selectedFixture = nullptr;
 
+        // Find the fixture.
         for (Fixture& fixture : fixtures)
         {
             if (fixture.getFixtureID() == fixtureID)
@@ -321,11 +321,19 @@ public:
             throw FixtureIncompleteException();
         }
 
+        // Prevent the result from being recorded twice.
         if (selectedFixture->hasAwardedPoints())
         {
             throw FixtureIncompleteException();
         }
 
+        // Validate the scores.
+        if (!matchResult.validateScores())
+        {
+            throw FixtureIncompleteException();
+        }
+
+        // Find the actual teams stored in the league.
         FootballTeam* home =
             findTeam(selectedFixture->getHomeTeamID());
 
@@ -337,13 +345,23 @@ public:
             throw FixtureIncompleteException();
         }
 
-        selectedFixture->recordResults(matchResult);
+        // Determine the winner and update the teams' statistics.
+        MatchResult appliedResult = matchResult;
 
-        MatchResult storedResult = selectedFixture->getResult();
+        appliedResult.determineWinner(*home, *away);
 
-        storedResult.determineWinner(*home, *away);
+        // Store the result with its determined winner.
+        selectedFixture->recordResults(appliedResult);
 
+        // Mark the fixture as completed for points awarding.
         selectedFixture->leaguePointsAwarded = true;
+
+        cout << "\nMatch result recorded successfully!\n";
+
+        // Display the updated standings.
+        cout << "\n========== UPDATED LEAGUE STANDINGS ==========\n";
+
+        getStandings();
     }
 
     // DISPLAY FIXTURES
@@ -405,9 +423,9 @@ public:
                  return a->getGoalsFor() > b->getGoalsFor();
              });
 
-        cout << "\n============================================================\n";
+        cout << "\n===========================================================================================\n";
         cout << "                    FOOTBALL LEAGUE STANDINGS\n";
-        cout << "============================================================\n";
+        cout << "==============================================================================================\n";
 
         cout << left
              << setw(5) << "POS"
@@ -422,7 +440,7 @@ public:
              << setw(5) << "PTS"
              << endl;
 
-        cout << "------------------------------------------------------------\n";
+        cout << "---------------------------------------------------------------------------------------------------\n";
 
         int position = 1;
 
@@ -447,7 +465,7 @@ public:
                  << endl;
         }
 
-        cout << "============================================================\n";
+        cout << "===================================================================================================\n";
     }
 };
 
