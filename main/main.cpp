@@ -1507,7 +1507,7 @@ void officialMenu(FootballLeague& league)
                 cout << "\nOfficial ID: ";
                 cin >> id;
 
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cin.ignore();
 
                 cout << "Official Name: ";
                 getline(cin, name);
@@ -1515,7 +1515,7 @@ void officialMenu(FootballLeague& league)
                 cout << "Age: ";
                 cin >> age;
 
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cin.ignore();
 
                 cout << "Gender: ";
                 getline(cin, gender);
@@ -1950,6 +1950,7 @@ void fixtureManagementMenu(FootballLeague& league)
 void commissionerMenu(FootballLeague& league)
 {
     int choice;
+    //stores fixtuer assign to selecetd officials
     vector<Fixture>& fixtures = league.getFixtures();
 
     do
