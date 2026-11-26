@@ -31,6 +31,7 @@ private:
 
     int homeTeamID;
     int awayTeamID;
+    int stadiumID;
 
     bool resultRecorded;
     bool leaguePointsAwarded;
@@ -63,6 +64,7 @@ public:
 
         homeTeamID = 0;
         awayTeamID = 0;
+        stadiumID = 0;
 
         resultRecorded = false;
         leaguePointsAwarded = false;
@@ -86,6 +88,7 @@ public:
 
         homeTeamID = 0;
         awayTeamID = 0;
+        stadiumID = stadium.getStadiumID();
 
         resultRecorded = false;
         leaguePointsAwarded = false;
@@ -124,6 +127,14 @@ public:
             status == "Cancelled")
         {
             fixtureStatus = status;
+        }
+    }
+
+    void setStadiumID(int id)
+    {
+        if (id > 0)
+        {
+            stadiumID = id;
         }
     }
 
@@ -180,6 +191,11 @@ public:
     int getAwayTeamID() const
     {
         return awayTeamID;
+    }
+
+    int getStadiumID() const
+    {
+        return stadiumID;
     }
 
     bool hasResult() const
@@ -343,6 +359,7 @@ public:
 
         cout << "\nHome Team ID: " << homeTeamID;
         cout << "\nAway Team ID: " << awayTeamID;
+        cout << "\nStadium ID: " << stadiumID;
 
         cout << "\nStatus: " << fixtureStatus;
         cout << "\nAttendance: " << attendance;
@@ -370,6 +387,7 @@ public:
            << attendance << ","
            << homeTeamID << ","
            << awayTeamID << ","
+           << stadiumID << ","
            << resultRecorded << ","
            << leaguePointsAwarded;
 
@@ -393,6 +411,7 @@ public:
         int id, day, month, year;
         int hours, minutes, seconds;
         int attend, homeID, awayID;
+        int stadID = 0;
 
         int recorded = 0;
         int awarded = 0;
@@ -414,7 +433,8 @@ public:
 
         ss >> attend >> comma;
         ss >> homeID >> comma;
-        ss >> awayID;
+        ss >> awayID >> comma;
+        ss >> stadID;
 
         if (ss.peek() == ',')
         {
@@ -434,6 +454,7 @@ public:
 
         fixture.homeTeamID = homeID;
         fixture.awayTeamID = awayID;
+        fixture.stadiumID = stadID;
 
         fixture.resultRecorded = recorded != 0;
         fixture.leaguePointsAwarded = awarded != 0;

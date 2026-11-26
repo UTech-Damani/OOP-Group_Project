@@ -95,10 +95,6 @@ class Product : public Persistable
             quantityInStock -= amount;
         }
 
-        virtual bool isTicket() const
-        {
-            return false;
-        }
 
 
 };

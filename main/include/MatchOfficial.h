@@ -16,6 +16,15 @@ class MatchOfficial : public Person {
     int yearsExperience;
     std::vector<Fixture*> assignedFixtures;
 
+    // Date/time of each fixture this official is assigned to.
+    // Stored by value so the conflict check never depends on pointers.
+    struct ScheduleSlot {
+        int fixtureID;
+        int day, month, year;
+        int hours, minutes;
+    };
+    std::vector<ScheduleSlot> schedule;
+
     public:
 
         MatchOfficial() : Person()
@@ -87,6 +96,24 @@ class MatchOfficial : public Person {
 
         bool canAssignFixture() const{
             return availability;
+        }
+
+        // Rule: an official cannot be assigned to two fixtures at the same date and time.
+        bool hasScheduleConflict(int fixtureID, int day, int month, int year,
+                                 int hours, int minutes) const{
+            for (const ScheduleSlot& slot : schedule){
+                if (slot.fixtureID != fixtureID &&
+                    slot.day == day && slot.month == month && slot.year == year &&
+                    slot.hours == hours && slot.minutes == minutes){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        void bookSlot(int fixtureID, int day, int month, int year,
+                      int hours, int minutes){
+            schedule.push_back({fixtureID, day, month, year, hours, minutes});
         }
 
         bool assignFixture(Fixture& fixture){

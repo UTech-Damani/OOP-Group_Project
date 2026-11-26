@@ -4,6 +4,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include <vector>
 #include <direct.h>
 #include <cerrno>
 
@@ -149,6 +150,41 @@ public:
         {
             throw DataFileException();
         }
+    }
+
+    void saveLines(const string& fileName, const vector<string>& lines) const
+    {
+        ofstream outFile(getPath(fileName), ios::trunc);
+        if (!outFile)
+            throw DataFileException();
+
+        for (const string& line : lines)
+            outFile << line << '\n';
+
+        if (!outFile)
+            throw DataFileException();
+    }
+
+    vector<string> readLines(const string& fileName) const
+    {
+        ifstream inFile(getPath(fileName));
+        if (!inFile)
+            throw DataFileException();
+
+        vector<string> lines;
+        string line;
+        while (getline(inFile, line))
+        {
+            if (!line.empty() && line.back() == '\r')
+                line.pop_back();
+            if (!line.empty())
+                lines.push_back(line);
+        }
+
+        if (inFile.bad())
+            throw DataFileException();
+
+        return lines;
     }
 
     void saveTeams(Persistable* teams[], int count) const

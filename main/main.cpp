@@ -7,6 +7,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <limits>
+#include <iomanip>
+#include <sstream>
+#include <cmath>
 
 #include "universal/KPFL.h"
 #include "universal/FileManager.h"
@@ -15,8 +18,8 @@ using namespace std;
 
 vector<MatchOfficial> officials;
 vector<Spectator> spectators;
-vector<Stadium> stadiums;
 LeagueCommissioner commissioner;
+StadiumShop shop;
 
 
 int displayMainMenu();
@@ -33,9 +36,15 @@ void commissionerMenu(FootballLeague& league);
 void resultsMenu(FootballLeague& league);
 void stadiumMenu(FootballLeague& league);
 void stadiumShopMenu();
-void spectatorManagement();
+int selectStadium(FootballLeague& league);
+string teamNameFor(FootballLeague& league, int teamID);
+void spectatorManagement(FootballLeague& league);
+string currentDateTime();
+void logRecord(const string& fileName, const string& line);
+int selectSpectator(bool allowWalkIn);
 void footballLeagueMenu(FootballLeague& league);
 void fileManagement(FootballLeague& league);
+void reportsMenu(FootballLeague& league);
 
 bool readInt(int& value)
 {
@@ -69,15 +78,102 @@ bool readDouble(double& value)
     return true;
 }
 
+// Lists registered stadiums and returns the chosen stadium ID, or -1 if none/invalid.
+int selectStadium(FootballLeague& league)
+{
+    vector<Stadium>& stadiums = league.getStadiums();
+
+    if (stadiums.empty()) {
+        cout << "\nNo stadiums registered. Add one under Stadium Management first.\n";
+        return -1;
+    }
+
+    cout << "\nREGISTERED STADIUMS\n";
+    for (size_t i = 0; i < stadiums.size(); ++i) {
+        cout << "\n" << i + 1 << ". " << stadiums[i].getStadiumName()
+             << " (ID: " << stadiums[i].getStadiumID()
+             << ", Capacity: " << stadiums[i].getSeatingCapacity() << ")";
+    }
+
+    int stadiumChoice;
+    cout << "\nSelect Stadium: ";
+    if (!readInt(stadiumChoice) || stadiumChoice < 1 ||
+        static_cast<size_t>(stadiumChoice) > stadiums.size()) {
+        cout << "\nInvalid stadium selection.\n";
+        return -1;
+    }
+
+    return stadiums[stadiumChoice - 1].getStadiumID();
+}
+
+string currentDateTime()
+{
+    time_t now = time(nullptr);
+    char buffer[20];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", localtime(&now));
+    return buffer;
+}
+
+// Appends a sale record to a CSV log. A logging failure is reported
+// but does not undo a sale that has already been completed.
+void logRecord(const string& fileName, const string& line)
+{
+    try {
+        FileManager fileManager("data");
+        fileManager.appendLine(fileName, line);
+    } catch (const KPFLExceptions& e) {
+        cout << "\nWarning: sale completed but could not be written to "
+             << fileName << ". " << e.getMessage() << '\n';
+    }
+}
+
+// Lists spectators and returns the chosen index, -1 for a walk-in customer
+// (only when allowed), or -2 if the selection is invalid.
+int selectSpectator(bool allowWalkIn)
+{
+    if (spectators.empty()) {
+        if (allowWalkIn)
+            return -1;
+        cout << "No spectators registered.\n";
+        return -2;
+    }
+
+    for (size_t i = 0; i < spectators.size(); ++i)
+        cout << i + 1 << ". " << spectators[i].getFullName() << '\n';
+
+    if (allowWalkIn)
+        cout << "0. Walk-in customer\n";
+
+    int spectatorChoice;
+    cout << "Select Spectator: ";
+    if (!readInt(spectatorChoice)) {
+        cout << "Invalid selection.\n";
+        return -2;
+    }
+
+    if (allowWalkIn && spectatorChoice == 0)
+        return -1;
+
+    if (spectatorChoice < 1 ||
+        static_cast<size_t>(spectatorChoice) > spectators.size()) {
+        cout << "Invalid selection.\n";
+        return -2;
+    }
+
+    return spectatorChoice - 1;
+}
+
+string teamNameFor(FootballLeague& league, int teamID)
+{
+    FootballTeam* team = league.findTeam(teamID);
+    return team != nullptr ? team->getTeamName() : "Unknown";
+}
+
 int main()
 {
     srand(time(NULL));
 
-    Date startDate(1, 12, 2026);
-    
-    Date endDate(31, 12, 2027);
-    
-    FootballLeague league(1,"Kingston Premier Football League","2026 Season",startDate,endDate,0,"Active");
+    FootballLeague league;
     int choice;
 
     cout << "Za Wurldo!" << endl;
@@ -124,7 +220,7 @@ int main()
                 break;
 
             case 10:
-                spectatorManagement();
+                spectatorManagement(league);
                 break;
 
             case 11:
@@ -137,6 +233,10 @@ int main()
             
             case 13:
                 fileManagement(league);
+                break;
+
+            case 14:
+                reportsMenu(league);
                 break;
 
             case 0:
@@ -164,8 +264,8 @@ void teamManagement(FootballLeague& league){
         cout << "\n 3. Add Coach";
         cout << "\n 4. Display Team";
         cout << "\n 5. Display All Teams";
-        cout << "\n 6. Update Team"; // Need to do
-        cout << "\n 7. Search Team"; // Need to do
+        cout << "\n 6. Update Team";
+        cout << "\n 7. Search Team";
         cout << "\n 0. Back";
         cout << "\n==================================================";
         cout << "\nChoice ==> ";
@@ -223,20 +323,17 @@ void teamManagement(FootballLeague& league){
                 }
                 
                 int teamChoice;
-                int teamCount = league.getTeams().size();
-
-                do {
-                    cout << "\nSelect Team: ";
-                    cin >> teamChoice;
-                    teamChoice--;
-
-                    if (teamChoice < 0 || teamChoice >= teamCount)
-                    {
-                        cout << "\nInvalid Team Selection!\n";
-                    }
-
-                } while (teamChoice < 0 || teamChoice >= teamCount);
                 
+                cout << "\nSelect Team: ";
+                cin >> teamChoice;
+            
+                teamChoice--;
+
+                if (teamChoice < 0 ||
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
+                    cout << "\nInvalid Team Selection!\n";
+                    break;
+                }
 
                 int id;
                 string name;
@@ -300,19 +397,17 @@ void teamManagement(FootballLeague& league){
                 }
                 
                 int teamChoice;
-                int teamCount = league.getTeams().size();
+            
+                cout << "\nSelect Team: ";
+                cin >> teamChoice;
+            
+                teamChoice--;
 
-                do {
-                    cout << "\nSelect Team: ";
-                    cin >> teamChoice;
-                    teamChoice--;
-
-                    if (teamChoice < 0 || teamChoice >= teamCount)
-                    {
-                        cout << "\nInvalid Team Selection!\n";
-                    }
-
-                } while (teamChoice < 0 || teamChoice >= teamCount);
+                if (teamChoice < 0 ||
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
+                    cout << "\nInvalid Team Selection!\n";
+                    break;
+                }
     
                 int id;
                 string name;
@@ -370,19 +465,17 @@ void teamManagement(FootballLeague& league){
                 }
                 
                 int teamChoice;
-                int teamCount = league.getTeams().size();
+                
+                cout << "\nSelect Team: ";
+                cin >> teamChoice;
+                
+                teamChoice--;
 
-                do {
-                    cout << "\nSelect Team: ";
-                    cin >> teamChoice;
-                    teamChoice--;
-
-                    if (teamChoice < 0 || teamChoice >= teamCount)
-                    {
-                        cout << "\nInvalid Team Selection!\n";
-                    }
-
-                } while (teamChoice < 0 || teamChoice >= teamCount);
+                if (teamChoice < 0 ||
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
+                    cout << "\nInvalid Team Selection!\n";
+                    break;
+                }
                 
                 cout << endl;
                 
@@ -404,7 +497,8 @@ void teamManagement(FootballLeague& league){
                 
                 break;
             }
-
+            
+            // UPDATE TEAM
             case 6: {
                 if(league.getTeams().empty()){
                     cout << "\nNo Teams Registered.\n";
@@ -412,88 +506,78 @@ void teamManagement(FootballLeague& league){
                 }
 
                 int teamID;
-                bool found = false;
-
                 cout << "\nEnter Team ID: ";
-                cin >> teamID;
-
-                for(FootballTeam& team : league.getTeams()){
-                    if(team.getTeamID() == teamID){
-
-                        found = true;
-
-                        string newName;
-                        string newParish;
-
-                        cin.ignore();
-
-                        cout << "New Team Name: ";
-                        getline(cin, newName);
-
-                        cout << "New Parish: ";
-                        getline(cin, newParish);
-
-                        team.setTeamName(newName);
-                        team.setParish(newParish);
-
-                        cout << "\nTeam Updated Successfully!\n";
-                        break;
-                    }
+                if (!readInt(teamID)) {
+                    cout << "\nInvalid Team ID.\n";
+                    break;
                 }
 
-                if(!found){
+                FootballTeam* team = league.findTeam(teamID);
+                if (team == nullptr) {
                     cout << "\nTeam Not Found!\n";
+                    break;
                 }
+
+                string name, parish;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+                cout << "New Team Name (leave blank to keep \"" << team->getTeamName() << "\"): ";
+                getline(cin, name);
+                cout << "New Parish (leave blank to keep \"" << team->getParish() << "\"): ";
+                getline(cin, parish);
+
+                if (!name.empty())
+                    team->setTeamName(name);
+                if (!parish.empty())
+                    team->setParish(parish);
+
+                cout << "\nTeam Updated Successfully!\n";
                 break;
             }
 
+            // SEARCH TEAM (by ID or by name)
             case 7: {
                 if(league.getTeams().empty()){
                     cout << "\nNo Teams Registered.\n";
                     break;
                 }
 
-                int teamID;
+                string term;
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "\nEnter Team ID or part of the Team Name: ";
+                getline(cin, term);
+
+                string lowerTerm = term;
+                for (char& c : lowerTerm) c = tolower(c);
+
                 bool found = false;
+                for (FootballTeam& team : league.getTeams()) {
+                    string lowerName = team.getTeamName();
+                    for (char& c : lowerName) c = tolower(c);
 
-                cout << "\nEnter Team ID: ";
-                cin >> teamID;
+                    bool idMatch = to_string(team.getTeamID()) == term;
+                    bool nameMatch = !lowerTerm.empty() &&
+                                     lowerName.find(lowerTerm) != string::npos;
 
-                for(FootballTeam& team : league.getTeams()){
-                    if(team.getTeamID() == teamID){
-
+                    if (idMatch || nameMatch) {
                         found = true;
-
-                        cout << "\n========== TEAM FOUND ==========\n";
-                        cout << "Team ID: "
-                            << team.getTeamID() << endl;
-
-                        cout << "Team Name: "
-                            << team.getTeamName() << endl;
-
-                        cout << "Parish: "
-                            << team.getParish() << endl;
-
-                        cout << "Status: "
-                            << team.getTeamStatus() << endl;
-
-                        cout << "Players: "
-                            << team.getPlayers().size() << endl;
-
-                        cout << "Coaches: "
-                            << team.getCoaches().size() << endl;
-
-                        break;
+                        cout << "\n----------------------------------";
+                        cout << "\nTeam ID: " << team.getTeamID();
+                        cout << "\nTeam Name: " << team.getTeamName();
+                        cout << "\nParish: " << team.getParish();
+                        cout << "\nStatus: " << team.getTeamStatus();
+                        cout << "\nPlayers: " << team.getPlayers().size();
+                        cout << "\nCoaches: " << team.getCoaches().size();
+                        cout << "\nPoints: " << team.getPoints();
+                        cout << "\n----------------------------------\n";
                     }
                 }
 
-                if(!found){
-                    cout << "\nTeam Not Found!\n";
-                }
-
+                if (!found)
+                    cout << "\nNo matching team found.\n";
                 break;
             }
-            
+
             case 0:
                 cout << "\nReturning...\n";
                 break;
@@ -548,19 +632,18 @@ void playerManagement(FootballLeague& league) {
                 }
 
                 int teamChoice;
-                int teamCount = league.getTeams().size();
 
-                do {
-                    cout << "\nSelect Team: ";
-                    cin >> teamChoice;
-                    teamChoice--;
+                cout << "\nSelect Team: ";
+                cin >> teamChoice;
 
-                    if (teamChoice < 0 || teamChoice >= teamCount)
-                    {
-                        cout << "\nInvalid Team Selection!\n";
-                    }
+                teamChoice--;
 
-                } while (teamChoice < 0 || teamChoice >= teamCount);
+                if (teamChoice < 0 ||
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
+
+                    cout << "\nInvalid Team Selection!\n";
+                    break;
+                }
 
                 int id, age, jersey;
                 string name, gender, position;
@@ -581,53 +664,8 @@ void playerManagement(FootballLeague& league) {
                 cout << "Gender: ";
                 getline(cin, gender);
 
-                int positionChoice;
-
-                cout << "\n========== PLAYER POSITION ==========\n";
-                cout << "1. Goalkeeper\n";
-                cout << "2. Centre Back\n";
-                cout << "3. Left Back\n";
-                cout << "4. Right Back\n";
-                cout << "5. Left Wing Back\n";
-                cout << "6. Right Wing Back\n";
-                cout << "7. Defensive Midfielder\n";
-                cout << "8. Central Midfielder\n";
-                cout << "9. Attacking Midfielder\n";
-                cout << "10. Left Midfielder\n";
-                cout << "11. Right Midfielder\n";
-                cout << "12. Left Winger\n";
-                cout << "13. Right Winger\n";
-                cout << "14. Striker\n";
-                cout << "15. Centre Forward\n";
-                cout << "Choice ==> ";
-
-                cin >> positionChoice;
-
-                switch(positionChoice)
-                {
-                    case 1: position = "Goalkeeper"; break;
-                    case 2: position = "Centre Back"; break;
-                    case 3: position = "Left Back"; break;
-                    case 4: position = "Right Back"; break;
-                    case 5: position = "Left Wing Back"; break;
-                    case 6: position = "Right Wing Back"; break;
-                    case 7: position = "Defensive Midfielder"; break;
-                    case 8: position = "Central Midfielder"; break;
-                    case 9: position = "Attacking Midfielder"; break;
-                    case 10: position = "Left Midfielder"; break;
-                    case 11: position = "Right Midfielder"; break;
-                    case 12: position = "Left Winger"; break;
-                    case 13: position = "Right Winger"; break;
-                    case 14: position = "Striker"; break;
-                    case 15: position = "Centre Forward"; break;
-
-                    default:
-                        cout << "\nInvalid Position!\n";
-                        break;
-                }
-                
-                
-                cout << "\nPosition Registered Successfully!\n";
+                cout << "Position: ";
+                getline(cin, position);
 
                 cout << "Jersey Number: ";
                 cin >> jersey;
@@ -663,6 +701,8 @@ void playerManagement(FootballLeague& league) {
                     break;
                 }
 
+                int teamChoice;
+
                 cout << "\n========== SELECT TEAM ==========\n";
 
                 for (size_t i = 0; i < league.getTeams().size(); ++i) {
@@ -671,20 +711,17 @@ void playerManagement(FootballLeague& league) {
                          << endl;
                 }
 
-                int teamChoice;
-                int teamCount = league.getTeams().size();
+                cout << "\nSelect Team: ";
+                cin >> teamChoice;
 
-                do {
-                    cout << "\nSelect Team: ";
-                    cin >> teamChoice;
-                    teamChoice--;
+                teamChoice--;
 
-                    if (teamChoice < 0 || teamChoice >= teamCount)
-                    {
-                        cout << "\nInvalid Team Selection!\n";
-                    }
+                if (teamChoice < 0 ||
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
 
-                } while (teamChoice < 0 || teamChoice >= teamCount);
+                    cout << "\nInvalid Team Selection!\n";
+                    break;
+                }
 
                 vector<Player>& players =
                     league.getTeams()[teamChoice].getPlayers();
@@ -739,61 +776,22 @@ void playerManagement(FootballLeague& league) {
                                 int age;
 
                                 cout << "New Age: ";
-                                if (!readInt(age) || age < league.getMinimumAge()) {
-                                    cout << "Player must be at least " << league.getMinimumAge() << " years old.\n";
-                                    break;
-                                }
+                                cin >> age;
+
                                 player.setAge(age);
+
                                 cout << "\nAge Updated Successfully!\n";
                                 break;
                             }
 
                             case 3: {
                                 string position;
-                                int positionChoice;
 
-                                cout << "\n========== PLAYER POSITION ==========\n";
-                                cout << "1. Goalkeeper\n";
-                                cout << "2. Centre Back\n";
-                                cout << "3. Left Back\n";
-                                cout << "4. Right Back\n";
-                                cout << "5. Left Wing Back\n";
-                                cout << "6. Right Wing Back\n";
-                                cout << "7. Defensive Midfielder\n";
-                                cout << "8. Central Midfielder\n";
-                                cout << "9. Attacking Midfielder\n";
-                                cout << "10. Left Midfielder\n";
-                                cout << "11. Right Midfielder\n";
-                                cout << "12. Left Winger\n";
-                                cout << "13. Right Winger\n";
-                                cout << "14. Striker\n";
-                                cout << "15. Centre Forward\n";
-                                cout << "Choice ==> ";
+                                cin.ignore();
 
-                                cin >> positionChoice;
+                                cout << "New Position: ";
+                                getline(cin, position);
 
-                                switch(positionChoice)
-                                {
-                                    case 1: position = "Goalkeeper"; break;
-                                    case 2: position = "Centre Back"; break;
-                                    case 3: position = "Left Back"; break;
-                                    case 4: position = "Right Back"; break;
-                                    case 5: position = "Left Wing Back"; break;
-                                    case 6: position = "Right Wing Back"; break;
-                                    case 7: position = "Defensive Midfielder"; break;
-                                    case 8: position = "Central Midfielder"; break;
-                                    case 9: position = "Attacking Midfielder"; break;
-                                    case 10: position = "Left Midfielder"; break;
-                                    case 11: position = "Right Midfielder"; break;
-                                    case 12: position = "Left Winger"; break;
-                                    case 13: position = "Right Winger"; break;
-                                    case 14: position = "Striker"; break;
-                                    case 15: position = "Centre Forward"; break;
-
-                                    default:
-                                        cout << "\nInvalid Position!\n";
-                                        break;
-                                }
                                 player.setPositionOnField(position);
 
                                 cout << "\nPosition Updated Successfully!\n";
@@ -881,26 +879,25 @@ void playerManagement(FootballLeague& league) {
                     break;
                 }
 
+                int teamChoice;
+
                 for (size_t i = 0; i < league.getTeams().size(); ++i) {
                     cout << i + 1 << ". "
                          << league.getTeams()[i].getTeamName()
                          << endl;
                 }
 
-                int teamChoice;
-                int teamCount = league.getTeams().size();
+                cout << "\nSelect Team: ";
+                cin >> teamChoice;
 
-                do {
-                    cout << "\nSelect Team: ";
-                    cin >> teamChoice;
-                    teamChoice--;
+                teamChoice--;
 
-                    if (teamChoice < 0 || teamChoice >= teamCount)
-                    {
-                        cout << "\nInvalid Team Selection!\n";
-                    }
+                if (teamChoice < 0 ||
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
 
-                } while (teamChoice < 0 || teamChoice >= teamCount);
+                    cout << "\nInvalid Team Selection!\n";
+                    break;
+                }
 
                 int playerID;
                 bool found = false;
@@ -928,6 +925,7 @@ void playerManagement(FootballLeague& league) {
             // CHECK ELIGIBILITY
             case 4: {
 
+                int teamChoice;
                 int playerID;
                 bool found = false;
 
@@ -942,20 +940,17 @@ void playerManagement(FootballLeague& league) {
                          << endl;
                 }
 
-                int teamChoice;
-                int teamCount = league.getTeams().size();
+                cout << "\nSelect Team: ";
+                cin >> teamChoice;
 
-                do {
-                    cout << "\nSelect Team: ";
-                    cin >> teamChoice;
-                    teamChoice--;
+                teamChoice--;
 
-                    if (teamChoice < 0 || teamChoice >= teamCount)
-                    {
-                        cout << "\nInvalid Team Selection!\n";
-                    }
+                if (teamChoice < 0 ||
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
 
-                } while (teamChoice < 0 || teamChoice >= teamCount);
+                    cout << "\nInvalid Team Selection!\n";
+                    break;
+                }
 
                 cout << "Player ID: ";
                 cin >> playerID;
@@ -984,63 +979,40 @@ void playerManagement(FootballLeague& league) {
                 break;
             }
 
-            case 5:{
-                if (league.getTeams().empty()){
+            // REMOVE PLAYER
+            case 5: {
+                if (league.getTeams().empty()) {
                     cout << "\nNo Teams Registered.\n";
                     break;
                 }
 
-                for (size_t i = 0; i < league.getTeams().size(); i++)
-                {
+                cout << "\n========== SELECT TEAM ==========\n";
+                for (size_t i = 0; i < league.getTeams().size(); ++i) {
                     cout << i + 1 << ". "
-                        << league.getTeams()[i].getTeamName()
-                        << endl;
+                         << league.getTeams()[i].getTeamName()
+                         << endl;
                 }
 
                 int teamChoice;
-                int teamCount = league.getTeams().size();
-
-                do {
-                    cout << "\nSelect Team: ";
-                    cin >> teamChoice;
-                    teamChoice--;
-
-                    if (teamChoice < 0 || teamChoice >= teamCount)
-                    {
-                        cout << "\nInvalid Team Selection!\n";
-                    }
-
-                } while (teamChoice < 0 || teamChoice >= teamCount);
-
-                vector<Player>& players =
-                    league.getTeams()[teamChoice].getPlayers();
-
-                int playerID;
-                cout << "Enter Player ID: ";
-                cin >> playerID;
-
-                bool found = false;
-
-                for (auto it = players.begin();
-                    it != players.end(); ++it)
-                {
-                    if (it->getIdNom() == playerID)
-                    {
-                        players.erase(it);
-
-                        cout << "\nPlayer Removed Successfully!\n";
-
-                        found = true;
-                        break;
-                    }
+                cout << "\nSelect Team: ";
+                if (!readInt(teamChoice) || teamChoice < 1 ||
+                    static_cast<size_t>(teamChoice) > league.getTeams().size()) {
+                    cout << "\nInvalid Team Selection!\n";
+                    break;
                 }
 
-                if (!found)
-                {
+                int removeID;
+                cout << "\nEnter Player ID: ";
+                if (!readInt(removeID)) {
+                    cout << "\nInvalid ID.\n";
+                    break;
+                }
+
+                if (league.getTeams()[teamChoice - 1].removePlayer(removeID))
+                    cout << "\nPlayer Removed Successfully!\n";
+                else
                     cout << "\nPlayer Not Found!\n";
-                }
                 break;
-
             }
 
             case 0:
@@ -1049,9 +1021,8 @@ void playerManagement(FootballLeague& league) {
 
             default:
                 cout << "\nInvalid Option!\n";
-                break;
         }
-    }while(choice != 0);
+    }
 }
 
 
@@ -1094,19 +1065,19 @@ void coachManagement(FootballLeague& league) {
                 }
 
                 int teamChoice;
-                int teamCount = league.getTeams().size();
 
-                do {
-                    cout << "\nSelect Team: ";
-                    cin >> teamChoice;
-                    teamChoice--;
+                cout << "\nSelect Team: ";
+                cin >> teamChoice;
 
-                    if (teamChoice < 0 || teamChoice >= teamCount)
-                    {
-                        cout << "\nInvalid Team Selection!\n";
-                    }
+                teamChoice--;
 
-                } while (teamChoice < 0 || teamChoice >= teamCount);
+                if (teamChoice < 0 ||
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
+
+                    cout << "\nInvalid Team Selection!\n";
+                    break;
+                }
+
                 int id, age, experience;
                 string name, gender, qualification, role;
 
@@ -1215,19 +1186,18 @@ void coachManagement(FootballLeague& league) {
                 }
 
                 int teamChoice;
-                int teamCount = league.getTeams().size();
 
-                do {
-                    cout << "\nSelect Team: ";
-                    cin >> teamChoice;
-                    teamChoice--;
+                cout << "\nSelect Team: ";
+                cin >> teamChoice;
 
-                    if (teamChoice < 0 || teamChoice >= teamCount)
-                    {
-                        cout << "\nInvalid Team Selection!\n";
-                    }
+                teamChoice--;
 
-                } while (teamChoice < 0 || teamChoice >= teamCount);
+                if (teamChoice < 0 ||
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
+
+                    cout << "\nInvalid Team Selection!\n";
+                    break;
+                }
 
                 vector<Coach>& coaches =
                     league.getTeams()[teamChoice].getCoaches();
@@ -1277,19 +1247,18 @@ void coachManagement(FootballLeague& league) {
                 }
 
                 int teamChoice;
-                int teamCount = league.getTeams().size();
 
-                do {
-                    cout << "\nSelect Team: ";
-                    cin >> teamChoice;
-                    teamChoice--;
+                cout << "\nSelect Team: ";
+                cin >> teamChoice;
 
-                    if (teamChoice < 0 || teamChoice >= teamCount)
-                    {
-                        cout << "\nInvalid Team Selection!\n";
-                    }
+                teamChoice--;
 
-                } while (teamChoice < 0 || teamChoice >= teamCount);
+                if (teamChoice < 0 ||
+                    static_cast<size_t>(teamChoice) >= league.getTeams().size()) {
+
+                    cout << "\nInvalid Team Selection!\n";
+                    break;
+                }
 
                 vector<Coach>& coaches =
                     league.getTeams()[teamChoice].getCoaches();
@@ -1340,63 +1309,39 @@ void coachManagement(FootballLeague& league) {
                 break;
             }
 
-            case 4:{
-                if (league.getTeams().empty()){
+            // REMOVE COACH
+            case 4: {
+                if (league.getTeams().empty()) {
                     cout << "\nNo Teams Registered.\n";
                     break;
                 }
 
-                int teamChoice;
-
-                for (size_t i = 0; i < league.getTeams().size(); i++)
-                {
+                cout << "\n========== SELECT TEAM ==========\n";
+                for (size_t i = 0; i < league.getTeams().size(); ++i) {
                     cout << i + 1 << ". "
-                        << league.getTeams()[i].getTeamName()
-                        << endl;
+                         << league.getTeams()[i].getTeamName()
+                         << endl;
                 }
 
-                int teamCount = league.getTeams().size();
-
-                do {
-                    cout << "\nSelect Team: ";
-                    cin >> teamChoice;
-                    teamChoice--;
-
-                    if (teamChoice < 0 || teamChoice >= teamCount)
-                    {
-                        cout << "\nInvalid Team Selection!\n";
-                    }
-
-                } while (teamChoice < 0 || teamChoice >= teamCount);
-
-                vector<Coach>& coaches =
-                    league.getTeams()[teamChoice].getCoaches();
-
-                int coachID;
-
-                cout << "Enter Coach ID: ";
-                cin >> coachID;
-
-                bool found = false;
-
-                for (auto it = coaches.begin();
-                    it != coaches.end(); ++it)
-                {
-                    if (it->getIdNom() == coachID)
-                    {
-                        coaches.erase(it);
-
-                        cout << "\nCoach Removed Successfully!\n";
-
-                        found = true;
-                        break;
-                    }
+                int teamChoice;
+                cout << "\nSelect Team: ";
+                if (!readInt(teamChoice) || teamChoice < 1 ||
+                    static_cast<size_t>(teamChoice) > league.getTeams().size()) {
+                    cout << "\nInvalid Team Selection!\n";
+                    break;
                 }
 
-                if (!found)
-                {
+                int removeID;
+                cout << "\nEnter Coach ID: ";
+                if (!readInt(removeID)) {
+                    cout << "\nInvalid ID.\n";
+                    break;
+                }
+
+                if (league.getTeams()[teamChoice - 1].removeCoach(removeID))
+                    cout << "\nCoach Removed Successfully!\n";
+                else
                     cout << "\nCoach Not Found!\n";
-                }
                 break;
             }
 
@@ -1406,7 +1351,6 @@ void coachManagement(FootballLeague& league) {
 
             default:
                 cout << "\nInvalid Option!\n";
-                break;
         }
     }
 }
@@ -1534,12 +1478,20 @@ void officialMenu(FootballLeague& league)
                     break;
                 }
 
-                commissioner.assignOfficial(
-                    fixtures[fixtureChoice - 1],
-                    officials[officialChoice - 1]
-                );
+                try
+                {
+                    commissioner.assignOfficial(
+                        fixtures[fixtureChoice - 1],
+                        officials[officialChoice - 1]
+                    );
 
-                cout << "\nOfficial assigned successfully!\n";
+                    cout << "\nOfficial assigned successfully!\n";
+                }
+                catch (const KPFLExceptions& exception)
+                {
+                    cout << "\nOfficial could not be assigned: "
+                         << exception.getMessage() << '\n';
+                }
                 break;
             }
 
@@ -1673,6 +1625,10 @@ void fixtureManagementMenu(FootballLeague& league)
                     break;
                 }
 
+                int stadiumID = selectStadium(league);
+                if(stadiumID == -1)
+                    break;
+
                 int id, day, month, year;
                 int hours, minutes, seconds;
 
@@ -1703,9 +1659,11 @@ void fixtureManagementMenu(FootballLeague& league)
                 proposed.setFixtureDate(day, month, year);
                 proposed.setFixtureTime(hours, minutes, seconds);
                 proposed.setFixtureStatus("Scheduled");
+                proposed.setStadiumID(stadiumID);
 
                 try{
                     league.createFixture(proposed, teams[home - 1], teams[away - 1]);
+                    cout << "\nFixture Created Successfully!\n";
                 } catch(const KPFLExceptions& e){
                     cout << "\n" << e.getMessage() << '\n';
                 }
@@ -1760,19 +1718,28 @@ void fixtureManagementMenu(FootballLeague& league)
                     break;
                 }
 
-                commissioner.assignOfficial(
-                    fixtures[fixtureChoice - 1],
-                    officials[officialChoice - 1]
-                );
+                try
+                {
+                    commissioner.assignOfficial(
+                        fixtures[fixtureChoice - 1],
+                        officials[officialChoice - 1]
+                    );
 
-                cout << "\nOfficial assigned successfully!\n";
+                    cout << "\nOfficial assigned successfully!\n";
+                }
+                catch (const KPFLExceptions& exception)
+                {
+                    cout << "\nOfficial could not be assigned: "
+                         << exception.getMessage() << '\n';
+                }
                 break;
             }
 
             case 3:
             {
-                cout << "\nTo record the result, the MatchResult "
-                     << "class methods are needed.\n";
+                // Results are entered through the Match Results menu,
+                // which validates scores and awards league points.
+                resultsMenu(league);
                 break;
             }
 
@@ -1873,19 +1840,15 @@ void commissionerMenu(FootballLeague& league)
                 }
 
                 int teamChoice;
-                int teamCount = league.getTeams().size();
 
-                do {
-                    cout << "\nSelect Team: ";
-                    cin >> teamChoice;
-                    teamChoice--;
+                cout << "\nSelect Team: ";
+                cin >> teamChoice;
 
-                    if (teamChoice < 0 || teamChoice >= teamCount)
-                    {
-                        cout << "\nInvalid Team Selection!\n";
-                    }
-
-                } while (teamChoice < 0 || teamChoice >= teamCount);
+                if(teamChoice < 1 || static_cast<size_t>(teamChoice) > teams.size())
+                {
+                    cout << "\nInvalid team selection.\n";
+                    break;
+                }
 
                 try
                 {
@@ -2004,12 +1967,20 @@ void commissionerMenu(FootballLeague& league)
                     break;
                 }
 
-                commissioner.assignOfficial(
-                    fixtures[fixtureChoice - 1],
-                    officials[officialChoice - 1]
-                );
+                try
+                {
+                    commissioner.assignOfficial(
+                        fixtures[fixtureChoice - 1],
+                        officials[officialChoice - 1]
+                    );
 
-                cout << "\nOfficial assigned successfully!\n";
+                    cout << "\nOfficial assigned successfully!\n";
+                }
+                catch (const KPFLExceptions& exception)
+                {
+                    cout << "\nOfficial could not be assigned: "
+                         << exception.getMessage() << '\n';
+                }
                 break;
             }
 
@@ -2053,7 +2024,7 @@ void commissionerMenu(FootballLeague& league)
 }
 
 
-void spectatorManagement(){
+void spectatorManagement(FootballLeague& league){
     int choice;
 
     do {
@@ -2089,34 +2060,102 @@ void spectatorManagement(){
                 cout << "Spectator registered successfully.\n";
                 break;
             }
+            // PURCHASE TICKET (limited by stadium seating capacity)
             case 2: {
-                if (spectators.empty()) {
-                    cout << "No spectators registered.\n";
+                int index = selectSpectator(false);
+                if (index < 0)
+                    break;
+
+                vector<int> openIDs;
+                for (Fixture& fixture : league.getFixtures()) {
+                    if (fixture.getStadiumID() != 0 && !fixture.hasResult() &&
+                        fixture.getFixtureStatus() == "Scheduled") {
+                        openIDs.push_back(fixture.getFixtureID());
+                        cout << "\n" << openIDs.size() << ". Fixture "
+                             << fixture.getFixtureID() << ": "
+                             << teamNameFor(league, fixture.getHomeTeamID()) << " vs "
+                             << teamNameFor(league, fixture.getAwayTeamID());
+                    }
+                }
+
+                if (openIDs.empty()) {
+                    cout << "No upcoming fixtures with a stadium assigned.\n";
                     break;
                 }
 
-                for (size_t i = 0; i < spectators.size(); ++i)
-                    cout << i + 1 << ". " << spectators[i].getFullName() << '\n';
-
-                int spectatorChoice;
-                cout << "Select Spectator: ";
-                if (!readInt(spectatorChoice)) {
-                    cout << "Invalid selection.\n";
+                int fixtureChoice, quantity;
+                cout << "\nSelect Fixture: ";
+                if (!readInt(fixtureChoice) || fixtureChoice < 1 ||
+                    static_cast<size_t>(fixtureChoice) > openIDs.size()) {
+                    cout << "Invalid fixture selection.\n";
                     break;
                 }
 
-                if (spectatorChoice < 1 ||
-                    static_cast<size_t>(spectatorChoice) > spectators.size()) {
-                    cout << "Invalid selection.\n";
+                Fixture* fixture = league.findFixture(openIDs[fixtureChoice - 1]);
+                Stadium* stadium = league.findStadium(fixture->getStadiumID());
+                if (stadium == nullptr) {
+                    cout << "The stadium for this fixture is not registered.\n";
+                    break;
+                }
+
+                int remaining = stadium->getSeatingCapacity() - fixture->getAttendance();
+                cout << "Ticket price: $" << fixed << setprecision(2) << stadium->getTicketPrice()
+                     << " (GCT inclusive) | Seats remaining: " << remaining << '\n';
+
+                cout << "Number of Tickets: ";
+                if (!readInt(quantity) || quantity <= 0) {
+                    cout << "Quantity must be at least 1.\n";
                     break;
                 }
 
                 try {
-                    Spectator& spectator = spectators[spectatorChoice - 1];
-                    spectator.deductBalance(100.0);
-                    spectator.buyTicket();
-                    spectator.setTotalAmountSpent(spectator.getTotalAmountSpent() + 100.0);
-                    cout << "Ticket purchased successfully.\n";
+                    if (quantity > remaining)
+                        throw CapacityExceededException();
+
+                    double total = round(stadium->getTicketPrice() * quantity * 100.0) / 100.0;
+                    double amountPaid;
+                    cout << "Total due: $" << total << "\nAmount Paid: $";
+                    if (!readDouble(amountPaid) || amountPaid < 0) {
+                        cout << "Invalid amount.\n";
+                        break;
+                    }
+                    if (amountPaid < total)
+                        throw InsufficientPaymentException();
+
+                    double gct = shop.calculateIncludedGCT(total);
+                    double subtotal = total - gct;
+                    double change = round((amountPaid - total) * 100.0) / 100.0;
+
+                    fixture->setAttendance(fixture->getAttendance() + quantity);
+
+                    Spectator& spectator = spectators[index];
+                    spectator.setTicketsPurchased(spectator.getTicketsPurchased() + quantity);
+                    spectator.addToTotalSpent(total);
+
+                    cout << "\n============ TICKET RECEIPT ============\n";
+                    cout << "Fixture " << fixture->getFixtureID() << " at "
+                         << stadium->getStadiumName() << "\n";
+                    cout << "General Admission x" << quantity << " @ $"
+                         << stadium->getTicketPrice() << "\n";
+                    cout << "Subtotal (before GCT): $" << subtotal << "\n";
+                    cout << "GCT (15%):             $" << gct << "\n";
+                    cout << "Total:                 $" << total << "\n";
+                    cout << "Amount Paid:           $" << amountPaid << "\n";
+                    cout << "Change:                $" << change << "\n";
+                    cout << "========================================\n";
+
+                    int transactionID = generateRandomID();
+                    stringstream ticketLine, saleLine;
+                    ticketLine << transactionID << "," << fixture->getFixtureID()
+                               << ",General," << stadium->getTicketPrice() << ","
+                               << quantity << "," << spectator.getIdNom();
+                    saleLine << transactionID << "," << currentDateTime()
+                             << ",Tickets for fixture " << fixture->getFixtureID()
+                             << " x" << quantity << "," << subtotal << "," << gct << ","
+                             << total << "," << amountPaid << "," << change;
+
+                    logRecord(FileManager::TICKETS_FILE, ticketLine.str());
+                    logRecord(FileManager::TRANSACTIONS_FILE, saleLine.str());
                 } catch (const KPFLExceptions& exception) {
                     cout << exception.getMessage() << '\n';
                 }
@@ -2175,7 +2214,7 @@ void spectatorManagement(){
 }
 
 void stadiumMenu(FootballLeague& league){
-    int choice = -1;
+    int choice;
 
     do {
         cout << "\n========== STADIUM MANAGEMENT ==========";
@@ -2192,195 +2231,142 @@ void stadiumMenu(FootballLeague& league){
         }
 
         switch (choice) {
+            // ADD STADIUM
             case 1: {
-                int id = generateRandomID();
-                int capacity = 0;
-                int initialOccupancy = 0;
-                double ticketPrice = 0.0;
+                int id, capacity, conditionChoice;
+                double price;
                 string name, location, condition;
 
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-                cout << "\nStadium Name: ";
-                getline(cin, name);
-
-                cout << "Location: ";
-                getline(cin, location);
-
-                cout << "Field Condition: ";
-                getline(cin, condition);
-
-                cout << "Seating Capacity: ";
-                if (!readInt(capacity) || capacity < 0) {
-                    cout << "\nInvalid seating capacity.\n";
+                cout << "\nStadium ID: ";
+                if (!readInt(id) || id <= 0) {
+                    cout << "\nInvalid ID. It must be a positive number.\n";
                     break;
                 }
 
-                cout << "Ticket Price: ";
-                if (!readDouble(ticketPrice) || ticketPrice < 0.0) {
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Stadium Name: ";
+                getline(cin, name);
+                cout << "Location: ";
+                getline(cin, location);
+
+                if (name.empty() || location.empty()) {
+                    cout << "\nName and location cannot be blank.\n";
+                    break;
+                }
+
+                cout << "Seating Capacity: ";
+                if (!readInt(capacity) || capacity <= 0) {
+                    cout << "\nInvalid capacity. It must be greater than 0.\n";
+                    break;
+                }
+
+                cout << "Field Condition (1 = Good, 2 = Fair, 3 = Poor): ";
+                if (!readInt(conditionChoice) || conditionChoice < 1 || conditionChoice > 3) {
+                    cout << "\nInvalid field condition.\n";
+                    break;
+                }
+                condition = (conditionChoice == 1) ? "Good" :
+                            (conditionChoice == 2) ? "Fair" : "Poor";
+
+                cout << "Ticket Price (GCT inclusive): $";
+                if (!readDouble(price) || price < 0) {
                     cout << "\nInvalid ticket price.\n";
                     break;
                 }
 
-                cout << "Initial Occupancy: ";
-                if (!readInt(initialOccupancy) || initialOccupancy < 0) {
-                    cout << "\nInvalid occupancy.\n";
-                    break;
+                try {
+                    league.addStadiums(Stadium(id, name, location, capacity,
+                                               condition, price, 0));
+                    cout << "\nStadium Added Successfully!\n";
+                } catch (const KPFLExceptions& e) {
+                    cout << "\n" << e.getMessage() << '\n';
                 }
-
-                Stadium stadium(id, name, location, capacity, condition, ticketPrice, 0);
-
-                if (initialOccupancy > 0) {
-                    try {
-                        stadium.sellTickets(initialOccupancy);
-                    } catch (const KPFLExceptions& e) {
-                        cout << "\nWarning: Could not set initial occupancy — "
-                             << e.getMessage() << "\n";
-                    }
-                }
-
-                stadiums.push_back(stadium);
-                cout << "\nStadium added successfully! (ID: " << id << ")\n";
                 break;
             }
 
+            // DISPLAY STADIUMS
             case 2: {
-                if (stadiums.empty()) {
+                if (league.getStadiums().empty()) {
                     cout << "\nNo stadiums registered.\n";
                     break;
                 }
 
-                for (size_t i = 0; i < stadiums.size(); ++i) {
+                for (const Stadium& stadium : league.getStadiums()) {
                     cout << "\n----------------------------------";
-                    cout << "\nStadium #" << (i + 1);
-                    cout << "\nID: " << stadiums[i].getStadiumID();
-                    cout << "\nName: " << stadiums[i].getStadiumName();
-                    cout << "\nLocation: " << stadiums[i].getLocation();
-                    cout << "\nCondition: " << stadiums[i].getFieldCondition();
-                    cout << "\nTicket Price: $" << stadiums[i].getTicketPrice();
-                    cout << "\nOccupancy: " << stadiums[i].getOccupancy()
-                         << " / " << stadiums[i].getSeatingCapacity();
-                    cout << "\nRemaining Seats: " << stadiums[i].getRemainingSeats();
-                    cout << "\nAvailable: " << (stadiums[i].isAvailable() ? "Yes" : "No");
+                    cout << "\nStadium ID: " << stadium.getStadiumID();
+                    cout << "\nName: " << stadium.getStadiumName();
+                    cout << "\nLocation: " << stadium.getLocation();
+                    cout << "\nSeating Capacity: " << stadium.getSeatingCapacity();
+                    cout << "\nField Condition: " << stadium.getFieldCondition();
+                    cout << "\nTicket Price: $" << fixed << setprecision(2)
+                         << stadium.getTicketPrice();
                     cout << "\n----------------------------------\n";
                 }
                 break;
             }
 
-            case 3: {
-                if (stadiums.empty()) {
-                    cout << "\nNo stadiums registered.\n";
-                    break;
-                }
-
-                for (size_t i = 0; i < stadiums.size(); ++i) {
-                    cout << (i + 1) << ". " << stadiums[i].getStadiumName()
-                         << " (" << stadiums[i].getOccupancy()
-                         << "/" << stadiums[i].getSeatingCapacity() << ")\n";
-                }
-
-                int selection = 0;
-                cout << "\nSelect Stadium: ";
-                if (!readInt(selection) || selection < 1 ||
-                    static_cast<size_t>(selection) > stadiums.size()) {
-                    cout << "\nInvalid stadium selection.\n";
-                    break;
-                }
-
-                Stadium& selected = stadiums[selection - 1];
-
-                cout << "\nStadium: " << selected.getStadiumName();
-                cout << "\nCurrent Occupancy: " << selected.getOccupancy();
-                cout << "\nSeating Capacity: " << selected.getSeatingCapacity();
-                cout << "\nRemaining Seats: " << selected.getRemainingSeats() << "\n";
-
-                int ticketsToSell = 0;
-                cout << "\nEnter tickets to sell (0 to skip): ";
-                if (!readInt(ticketsToSell)) {
-                    cout << "\nInvalid ticket count.\n";
-                    break;
-                }
-
-                if (ticketsToSell != 0) {
-                    try {
-                        selected.sellTickets(ticketsToSell);
-                        cout << "\nSold " << ticketsToSell
-                             << " ticket(s). Remaining seats: "
-                             << selected.getRemainingSeats() << "\n";
-                    } catch (const KPFLExceptions& e) {
-                        cout << "\n" << e.getMessage() << "\n";
-                    }
-                }
-                break;
-            }
-
+            // CHECK CAPACITY (per fixture at the chosen stadium)
+            case 3:
+            // VIEW SCHEDULED FIXTURES
             case 4: {
-                if (stadiums.empty()) {
-                    cout << "\nNo stadiums registered.\n";
+                int stadiumID = selectStadium(league);
+                if (stadiumID == -1)
                     break;
-                }
 
-                for (size_t i = 0; i < stadiums.size(); ++i) {
-                    cout << (i + 1) << ". " << stadiums[i].getStadiumName() << "\n";
-                }
+                Stadium* stadium = league.findStadium(stadiumID);
+                bool any = false;
 
-                int selection = 0;
-                cout << "\nSelect Stadium: ";
-                if (!readInt(selection) || selection < 1 ||
-                    static_cast<size_t>(selection) > stadiums.size()) {
-                    cout << "\nInvalid stadium selection.\n";
-                    break;
-                }
+                cout << "\n" << stadium->getStadiumName()
+                     << " | Capacity: " << stadium->getSeatingCapacity() << "\n";
 
-                Stadium& selected = stadiums[selection - 1];
-                vector<Fixture*>& stadiumFixtures = selected.getFixtures();
+                for (Fixture& fixture : league.getFixtures()) {
+                    if (fixture.getStadiumID() != stadiumID)
+                        continue;
 
-                if (!stadiumFixtures.empty()) {
-                    cout << "\n========== FIXTURES AT " << selected.getStadiumName() << " ==========\n";
-                    for (Fixture* f : stadiumFixtures) {
-                        if (f != nullptr) {
-                            cout << "\nFixture ID: " << f->getFixtureID();
-                            cout << "\nStatus: " << f->getFixtureStatus();
-                            cout << "\nAttendance: " << f->getAttendance() << "\n";
-                        }
-                    }
-                } else {
-                    vector<Fixture>& leagueFixtures = league.getFixtures();
-                    if (leagueFixtures.empty()) {
-                        cout << "\nNo scheduled fixtures available.\n";
+                    any = true;
+                    cout << "\nFixture " << fixture.getFixtureID() << ": "
+                         << teamNameFor(league, fixture.getHomeTeamID()) << " vs "
+                         << teamNameFor(league, fixture.getAwayTeamID());
+
+                    if (choice == 3) {
+                        cout << "\n  Tickets sold: " << fixture.getAttendance()
+                             << " | Seats remaining: "
+                             << stadium->getSeatingCapacity() - fixture.getAttendance() << "\n";
                     } else {
-                        cout << "\n========== ALL LEAGUE FIXTURES ==========\n";
-                        for (Fixture& f : leagueFixtures) {
-                            cout << "\nFixture ID: " << f.getFixtureID();
-                            cout << "\nStatus: " << f.getFixtureStatus();
-                            cout << "\nAttendance: " << f.getAttendance() << "\n";
-                        }
+                        Date date = fixture.getFixtureDateMember();
+                        ProjectTime time = fixture.getFixtureTimeMember();
+                        cout << "\n  Date: " << date.getDay() << "/" << date.getMonth()
+                             << "/" << date.getYear()
+                             << " | Time: " << setfill('0') << setw(2) << time.getHours()
+                             << ":" << setw(2) << time.getMinutes() << setfill(' ')
+                             << " | Status: " << fixture.getFixtureStatus() << "\n";
                     }
                 }
+
+                if (!any)
+                    cout << "\nNo fixtures scheduled at this stadium.\n";
                 break;
             }
 
             case 0:
-                cout << "\nReturning to Main Menu...\n";
+                cout << "\nReturning to previous menu...\n";
                 break;
 
             default:
-                cout << "\nInvalid option!\n";
-                break;
+                cout << "\nInvalid choice. Try again.\n";
         }
     } while (choice != 0);
 }
 
 void stadiumShopMenu(){
-    int choice = -1;
-    static StadiumShop shop(1, "KPFL Stadium Shop", 0, "Main Concourse", 0.0, 0);
-    static vector<Product*> catalog;
+    int choice;
 
     do {
         cout << "\n============ STADIUM SHOP ============\n";
         cout << "1. Add Product\n";
         cout << "2. Display Inventory\n";
         cout << "3. Purchase Product\n";
+        cout << "4. Restock Product\n";
         cout << "0. Back\n";
         cout << "\nChoice ==> ";
 
@@ -2390,269 +2376,226 @@ void stadiumShopMenu(){
         }
 
         switch (choice) {
+            // ADD PRODUCT
             case 1: {
-                int typeChoice = 0;
-                cout << "\nProduct Type:\n";
-                cout << "1. Food Item\n";
-                cout << "2. Merchandise\n";
-                cout << "3. Ticket Item\n";
-                cout << "Choice ==> ";
-                if (!readInt(typeChoice) || typeChoice < 1 || typeChoice > 3) {
+                int type, id, stock;
+                double price;
+                string name;
+
+                cout << "\nProduct Type (1 = Merchandise, 2 = Food/Beverage): ";
+                if (!readInt(type) || (type != 1 && type != 2)) {
                     cout << "\nInvalid product type.\n";
                     break;
                 }
 
-                int id = generateRandomID();
-                int qty = 0;
-                double preTaxPrice = 0.0;
-                string name;
+                cout << "Product ID: ";
+                if (!readInt(id) || id <= 0) {
+                    cout << "\nInvalid ID. It must be a positive number.\n";
+                    break;
+                }
+                if (shop.findProduct(id) != nullptr) {
+                    cout << "\n" << DuplicateRegistrationException().getMessage() << '\n';
+                    break;
+                }
 
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 cout << "Product Name: ";
                 getline(cin, name);
+                if (name.empty()) {
+                    cout << "\nProduct name cannot be blank.\n";
+                    break;
+                }
 
-                cout << "Pre-Tax Price: ";
-                if (!readDouble(preTaxPrice) || preTaxPrice < 0.0) {
+                cout << "Price before GCT: $";
+                if (!readDouble(price) || price < 0) {
                     cout << "\nInvalid price.\n";
                     break;
                 }
 
                 cout << "Quantity in Stock: ";
-                if (!readInt(qty) || qty < 0) {
-                    cout << "\nInvalid quantity.\n";
+                if (!readInt(stock) || stock < 0) {
+                    cout << "\nQuantity cannot be negative.\n";
                     break;
                 }
 
-                Product* prod = nullptr;
+                Product* product = nullptr;
 
-                if (typeChoice == 1) {
-                    string category;
-                    int day, month, year;
-
-                    cout << "Food Category: ";
-                    getline(cin, category);
-
-                    cout << "Expiry Day: ";
-                    cin >> day;
-
-                    cout << "Expiry Month: ";
-                    cin >> month;
-
-                    cout << "Expiry Year: ";
-                    cin >> year;
-
-                    FoodItems* item = new FoodItems();
-                    item->setProductID(id);
-                    item->setProductName(name);
-                    item->setPrice(preTaxPrice);
-                    item->setQuantityInStock(qty);
-                    item->setCategory(category);
-
-                    Date expiryDate;
-                    expiryDate.setDay(day);
-                    expiryDate.setMonth(month);
-                    expiryDate.setYear(year);
-
-                    item->setExpiryDate(expiryDate);
-                    
-                    prod = item;
-                } else if (typeChoice == 2) {
+                if (type == 1) {
                     string size, brand;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     cout << "Size: ";
                     getline(cin, size);
                     cout << "Brand: ";
                     getline(cin, brand);
-                    Merchandise* item = new Merchandise();
-                    item->setProductID(id);
-                    item->setProductName(name);
-                    item->setPrice(preTaxPrice);
-                    item->setQuantityInStock(qty);
-                    item->setSizeOfItem(size);
-                    item->setBrand(brand);
-                    prod = item;
+                    product = new Merchandise(size, brand, id, name, price, stock);
                 } else {
-                    string category, seat;
-                    cout << "Ticket Category: ";
+                    string category;
+                    int day, month, year;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cout << "Category (e.g. Drink, Burger, Popcorn): ";
                     getline(cin, category);
-                    cout << "Seat Number: ";
-                    getline(cin, seat);
-                    Tickets* item = new Tickets();
-                    item->setProductID(id);
-                    item->setProductName(name);
-                    item->setPrice(preTaxPrice);
-                    item->setQuantityInStock(qty);
-                    item->setTicketCategory(category);
-                    item->setSeatNumber(seat);
-                    prod = item;
+                    cout << "Expiry Day: ";
+                    if (!readInt(day)) break;
+                    cout << "Expiry Month: ";
+                    if (!readInt(month)) break;
+                    cout << "Expiry Year: ";
+                    if (!readInt(year)) break;
+                    product = new FoodItems(Date(day, month, year), category, id, name, price, stock);
                 }
 
-                if (prod != nullptr) {
-                    catalog.push_back(prod);
-                    shop.addProduct(prod);
-                    cout << "\nProduct added with 15%% GCT. Final Price: $"
-                         << prod->getPrice() << "\n";
-                }
+                shop.addProduct(product);   // adds 15% GCT to the price
+                cout << "\nProduct added. Selling price incl. GCT: $"
+                     << fixed << setprecision(2) << product->getPrice() << "\n";
                 break;
             }
 
-            case 2: {
-                if (catalog.empty()) {
-                    cout << "\nNo products in shop inventory.\n";
+            // DISPLAY INVENTORY (polymorphic Display through Product*)
+            case 2:
+                if (shop.getProducts().empty()) {
+                    cout << "\nNo products in inventory.\n";
                     break;
                 }
-
-                cout << "\n========== SHOP INVENTORY ==========";
-                cout << "\nShop: " << shop.getShopName()
-                     << " | Products: " << shop.getProductCount()
-                     << " | Inventory Value: $" << shop.getInventoryValue()
-                     << " | Sold: " << shop.getTotalProductsSold() << "\n";
-
-                for (size_t i = 0; i < catalog.size(); ++i) {
-                    cout << "\n[" << (i + 1) << "]";
-                    catalog[i]->Display();
-                }
+                for (Product* product : shop.getProducts())
+                    product->Display();
                 break;
-            }
 
+            // PURCHASE PRODUCT(S)
             case 3: {
-                if (catalog.empty()) {
-                    cout << "\nNo products available to purchase.\n";
+                if (shop.getProducts().empty()) {
+                    cout << "\nNo products in inventory.\n";
                     break;
                 }
 
-                if (spectators.empty()) {
-                    cout << "\nNo spectators registered. Register one in Spectator Management first.\n";
+                int index = selectSpectator(true);
+                if (index == -2)
+                    break;
+
+                vector<StadiumShop::SaleLine> cart;
+
+                while (true) {
+                    cout << "\nID    Product              Price      Stock\n";
+                    for (Product* product : shop.getProducts()) {
+                        cout << left << setw(6) << product->getProductID()
+                             << setw(21) << product->getProductName()
+                             << "$" << setw(10) << fixed << setprecision(2) << product->getPrice()
+                             << product->getQuantityInStock() << '\n';
+                    }
+
+                    int productID, quantity;
+                    cout << "Product ID to add (0 to checkout): ";
+                    if (!readInt(productID)) {
+                        cout << "Invalid ID.\n";
+                        continue;
+                    }
+                    if (productID == 0)
+                        break;
+
+                    Product* product = shop.findProduct(productID);
+                    if (product == nullptr) {
+                        cout << "Product not found.\n";
+                        continue;
+                    }
+
+                    cout << "Quantity: ";
+                    if (!readInt(quantity) || quantity <= 0) {
+                        cout << "Quantity must be at least 1.\n";
+                        continue;
+                    }
+
+                    bool merged = false;
+                    for (StadiumShop::SaleLine& line : cart) {
+                        if (line.product == product) {
+                            line.quantity += quantity;
+                            merged = true;
+                        }
+                    }
+                    if (!merged)
+                        cart.push_back({product, quantity});
+                }
+
+                if (cart.empty()) {
+                    cout << "\nNo items selected.\n";
                     break;
                 }
 
-                if (stadiums.empty()) {
-                    cout << "\nNo stadiums registered.\n";
-                    break;
-                }
+                double cartTotal = 0.0;
+                for (const StadiumShop::SaleLine& line : cart)
+                    cartTotal += line.product->getPrice() * line.quantity;
 
-                cout << "\n========== SELECT SPECTATOR ==========\n";
-
-                for (int i = 0; i < spectators.size(); i++) {
-                    cout << i + 1 << ". "
-                        << spectators[i].getFullName()
-                        << " (Balance: $"
-                        << spectators[i].getBalance()
-                        << ")\n";
-                }
-
-                int specChoice;
-
-                cout << "Select Spectator: ";
-                readInt(specChoice);
-
-                if (specChoice < 1 ||
-                    specChoice > spectators.size())
-                {
-                    cout << "\nInvalid spectator selection.\n";
-                    break;
-                }
-
-                cout << "\n========== SELECT PRODUCT ==========\n";
-
-                for (int i = 0; i < catalog.size(); i++) {
-                    cout << i + 1 << ". "
-                        << catalog[i]->getProductName()
-                        << " - $"
-                        << catalog[i]->getPrice()
-                        << " (Stock: "
-                        << catalog[i]->getQuantityInStock()
-                        << ")\n";
-                }
-
-                int prodChoice;
-
-                cout << "Select Product: ";
-                readInt(prodChoice);
-
-                if (prodChoice < 1 ||
-                    prodChoice > catalog.size())
-                {
-                    cout << "\nInvalid product selection.\n";
-                    break;
-                }
-
-                cout << "\n========== SELECT STADIUM ==========\n";
-
-                for (int i = 0; i < stadiums.size(); i++) {
-                    cout << i + 1 << ". "
-                        << stadiums[i].getStadiumName()
-                        << "\n";
-                }
-
-                int stadiumChoice;
-
-                cout << "Select Stadium: ";
-                readInt(stadiumChoice);
-
-                if (stadiumChoice < 1 ||
-                    stadiumChoice > stadiums.size())
-                {
-                    cout << "\nInvalid stadium selection.\n";
+                double amountPaid;
+                cout << "\nTotal due: $" << fixed << setprecision(2) << cartTotal
+                     << "\nAmount Paid: $";
+                if (!readDouble(amountPaid) || amountPaid < 0) {
+                    cout << "Invalid amount.\n";
                     break;
                 }
 
                 try {
-                    Spectator* specPtr = &spectators[specChoice - 1];
-                    
-                    Product* prodPtr = catalog[prodChoice - 1];
-                    
-                    Stadium* stadiumPtr = &stadiums[stadiumChoice - 1];
-                    
-                    
-                    if (prodPtr->isTicket())
-                    {
-                        if (!stadiumPtr->canSellTickets(1))
-                        {
-                            throw CapacityExceededException();
-                        }
-                    
-                        stadiumPtr->sellTickets(1);
-                    }
-                    
-                    double includedGCT = shop.calculateIncludedGCT(prodPtr->getPrice());
-                    
-                    shop.transaction(specPtr,prodPtr);
-                    
-                    cout << "\nPurchase Complete!\n";
-                    cout << "Included GCT: $" << includedGCT << endl;
-                    }
-                        catch (const KPFLExceptions& e) {
-                        cout << "\nTransaction failed: " << e.getMessage() << "\n";
+                    double subtotal, gct, total, change;
+                    shop.checkout(cart, amountPaid, subtotal, gct, total, change);
+                    StadiumShop::printReceipt(cart, subtotal, gct, total, amountPaid, change);
+
+                    stringstream items;
+                    for (const StadiumShop::SaleLine& line : cart) {
+                        items << line.product->getProductName() << " x" << line.quantity << " ";
                     }
 
+                    if (index >= 0) {
+                        for (const StadiumShop::SaleLine& line : cart)
+                            for (int i = 0; i < line.quantity; ++i)
+                                spectators[index].buyProduct(line.product->getPrice());
+                    }
+
+                    stringstream saleLine;
+                    saleLine << generateRandomID() << "," << currentDateTime() << ","
+                             << items.str() << "," << subtotal << "," << gct << ","
+                             << total << "," << amountPaid << "," << change;
+                    logRecord(FileManager::TRANSACTIONS_FILE, saleLine.str());
+                } catch (const KPFLExceptions& e) {
+                    cout << "\nTransaction cancelled: " << e.getMessage() << '\n';
+                }
                 break;
+            }
 
+            // RESTOCK PRODUCT
+            case 4: {
+                int productID, amount;
+                cout << "\nProduct ID: ";
+                if (!readInt(productID)) {
+                    cout << "\nInvalid ID.\n";
+                    break;
+                }
+
+                Product* product = shop.findProduct(productID);
+                if (product == nullptr) {
+                    cout << "\nProduct not found.\n";
+                    break;
+                }
+
+                cout << "Quantity to add: ";
+                if (!readInt(amount) || amount <= 0) {
+                    cout << "\nQuantity must be at least 1.\n";
+                    break;
+                }
+
+                product->increaseStock(amount);
+                cout << "\n" << product->getProductName() << " now has "
+                     << product->getQuantityInStock() << " in stock.\n";
+                break;
             }
 
             case 0:
-                cout << "\nReturning to Main Menu...\n";
+                cout << "\nReturning to previous menu...\n";
                 break;
 
             default:
-                cout << "\nInvalid option!\n";
-                break;
+                cout << "\nInvalid choice. Try again.\n";
         }
     } while (choice != 0);
 }
 
 void resultsMenu(FootballLeague& league){
-    int choice = -1;
-    vector<Fixture>& fixtures = league.getFixtures();
-    vector<FootballTeam>& teams = league.getTeams();
-
-    struct RecordedFixtureResult {
-        int fixtureID;
-        string homeTeamName;
-        string awayTeamName;
-        MatchResult result;
-    };
-
-    vector<RecordedFixtureResult> recordedResults;
+    int choice;
 
     do {
         cout << "\n========== MATCH RESULTS ==========";
@@ -2668,129 +2611,104 @@ void resultsMenu(FootballLeague& league){
         }
 
         switch (choice) {
+            // ENTER MATCH RESULT (awards points: win = 3, draw = 1, loss = 0)
             case 1: {
-                if (fixtures.empty()) {
-                    cout << "\nNo fixtures available.\n";
+                vector<Fixture>& fixtures = league.getFixtures();
+                vector<int> openIDs;
+
+                for (Fixture& fixture : fixtures) {
+                    if (!fixture.hasResult() &&
+                        fixture.getFixtureStatus() != "Cancelled" &&
+                        fixture.getFixtureStatus() != "Postponed") {
+                        openIDs.push_back(fixture.getFixtureID());
+                        cout << "\n" << openIDs.size() << ". Fixture "
+                             << fixture.getFixtureID() << ": "
+                             << teamNameFor(league, fixture.getHomeTeamID()) << " vs "
+                             << teamNameFor(league, fixture.getAwayTeamID());
+                    }
+                }
+
+                if (openIDs.empty()) {
+                    cout << "\nNo fixtures are waiting for a result.\n";
                     break;
                 }
 
-                for (size_t i = 0; i < fixtures.size(); ++i) {
-                    cout << (i + 1) << ". Fixture ID: " << fixtures[i].getFixtureID()
-                         << " | Status: " << fixtures[i].getFixtureStatus() << "\n";
-                }
-
-                int fixtureChoice = 0;
+                int fixtureChoice;
                 cout << "\nSelect Fixture: ";
                 if (!readInt(fixtureChoice) || fixtureChoice < 1 ||
-                    static_cast<size_t>(fixtureChoice) > fixtures.size()) {
+                    static_cast<size_t>(fixtureChoice) > openIDs.size()) {
                     cout << "\nInvalid fixture selection.\n";
                     break;
                 }
 
-                Fixture& fixture = fixtures[fixtureChoice - 1];
+                Fixture* fixture = league.findFixture(openIDs[fixtureChoice - 1]);
+                int homeScore, awayScore;
 
-                FootballTeam* home = nullptr;
-                FootballTeam* away = nullptr;
-                for (FootballTeam& team : teams) {
-                    if (team.getTeamID() == fixture.getHomeTeamID()) {
-                        home = &team;
-                    }
-                    if (team.getTeamID() == fixture.getAwayTeamID()) {
-                        away = &team;
-                    }
-                }
-
-                if (home == nullptr || away == nullptr) {
-                    cout << "\nUnable to locate fixture teams.\n";
-                    break;
-                }
-
-                int homeScore = 0;
-                int awayScore = 0;
-                string stats;
-
-                cout << "\n" << home->getTeamName() << " Goals: ";
+                cout << teamNameFor(league, fixture->getHomeTeamID()) << " Goals: ";
                 if (!readInt(homeScore)) {
-                    cout << "\nInvalid input.\n";
+                    cout << "\nInvalid score.\n";
                     break;
                 }
-
-                cout << away->getTeamName() << " Goals: ";
+                cout << teamNameFor(league, fixture->getAwayTeamID()) << " Goals: ";
                 if (!readInt(awayScore)) {
-                    cout << "\nInvalid input.\n";
+                    cout << "\nInvalid score.\n";
                     break;
                 }
-
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "Match Statistics: ";
-                getline(cin, stats);
 
                 try {
-                    MatchResult matchRes;
-                    matchRes.setHomeScore(homeScore);
-                    matchRes.setAwayScore(awayScore);
-                    matchRes.setMatchStatistics(stats);
-                    matchRes.determineWinner(*home, *away);
-                    fixture.recordResults(matchRes);
+                    MatchResult result;
+                    result.setHomeScore(homeScore);   // throws InvalidScoreException if negative
+                    result.setAwayScore(awayScore);
 
-                    bool updated = false;
-                    for (RecordedFixtureResult& entry : recordedResults) {
-                        if (entry.fixtureID == fixture.getFixtureID()) {
-                            entry.homeTeamName = home->getTeamName();
-                            entry.awayTeamName = away->getTeamName();
-                            entry.result = matchRes;
-                            updated = true;
-                            break;
-                        }
-                    }
-                    if (!updated) {
-                        recordedResults.push_back({
-                            fixture.getFixtureID(),
-                            home->getTeamName(),
-                            away->getTeamName(),
-                            matchRes
-                        });
-                    }
-
-                    cout << "\nMatch result recorded successfully!\n";
-                    matchRes.Display();
+                    league.recordFixtureResult(fixture->getFixtureID(), result);
+                    cout << "\nResult recorded and league points awarded.\n";
                 } catch (const KPFLExceptions& e) {
-                    cout << "\n" << e.getMessage() << "\n";
+                    cout << "\n" << e.getMessage() << '\n';
                 }
                 break;
             }
 
+            // DISPLAY RESULT
             case 2: {
-                if (recordedResults.empty()) {
-                    cout << "\nNo match results recorded yet.\n";
-                    break;
+                bool any = false;
+
+                for (Fixture& fixture : league.getFixtures()) {
+                    if (!fixture.hasResult())
+                        continue;
+
+                    any = true;
+                    MatchResult result = fixture.getResult();
+                    string home = teamNameFor(league, fixture.getHomeTeamID());
+                    string away = teamNameFor(league, fixture.getAwayTeamID());
+                    string winner = result.getHomeScore() > result.getAwayScore() ? home :
+                                    result.getAwayScore() > result.getHomeScore() ? away : "Draw";
+
+                    cout << "\nFixture " << fixture.getFixtureID() << ": "
+                         << home << " " << result.getHomeScore() << " - "
+                         << result.getAwayScore() << " " << away
+                         << " | Winner: " << winner
+                         << " | Status: " << fixture.getFixtureStatus() << "\n";
                 }
 
-                for (const RecordedFixtureResult& entry : recordedResults) {
-                    cout << "\n----------------------------------";
-                    cout << "\nFixture ID: " << entry.fixtureID
-                         << " (" << entry.homeTeamName << " vs " << entry.awayTeamName << ")";
-                    entry.result.Display();
-                }
+                if (!any)
+                    cout << "\nNo results recorded yet.\n";
                 break;
             }
 
-            case 3: {
-                if (teams.empty()) {
-                    cout << "\nNo registered teams.\n";
-                    break;
-                }
-                league.getStandings();
+            // VIEW STANDINGS
+            case 3:
+                if (league.getTeams().empty())
+                    cout << "\nNo Registered Teams.\n";
+                else
+                    league.getStandings();
                 break;
-            }
 
             case 0:
-                cout << "\nReturning to Main Menu...\n";
+                cout << "\nReturning to previous menu...\n";
                 break;
 
             default:
-                cout << "\nInvalid option!\n";
-                break;
+                cout << "\nInvalid choice. Try again.\n";
         }
     } while (choice != 0);
 }
@@ -2890,6 +2808,10 @@ void footballLeagueMenu(FootballLeague& league)
                     break;
                 }
 
+                int stadiumID = selectStadium(league);
+                if (stadiumID == -1)
+                    break;
+
                 int id, day, month, year;
                 int hours, minutes, seconds;
 
@@ -2920,6 +2842,7 @@ void footballLeagueMenu(FootballLeague& league)
                 fixture.setFixtureDate(day, month, year);
                 fixture.setFixtureTime(hours, minutes, seconds);
                 fixture.setFixtureStatus("Scheduled");
+                fixture.setStadiumID(stadiumID);
 
                 try
                 {
@@ -3111,6 +3034,10 @@ void footballLeagueMenu(FootballLeague& league)
                     cout << "\nHome Team: " << homeName;
                     cout << "\nAway Team: " << awayName;
 
+                    Stadium* venue = league.findStadium(fixture.getStadiumID());
+                    cout << "\nStadium: "
+                         << (venue != nullptr ? venue->getStadiumName() : "Not assigned");
+
                     cout << "\nDate: ";
                     fixture.getFixtureDate();
 
@@ -3211,9 +3138,264 @@ void testExceptions() {
     } while (choice != 0);
 }
 
+// ---------- persistence helpers (one per data file) ----------
+
+vector<string> splitFields(const string& line, char delimiter)
+{
+    vector<string> fields;
+    stringstream ss(line);
+    string field;
+    while (getline(ss, field, delimiter))
+        fields.push_back(field);
+    if (!line.empty() && line.back() == delimiter)
+        fields.push_back("");   // keep a trailing empty field (e.g. a blank status)
+    return fields;
+}
+
+void saveTeamsFile(FootballLeague& league, FileManager& fileManager)
+{
+    vector<FootballTeam>& teams = league.getTeams();
+    vector<Persistable*> teamRecords;
+    for (FootballTeam& team : teams)
+        teamRecords.push_back(&team);
+
+    fileManager.saveTeams(teamRecords.data(), teamRecords.size());
+    cout << "\n" << teams.size() << " team(s) saved.\n";
+}
+
+void loadTeamsFile(FootballLeague& league, FileManager& fileManager)
+{
+    unique_ptr<FootballTeam> teams[100];
+    int count = fileManager.loadTeams(teams, 100);
+
+    league.getTeams().clear();
+    for (int i = 0; i < count; ++i)
+        league.addFootBallTeams(*teams[i]);   // keeps the saved status (e.g. suspended)
+
+    league.setNumberOfTeams(count);
+    cout << "\n" << count << " team(s) loaded.\n";
+}
+
+void saveFixturesFile(FootballLeague& league, FileManager& fileManager)
+{
+    vector<Fixture>& fixtures = league.getFixtures();
+    vector<Persistable*> fixtureRecords;
+    for (Fixture& fixture : fixtures)
+        fixtureRecords.push_back(&fixture);
+
+    fileManager.saveFixtures(fixtureRecords.data(), fixtureRecords.size());
+    cout << "\n" << fixtures.size() << " fixture(s) saved.\n";
+}
+
+void loadFixturesFile(FootballLeague& league, FileManager& fileManager)
+{
+    unique_ptr<Fixture> fixtures[100];
+    int count = fileManager.loadFixtures(fixtures, 100);
+
+    league.getFixtures().clear();
+    for (int i = 0; i < count; ++i)
+        league.getFixtures().push_back(*fixtures[i]);
+
+    cout << "\n" << count << " fixture(s) loaded.\n";
+}
+
+// people.csv: type|teamID|id|name|age|gender|subtype fields...
+void savePeopleFile(FootballLeague& league, FileManager& fileManager)
+{
+    vector<string> lines;
+
+    for (FootballTeam& team : league.getTeams()) {
+        for (Player& player : team.getPlayers()) {
+            lines.push_back("Player|" + to_string(team.getTeamID()) + "|" +
+                to_string(player.getIdNom()) + "|" + player.getFullName() + "|" +
+                to_string(player.getAge()) + "|" + player.getGender() + "|" +
+                player.getPositionOnField() + "|" + to_string(player.getJerseyNom()) + "|" +
+                to_string(player.getGoalScored()) + "|" + player.getPlayerStatus());
+        }
+
+        for (Coach& coach : team.getCoaches()) {
+            lines.push_back("Coach|" + to_string(team.getTeamID()) + "|" +
+                to_string(coach.getIdNom()) + "|" + coach.getFullName() + "|" +
+                to_string(coach.getAge()) + "|" + coach.getGender() + "|" +
+                coach.getQualification() + "|" + coach.getCoachingRole() + "|" +
+                to_string(coach.getYearsExperience()));
+        }
+    }
+
+    for (MatchOfficial& official : officials) {
+        lines.push_back("Official|0|" + to_string(official.getIdNom()) + "|" +
+            official.getFullName() + "|" + to_string(official.getAge()) + "|" +
+            official.getGender() + "|" + official.getOfficiatingRole() + "|" +
+            official.getRank() + "|" + (official.getAvailability() ? "1" : "0") + "|" +
+            to_string(official.getYearsExperience()));
+    }
+
+    for (Spectator& spectator : spectators) {
+        stringstream line;
+        line << "Spectator|0|" << spectator.getIdNom() << "|" << spectator.getFullName()
+             << "|" << spectator.getAge() << "|" << spectator.getGender() << "|"
+             << spectator.getTicketsPurchased() << "|" << spectator.getTotalAmountSpent()
+             << "|" << spectator.getBalance();
+        lines.push_back(line.str());
+    }
+
+    fileManager.saveLines(FileManager::PEOPLE_FILE, lines);
+    cout << "\n" << lines.size() << " person record(s) saved.\n";
+}
+
+// Load teams first so players and coaches can be put back on their team.
+void loadPeopleFile(FootballLeague& league, FileManager& fileManager)
+{
+    vector<string> lines = fileManager.readLines(FileManager::PEOPLE_FILE);
+
+    for (FootballTeam& team : league.getTeams()) {
+        team.getPlayers().clear();
+        team.getCoaches().clear();
+    }
+    officials.clear();
+    spectators.clear();
+
+    int loaded = 0, skipped = 0;
+
+    for (const string& line : lines) {
+        vector<string> f = splitFields(line, '|');
+
+        try {
+            if (f.size() < 6)
+                throw DataFileException();
+
+            string type = f[0];
+            int teamID = stoi(f[1]);
+            int id = stoi(f[2]);
+            int age = stoi(f[4]);
+
+            if (type == "Player" && f.size() >= 10) {
+                FootballTeam* team = league.findTeam(teamID);
+                if (team == nullptr)
+                    throw DataFileException();
+                Player player(id, f[3], age, f[5], f[6], stoi(f[7]), stoi(f[8]), f[9]);
+                team->addPlayer(player);
+            }
+            else if (type == "Coach" && f.size() >= 9) {
+                FootballTeam* team = league.findTeam(teamID);
+                if (team == nullptr)
+                    throw DataFileException();
+                Coach coach(id, f[3], age, f[5], f[6], f[7], stoi(f[8]));
+                team->addCoach(coach);
+            }
+            else if (type == "Official" && f.size() >= 10) {
+                officials.push_back(MatchOfficial(id, f[3], age, f[5], f[6], f[7],
+                                                  f[8] == "1", stoi(f[9])));
+            }
+            else if (type == "Spectator" && f.size() >= 9) {
+                spectators.push_back(Spectator(id, f[3], age, f[5], stoi(f[6]),
+                                               stod(f[7]), stod(f[8])));
+            }
+            else {
+                throw DataFileException();
+            }
+            ++loaded;
+        }
+        catch (const KPFLExceptions&) { ++skipped; }
+        catch (const exception&) { ++skipped; }   // stoi/stod on a malformed field
+    }
+
+    cout << "\n" << loaded << " person record(s) loaded.";
+    if (skipped > 0)
+        cout << " " << skipped << " malformed or orphaned record(s) skipped.";
+    cout << '\n';
+}
+
+void saveStadiumsFile(FootballLeague& league, FileManager& fileManager)
+{
+    vector<string> lines;
+    for (const Stadium& stadium : league.getStadiums())
+        lines.push_back(stadium.toFileString());
+
+    fileManager.saveLines(FileManager::STADIUMS_FILE, lines);
+    cout << "\n" << lines.size() << " stadium(s) saved.\n";
+}
+
+void loadStadiumsFile(FootballLeague& league, FileManager& fileManager)
+{
+    vector<string> lines = fileManager.readLines(FileManager::STADIUMS_FILE);
+
+    league.getStadiums().clear();
+    for (const string& line : lines)
+        league.addStadiums(Stadium::fromFileString(line));
+
+    cout << "\n" << lines.size() << " stadium(s) loaded.\n";
+}
+
+// products.csv: type,id,name,price incl. GCT,stock,then subtype fields
+void saveProductsFile(FileManager& fileManager)
+{
+    vector<string> lines;
+
+    for (Product* product : shop.getProducts()) {
+        stringstream line;
+        line << fixed << setprecision(2);
+
+        if (Merchandise* item = dynamic_cast<Merchandise*>(product)) {
+            line << "Merchandise," << item->getProductID() << "," << item->getProductName()
+                 << "," << item->getPrice() << "," << item->getQuantityInStock() << ","
+                 << item->getSizeOfItem() << "," << item->getBrand();
+        }
+        else if (FoodItems* item = dynamic_cast<FoodItems*>(product)) {
+            Date expiry = item->getExpiryDate();
+            line << "Food," << item->getProductID() << "," << item->getProductName()
+                 << "," << item->getPrice() << "," << item->getQuantityInStock() << ","
+                 << item->getCategory() << "," << expiry.getDay() << ","
+                 << expiry.getMonth() << "," << expiry.getYear();
+        }
+        else {
+            continue;
+        }
+
+        lines.push_back(line.str());
+    }
+
+    fileManager.saveLines(FileManager::PRODUCTS_FILE, lines);
+    cout << "\n" << lines.size() << " product(s) saved.\n";
+}
+
+void loadProductsFile(FileManager& fileManager)
+{
+    vector<string> lines = fileManager.readLines(FileManager::PRODUCTS_FILE);
+
+    shop.clearProducts();
+    int loaded = 0, skipped = 0;
+
+    for (const string& line : lines) {
+        vector<string> f = splitFields(line, ',');
+
+        try {
+            if (f.size() >= 7 && f[0] == "Merchandise") {
+                shop.addTaxInclusiveProduct(new Merchandise(f[5], f[6], stoi(f[1]), f[2],
+                                                            stod(f[3]), stoi(f[4])));
+                ++loaded;
+            }
+            else if (f.size() >= 9 && f[0] == "Food") {
+                Date expiry(stoi(f[6]), stoi(f[7]), stoi(f[8]));
+                shop.addTaxInclusiveProduct(new FoodItems(expiry, f[5], stoi(f[1]), f[2],
+                                                          stod(f[3]), stoi(f[4])));
+                ++loaded;
+            }
+            else {
+                ++skipped;
+            }
+        }
+        catch (const exception&) { ++skipped; }
+    }
+
+    cout << "\n" << loaded << " product(s) loaded.";
+    if (skipped > 0)
+        cout << " " << skipped << " malformed record(s) skipped.";
+    cout << '\n';
+}
+
 void fileManagement(FootballLeague& league){
     int choice;
-    FileManager fileManager("data");
 
     do {
         cout << "\n===== FILE MANAGER =====\n";
@@ -3222,7 +3404,13 @@ void fileManagement(FootballLeague& league){
         cout << "\n 3. Save Fixtures";
         cout << "\n 4. Load Fixtures";
         cout << "\n 5. Save People";
-        cout << "\n 6. Load People";
+        cout << "\n 6. Load People (load teams first)";
+        cout << "\n 7. Save Stadiums";
+        cout << "\n 8. Load Stadiums";
+        cout << "\n 9. Save Products";
+        cout << "\n10. Load Products";
+        cout << "\n11. Save All";
+        cout << "\n12. Load All";
         cout << "\n 0. Back";
         cout << "\nChoice ==> ";
         if (!readInt(choice)) {
@@ -3231,108 +3419,36 @@ void fileManagement(FootballLeague& league){
         }
 
         try {
+            FileManager fileManager("data");
+
             switch(choice){
-                case 1: {
-                    vector<FootballTeam>& teams = league.getTeams();
-                    vector<Persistable*> teamRecords;
-                    teamRecords.reserve(teams.size());
+                case 1: saveTeamsFile(league, fileManager); break;
+                case 2: loadTeamsFile(league, fileManager); break;
+                case 3: saveFixturesFile(league, fileManager); break;
+                case 4: loadFixturesFile(league, fileManager); break;
+                case 5: savePeopleFile(league, fileManager); break;
+                case 6: loadPeopleFile(league, fileManager); break;
+                case 7: saveStadiumsFile(league, fileManager); break;
+                case 8: loadStadiumsFile(league, fileManager); break;
+                case 9: saveProductsFile(fileManager); break;
+                case 10: loadProductsFile(fileManager); break;
 
-                    for (FootballTeam& team : teams)
-                        teamRecords.push_back(&team);
-
-                    fileManager.saveTeams(teamRecords.data(), teamRecords.size());
-                    cout << "\nTeams saved successfully.\n";
+                case 11:
+                    saveTeamsFile(league, fileManager);
+                    saveStadiumsFile(league, fileManager);
+                    saveFixturesFile(league, fileManager);
+                    savePeopleFile(league, fileManager);
+                    saveProductsFile(fileManager);
                     break;
-                }
 
-                case 2: {
-                    unique_ptr<FootballTeam> teams[100];
-                    int count = fileManager.loadTeams(teams, 100);
-
-                    league.getTeams().clear();
-                    for (int i = 0; i < count; ++i)
-                        league.registerTeam(*teams[i]);
-
-                    cout << "\n" << count << "Team(s) loaded successfully.\n";
+                case 12:
+                    // Order matters: people are attached to teams that must already exist.
+                    loadTeamsFile(league, fileManager);
+                    loadStadiumsFile(league, fileManager);
+                    loadFixturesFile(league, fileManager);
+                    loadPeopleFile(league, fileManager);
+                    loadProductsFile(fileManager);
                     break;
-                }
-
-                case 3: {
-                    vector<Fixture> fixtures = league.getFixtures();
-                    vector<Persistable*> fixtureRecords;
-                    fixtureRecords.reserve(fixtures.size());
-
-                    for (Fixture& fixture : fixtures)
-                        fixtureRecords.push_back(&fixture);
-
-                    fileManager.saveFixtures(fixtureRecords.data(), fixtureRecords.size());
-                    cout << "\nFixtures saved successfully.\n";
-                    break;
-                }
-
-                case 4: {
-                    unique_ptr<Fixture> fixtures[100];
-                    int count = fileManager.loadFixtures(fixtures, 100);
-                    league.getFixtures().clear();
-
-                    for (int i = 0; i < count; ++i)
-                        league.getFixtures().push_back(*fixtures[i]);
-
-                    cout << "\n" << count << "Fixture(s) loaded successfully.\n";
-                    break;
-                }
-
-                case 5: {
-                    int count = 0;
-
-                    for (FootballTeam& team : league.getTeams()) {
-                        for (Player& player : team.getPlayers()) {
-                            string record = "Player|" +
-                                to_string(player.getIdNom()) + "|" +
-                                player.getFullName() + "|" +
-                                to_string(player.getAge()) + "|" +
-                                player.getGender() + "|" +
-                                player.getPositionOnField() + "|" +
-                                to_string(player.getJerseyNom());
-
-                            fileManager.appendLine(FileManager::PEOPLE_FILE, record);
-                            ++count;
-                        }
-
-                        for (Coach& coach : team.getCoaches()) {
-                            string record = "Coach|" +
-                                to_string(coach.getIdNom()) + "|" +
-                                coach.getFullName() + "|" +
-                                to_string(coach.getAge()) + "|" +
-                                coach.getGender() + "|" +
-                                coach.getQualification() + "|" +
-                                to_string(coach.getYearsExperience());
-
-                            fileManager.appendLine(FileManager::PEOPLE_FILE, record);
-                            ++count;
-                        }
-                    }
-
-                    cout << "\n" << count << " person record(s) saved successfully.\n";
-                    break;
-                }
-
-                case 6: {
-                    ifstream input(string("data/") + FileManager::PEOPLE_FILE);
-                    if (!input)
-                        throw DataFileException();
-                    string line;
-                    int count = 0;
-                    cout << "\nPeople Records:\n";
-                    while (getline(input, line)) {
-                        if (!line.empty()){
-                            cout << line << '\n';
-                            ++count;
-                        }
-                    }
-                    cout << count << " person record(s) loaded.\n";
-                    break;
-                }
 
                 case 0:
                     cout << "\nReturning to previous menu...\n";
@@ -3345,6 +3461,126 @@ void fileManagement(FootballLeague& league){
         catch (const KPFLExceptions& exception){
             cout << "\nFile operation failed: "
                  << exception.getMessage() << '\n';
+        }
+    } while (choice != 0);
+}
+
+// ---------- management reports ----------
+
+void reportsMenu(FootballLeague& league)
+{
+    int choice;
+
+    do {
+        cout << "\n============== REPORTS ==============";
+        cout << "\n1. League Standings";
+        cout << "\n2. Fixture Attendance and Ticket Revenue";
+        cout << "\n3. Sales and Inventory";
+        cout << "\n0. Back";
+        cout << "\nChoice ==> ";
+
+        if (!readInt(choice)) {
+            cout << "\nInvalid choice. Enter a number.\n";
+            continue;
+        }
+
+        switch (choice) {
+            case 1:
+                if (league.getTeams().empty())
+                    cout << "\nNo Registered Teams.\n";
+                else
+                    league.getStandings();
+                break;
+
+            case 2: {
+                if (league.getFixtures().empty()) {
+                    cout << "\nNo fixtures available.\n";
+                    break;
+                }
+
+                double totalRevenue = 0.0;
+                int totalTickets = 0;
+
+                cout << "\n================ FIXTURE ATTENDANCE REPORT ================\n";
+                cout << left << setw(6) << "ID" << setw(30) << "Match" << setw(14) << "Status"
+                     << setw(12) << "Sold/Cap" << "Revenue\n";
+                cout << "-----------------------------------------------------------------------\n";
+
+                for (Fixture& fixture : league.getFixtures()) {
+                    Stadium* stadium = league.findStadium(fixture.getStadiumID());
+                    string match = teamNameFor(league, fixture.getHomeTeamID()) + " vs " +
+                                   teamNameFor(league, fixture.getAwayTeamID());
+                    string soldCap = to_string(fixture.getAttendance()) + "/" +
+                                     (stadium ? to_string(stadium->getSeatingCapacity()) : "?");
+                    double revenue = stadium ? fixture.getAttendance() * stadium->getTicketPrice() : 0.0;
+
+                    totalRevenue += revenue;
+                    totalTickets += fixture.getAttendance();
+
+                    cout << left << setw(6) << fixture.getFixtureID() << setw(30) << match.substr(0, 29)
+                         << setw(14) << fixture.getFixtureStatus() << setw(12) << soldCap
+                         << "$" << fixed << setprecision(2) << revenue << '\n';
+                }
+
+                cout << "-----------------------------------------------------------------------\n";
+                cout << "Tickets sold: " << totalTickets
+                     << " | Ticket revenue (GCT incl.): $" << totalRevenue << '\n';
+                break;
+            }
+
+            case 3: {
+                cout << "\n================ SALES AND INVENTORY REPORT ================\n";
+
+                // Sales history comes from the transaction log, so it includes earlier sessions.
+                int transactionCount = 0;
+                double revenue = 0.0, gct = 0.0;
+                try {
+                    FileManager fileManager("data");
+                    for (const string& line : fileManager.readLines(FileManager::TRANSACTIONS_FILE)) {
+                        vector<string> f = splitFields(line, ',');
+                        if (f.size() < 8)
+                            continue;
+                        gct += stod(f[f.size() - 4]);
+                        revenue += stod(f[f.size() - 3]);
+                        ++transactionCount;
+                    }
+                } catch (const KPFLExceptions&) {
+                    // no transactions logged yet
+                } catch (const exception&) {
+                    cout << "Some transaction records could not be read.\n";
+                }
+
+                cout << fixed << setprecision(2);
+                cout << "Transactions (tickets and shop): " << transactionCount << '\n';
+                cout << "Total revenue (GCT incl.):       $" << revenue << '\n';
+                cout << "GCT collected:                   $" << gct << '\n';
+
+                cout << "\nINVENTORY\n";
+                if (shop.getProducts().empty()) {
+                    cout << "No products in inventory.\n";
+                    break;
+                }
+
+                cout << left << setw(6) << "ID" << setw(22) << "Product" << setw(12) << "Price"
+                     << setw(8) << "Stock" << "Note\n";
+                for (Product* product : shop.getProducts()) {
+                    cout << left << setw(6) << product->getProductID()
+                         << setw(22) << product->getProductName().substr(0, 21)
+                         << "$" << setw(11) << product->getPrice()
+                         << setw(8) << product->getQuantityInStock()
+                         << (product->getQuantityInStock() == 0 ? "OUT OF STOCK" :
+                             product->getQuantityInStock() <= 5 ? "Low stock" : "")
+                         << '\n';
+                }
+                break;
+            }
+
+            case 0:
+                cout << "\nReturning to previous menu...\n";
+                break;
+
+            default:
+                cout << "\nInvalid choice. Try again.\n";
         }
     } while (choice != 0);
 }
@@ -3368,6 +3604,7 @@ int displayMainMenu(){
     cout << "\n11. View League Summary";
     cout << "\n12. Test Exceptions";
     cout << "\n13. File Management";
+    cout << "\n14. Reports";
     cout << "\n 0. Exit";
     cout << "\n==================================================";
     cout << "\nEnter option: ";

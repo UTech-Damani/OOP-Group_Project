@@ -57,11 +57,6 @@ class Tickets : public Product{
             this->seatNumber = seatNumber;
         }
 
-        bool isTicket() const
-        {
-            return true;
-        }
-
         // Display method for attributes within the class
         void Display() override{ // override tells the compiler that this method should be overriding a method in the parent class
             cout << "\n================================"

@@ -4,15 +4,15 @@
 #include "../data/Product.h"
 #include "../include/Spectator.h"
 #include "../exceptions/InsufficientStockException.h"
-#include "Stadium.h"
+#include "../exceptions/InsufficientPaymentException.h"
 
 #include <string>
 #include <math.h>
 #include <vector>
+#include <iomanip>
+#include <iostream>
 
 using namespace std;
-
-class Stadium;
 
 class StadiumShop
 {
@@ -27,7 +27,17 @@ class StadiumShop
 
         vector<Product*> products;
 
+        double totalRevenue = 0.0;
+        double totalGCTCollected = 0.0;
+        int transactionCount = 0;
+
     public:
+        // One line of a shop sale: which product and how many.
+        struct SaleLine {
+            Product* product;
+            int quantity;
+        };
+
     // Default Constructor
         StadiumShop() {
             shopID = 0;
@@ -143,8 +153,93 @@ class StadiumShop
           
         }
 
+        vector<Product*>& getProducts() {
+            return products;
+        }
+
+        Product* findProduct(int productID) {
+            for (Product* product : products) {
+                if (product->getProductID() == productID)
+                    return product;
+            }
+            return nullptr;
+        }
+
+        void clearProducts() {
+            for (Product* product : products)
+                delete product;
+            products.clear();
+            productCount = 0;
+            inventoryValue = 0.0;
+        }
+
+        double getTotalRevenue() const { return totalRevenue; }
+        double getTotalGCTCollected() const { return totalGCTCollected; }
+        int getTransactionCount() const { return transactionCount; }
+
+        // Adds a product whose price already includes GCT (e.g. one reloaded from file).
+        void addTaxInclusiveProduct(Product* p) {
+            products.push_back(p);
+            productCount++;
+            inventoryValue += p->getPrice() * p->getQuantityInStock();
+        }
+
+        // Completes a sale. Prices already include 15% GCT, so the tax is
+        // worked out from the total. Nothing changes if an exception is thrown.
+        void checkout(const vector<SaleLine>& cart, double amountPaid,
+                      double& subtotal, double& gct, double& total, double& change)
+        {
+            total = 0.0;
+
+            for (const SaleLine& line : cart) {
+                if (line.product == nullptr || line.quantity <= 0 ||
+                    line.quantity > line.product->getQuantityInStock()) {
+                    throw InsufficientStockException();
+                }
+                total += line.product->getPrice() * line.quantity;
+            }
+
+            total = round(total * 100.0) / 100.0;
+
+            if (amountPaid < total) {
+                throw InsufficientPaymentException();
+            }
+
+            gct = calculateIncludedGCT(total);
+            subtotal = total - gct;
+            change = round((amountPaid - total) * 100.0) / 100.0;
+
+            for (const SaleLine& line : cart) {
+                line.product->decreaseStock(line.quantity);
+                totalProductsSold += line.quantity;
+                inventoryValue -= line.product->getPrice() * line.quantity;
+            }
+
+            totalRevenue += total;
+            totalGCTCollected += gct;
+            transactionCount++;
+        }
+
+        static void printReceipt(const vector<SaleLine>& cart, double subtotal, double gct,
+                                 double total, double amountPaid, double change)
+        {
+            cout << fixed << setprecision(2);
+            cout << "\n============ RECEIPT ============\n";
+            for (const SaleLine& line : cart) {
+                cout << left << setw(20) << line.product->getProductName()
+                     << " x" << setw(4) << line.quantity
+                     << "$" << line.product->getPrice() * line.quantity << "\n";
+            }
+            cout << "---------------------------------\n";
+            cout << "Subtotal (before GCT): $" << subtotal << "\n";
+            cout << "GCT (15%):             $" << gct << "\n";
+            cout << "Total:                 $" << total << "\n";
+            cout << "Amount Paid:           $" << amountPaid << "\n";
+            cout << "Change:                $" << change << "\n";
+            cout << "=================================\n";
+        }
+
         void transaction(Spectator* spectator, Product* product){
-            
             if (spectator == nullptr || product == nullptr) {
                 return;
             }

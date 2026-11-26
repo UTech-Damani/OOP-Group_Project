@@ -23,7 +23,7 @@ class Stadium : public Persistable
         double ticketPrice;
         int occupancy;
 
-        vector<StadiumShop*> shops;
+        vector<StadiumShop> shops;
         vector<Fixture*> fixtures;
 
     public:
@@ -133,7 +133,7 @@ class Stadium : public Persistable
             }
         }
 
-        void addShop(StadiumShop* shop){
+        void addShop(const StadiumShop& shop) {
             shops.push_back(shop);
         }
 
@@ -186,15 +186,18 @@ class Stadium : public Persistable
 
             char comma;
 
+            // Same field order as toFileString():
+            // id, name, location, capacity, condition, price, occupancy
             ss >> id >> comma;
             getline(ss, name, ',');
 
             getline(ss, location, ',');
 
+            ss >> capacity >> comma;
+
             getline(ss, condition, ',');
 
-            ss >> capacity >> comma
-            >> price >> comma
+            ss >> price >> comma
             >> occupancy;
 
             return Stadium(

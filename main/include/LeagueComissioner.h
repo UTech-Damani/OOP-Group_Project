@@ -94,9 +94,21 @@ class LeagueCommissioner : public Person{
                 throw SchedulingConflictException();
             }
 
+            Date date = fixture.getFixtureDateMember();
+            ProjectTime time = fixture.getFixtureTimeMember();
+
+            if(official.hasScheduleConflict(fixture.getFixtureID(),
+                                            date.getDay(), date.getMonth(), date.getYear(),
+                                            time.getHours(), time.getMinutes())){
+                throw SchedulingConflictException();
+            }
+
             fixture.addOfficial(&official);
 
             official.assignFixture(fixture);
+            official.bookSlot(fixture.getFixtureID(),
+                              date.getDay(), date.getMonth(), date.getYear(),
+                              time.getHours(), time.getMinutes());
 
         }
 

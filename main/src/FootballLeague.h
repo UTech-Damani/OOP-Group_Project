@@ -254,6 +254,36 @@ public:
         return nullptr;
     }
 
+    // FIND STADIUM
+
+    Stadium* findStadium(int stadiumID)
+    {
+        for (Stadium& stadium : stadiums)
+        {
+            if (stadium.getStadiumID() == stadiumID)
+            {
+                return &stadium;
+            }
+        }
+
+        return nullptr;
+    }
+
+    // FIND FIXTURE
+
+    Fixture* findFixture(int fixtureID)
+    {
+        for (Fixture& fixture : fixtures)
+        {
+            if (fixture.getFixtureID() == fixtureID)
+            {
+                return &fixture;
+            }
+        }
+
+        return nullptr;
+    }
+
     // CREATE FIXTURE
 
     void createFixture(Fixture proposed,
@@ -275,6 +305,11 @@ public:
             findTeam(away.getTeamID()) == nullptr)
         {
             throw TeamNotEligibleException();
+        }
+
+        if (findFixture(proposed.getFixtureID()) != nullptr)
+        {
+            throw DuplicateRegistrationException();
         }
 
         for (const Fixture& existing : fixtures)

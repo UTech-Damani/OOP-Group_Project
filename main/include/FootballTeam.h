@@ -219,6 +219,32 @@ class FootballTeam : public Persistable {
         c.setTeam(this);
     }
 
+    // Removes the player with the given ID. Returns false if not found.
+    bool removePlayer(int playerID){
+        // Player has a const member, so it cannot be assigned; rebuild the list instead of erase().
+        std::vector<Player> kept;
+        bool removed = false;
+        for (Player& player : players){
+            if (!removed && player.getIdNom() == playerID)
+                removed = true;
+            else
+                kept.push_back(player);
+        }
+        players.swap(kept);
+        return removed;
+    }
+
+    // Removes the coach with the given ID. Returns false if not found.
+    bool removeCoach(int coachID){
+        for (size_t i = 0; i < coaches.size(); ++i){
+            if (coaches[i].getIdNom() == coachID){
+                coaches.erase(coaches.begin() + i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     void addGoalsFor(int goal){
         goalsFor += goal;
     }
@@ -263,7 +289,9 @@ class FootballTeam : public Persistable {
         << teamStatus << ","
         << registrationDate.getDay() << ","
         << registrationDate.getMonth() << ","
-        << registrationDate.getYear();
+        << registrationDate.getYear() << ","
+        << goalsFor << ","
+        << goalsAgainst;
 
         return ss.str();
     }
@@ -288,8 +316,17 @@ class FootballTeam : public Persistable {
            >> month >> comma
            >> year;
 
-        return FootballTeam(id, name, parish, points, wins, draws,
-                            losses, status, day, month, year);
+        FootballTeam team(id, name, parish, points, wins, draws,
+                          losses, status, day, month, year);
+
+        int goalsForValue = 0, goalsAgainstValue = 0;
+        if (ss >> comma >> goalsForValue >> comma >> goalsAgainstValue) {
+            team.addGoalsFor(goalsForValue);
+            team.addGoalsAgainst(goalsAgainstValue);
+            team.calcGoalDifference();
+        }
+
+        return team;
     }
     
 };

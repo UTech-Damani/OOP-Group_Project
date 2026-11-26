@@ -13,7 +13,7 @@ class Player : public Person {
         int jerseyNom;
         int goalScored;
         std::string playerStatus;
-        static const int MIN_PLAYER_AGE = 16;
+        const int MIN_PLAYER_AGE = 16;
         
         FootballTeam* team;
 
