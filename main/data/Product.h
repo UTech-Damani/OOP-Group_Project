@@ -28,10 +28,10 @@ class Product : public Persistable
 
         //Primary Constructor
         Product(int pID, std::string pName, double cost, int quantity) {
-            productID = (pID > 0 ? pID : 0);
+            productID = pID;
             productName = pName;
-            price = (cost >= 0 ? cost : 0.0);
-            quantityInStock = (quantity >= 0 ? quantity : 0);
+            price = cost;
+            quantityInStock = quantity;
         }
 
         // Sets the product ID
@@ -56,7 +56,7 @@ class Product : public Persistable
 
         // Sets the product price
         void setPrice(double p) {
-            if (p >= 0) price = p;
+            price = p;
         }
 
         // Returns the product price
@@ -66,7 +66,7 @@ class Product : public Persistable
 
         // Sets the quantity of the product in stock
         void setQuantityInStock(int quantity) {
-            if (quantity >= 0) quantityInStock = quantity;
+            quantityInStock = quantity;
         }
 
         // Returns the quantity of the product in stock
@@ -80,7 +80,6 @@ class Product : public Persistable
 
         void increaseStock(int amount)
         {
-            if (amount <= 0) throw InsufficientStockException();
             quantityInStock += amount;
         }
 

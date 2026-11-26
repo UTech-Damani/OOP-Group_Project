@@ -4,338 +4,451 @@
 #include <string>
 #include <vector>
 #include <iomanip>
+#include <iostream>
 #include <algorithm>
+
+#include "../universal/Date.h"
+
+#include "Fixture.h"
+#include "MatchResults.h"
+#include "Stadium.h"
+
+#include "../include/FootballTeam.h"
+
+#include "../exceptions/TeamNotEligibleException.h"
 #include "../exceptions/DuplicateRegistrationException.h"
 #include "../exceptions/SchedulingConflictException.h"
 #include "../exceptions/FixtureIncompleteException.h"
-
-#include "../universal/Date.h"
-#include "Fixture.h"
-#include "../include/FootballTeam.h"
-#include "Stadium.h"
-#include "../exceptions/TeamNotEligibleException.h"
 
 using namespace std;
 
 class FootballLeague
 {
-    private:
-        int leagueID;
-        string leagueName;
-        string season;
-        Date startDate;
-        Date endDate;
-        int numberOfTeams;
-        string currentStatus;
-        const int minimumAge = 16;
+private:
 
-        vector <Fixture> fixtures;
-        vector <Stadium> stadiums;
-        vector <FootballTeam> teams;
+    int leagueID;
+    string leagueName;
+    string season;
 
-    public:
-        // Default Constructor
-        FootballLeague() {
-            leagueID = 0;
-            leagueName = "";
-            season = "";
-            numberOfTeams = 0;
-            currentStatus = "";
-            teams.reserve(100);
-            stadiums.reserve(100);
-            fixtures.reserve(1000);
-        }
+    Date startDate;
+    Date endDate;
 
-        // Parameterized Constructor
-        FootballLeague(int leagueID, string leagueName, string season,
-                       Date startDate, Date endDate,
-                       int numberOfTeams, string currentStatus) {
-            this->leagueID = leagueID;
-            this->leagueName = leagueName;
-            this->season = season;
-            this->startDate = startDate;
-            this->endDate = endDate;
-            this->numberOfTeams = numberOfTeams;
-            this->currentStatus = currentStatus;
-            teams.reserve(100);
-            stadiums.reserve(100);
-            fixtures.reserve(1000);
-        }
+    int numberOfTeams;
+    string currentStatus;
 
-        // Getters
-        int getLeagueID() {
-            return leagueID;
-        }
+    const int minimumAge = 16;
 
-        string getLeagueName() {
-            return leagueName;
-        }
+    vector<Fixture> fixtures;
+    vector<Stadium> stadiums;
+    vector<FootballTeam> teams;
 
-        string getSeason() {
-            return season;
-        }
+public:
 
-        Date getStartDate() {
-            return startDate;
-        }
+    FootballLeague()
+    {
+        leagueID = 0;
+        leagueName = "";
+        season = "";
+        numberOfTeams = 0;
+        currentStatus = "";
+    }
 
-        Date getEndDate() {
-            return endDate;
-        }
+    FootballLeague(int leagueID, string leagueName,
+                   string season, Date startDate,
+                   Date endDate, int numberOfTeams,
+                   string currentStatus)
+    {
+        this->leagueID = leagueID;
+        this->leagueName = leagueName;
+        this->season = season;
+        this->startDate = startDate;
+        this->endDate = endDate;
+        this->numberOfTeams = numberOfTeams;
+        this->currentStatus = currentStatus;
+    }
 
-        int getNumberOfTeams() const {
-            return numberOfTeams;
-        }
+    // GETTERS
 
-        string getCurrentStatus() const {
-            return currentStatus;
-        }
+    int getLeagueID() const
+    {
+        return leagueID;
+    }
 
-        int getMinimumAge() const {
-            return minimumAge;
-        }
+    string getLeagueName() const
+    {
+        return leagueName;
+    }
 
-        vector<Fixture>& getFixtures() {
-            return fixtures;
-        }
+    string getSeason() const
+    {
+        return season;
+    }
 
-        const vector<Fixture>& getFixtures() const {
-            return fixtures;
-        }
+    Date getStartDate() const
+    {
+        return startDate;
+    }
 
-        vector<Stadium>& getStadiums() { return stadiums; }
-        const vector<Stadium>& getStadiums() const { return stadiums; }
+    Date getEndDate() const
+    {
+        return endDate;
+    }
 
-        const vector<FootballTeam>& getTeams() const {
-            return teams;
-        }
-        vector<FootballTeam>& getTeams() {
-            return teams;
-        }
+    int getNumberOfTeams() const
+    {
+        return numberOfTeams;
+    }
 
+    string getCurrentStatus() const
+    {
+        return currentStatus;
+    }
 
-        // Setters
-        void setLeagueID(int leagueID) {
-            this->leagueID = leagueID;
-        }
+    int getMinimumAge() const
+    {
+        return minimumAge;
+    }
 
-        void setLeagueName(string leagueName) {
-            this->leagueName = leagueName;
-        }
+    vector<Fixture>& getFixtures()
+    {
+        return fixtures;
+    }
 
-        void setSeason(string season) {
-            this->season = season;
-        }
+    const vector<Fixture>& getFixtures() const
+    {
+        return fixtures;
+    }
 
-        void setStartDate(Date startDate) {
-            this->startDate = startDate;
-        }
+    vector<Stadium>& getStadiums()
+    {
+        return stadiums;
+    }
 
-        void setEndDate(Date endDate) {
-            this->endDate = endDate;
-        }
+    const vector<Stadium>& getStadiums() const
+    {
+        return stadiums;
+    }
 
-        void setNumberOfTeams(int numberOfTeams) {
-            this->numberOfTeams = numberOfTeams;
-        }
+    vector<FootballTeam>& getTeams()
+    {
+        return teams;
+    }
 
-        void setCurrentStatus(string currentStatus) {
-            this->currentStatus = currentStatus;
-        }
+    const vector<FootballTeam>& getTeams() const
+    {
+        return teams;
+    }
 
-        //Worker Functions
+    // SETTERS
 
-        void addStadiums(const Stadium& stadium){
-            for (const Stadium& existing : stadiums)
-                if (existing.getStadiumID()==stadium.getStadiumID())
-                    throw DuplicateRegistrationException();
-            stadiums.push_back(stadium);
-        }
+    void setLeagueID(int id)
+    {
+        leagueID = id;
+    }
 
-        void addFootBallTeams(const FootballTeam& team){
-            if (team.getTeamID() <= 0 || findTeam(team.getTeamID()))
+    void setLeagueName(string name)
+    {
+        leagueName = name;
+    }
+
+    void setSeason(string season)
+    {
+        this->season = season;
+    }
+
+    void setStartDate(Date date)
+    {
+        startDate = date;
+    }
+
+    void setEndDate(Date date)
+    {
+        endDate = date;
+    }
+
+    void setNumberOfTeams(int number)
+    {
+        if (number >= 0)
+            numberOfTeams = number;
+    }
+
+    void setCurrentStatus(string status)
+    {
+        currentStatus = status;
+    }
+
+    // ADD STADIUM
+
+    void addStadiums(const Stadium& stadium)
+    {
+        for (const Stadium& existing : stadiums)
+        {
+            if (existing.getStadiumID() == stadium.getStadiumID())
+            {
                 throw DuplicateRegistrationException();
-            teams.push_back(team);
-            teams.back().rebindMembers();
-            numberOfTeams=static_cast<int>(teams.size());
-        }
-
-        void addFixtures(const Fixture& fixture){
-            for (const Fixture& existing : fixtures)
-                if (existing.getFixtureID()==fixture.getFixtureID())
-                    throw DuplicateRegistrationException();
-            fixtures.push_back(fixture);
-        }
-
-        void getStandings(){
-            vector<FootballTeam*> ranked;
-            for (FootballTeam& team : teams) ranked.push_back(&team);
-            sort(ranked.begin(), ranked.end(), [](const FootballTeam* a, const FootballTeam* b) {
-                if (a->getPoints()!=b->getPoints()) return a->getPoints()>b->getPoints();
-                if (a->getGoalDifference()!=b->getGoalDifference()) return a->getGoalDifference()>b->getGoalDifference();
-                return a->getGoalsFor()>b->getGoalsFor();
-            });
-            cout << "\nPOS  TEAM                     P  W  D  L  GF  GA  GD  PTS\n";
-            int pos=1;
-            for (const FootballTeam* t : ranked) {
-                cout << left << setw(5) << pos++ << setw(25) << t->getTeamName()
-                     << setw(3) << (t->getWins()+t->getDraws()+t->getLosses())
-                     << setw(3) << t->getWins() << setw(3) << t->getDraws()
-                     << setw(3) << t->getLosses() << setw(4) << t->getGoalsFor()
-                     << setw(4) << t->getGoalsAgainst() << setw(4) << t->getGoalDifference()
-                     << t->getPoints() << '\n';
             }
         }
 
-        FootballTeam* findTeam(int id) {
-            for (FootballTeam& team : teams) if (team.getTeamID()==id) return &team;
-            return nullptr;
+        stadiums.push_back(stadium);
+    }
+
+    // ADD TEAM
+
+    void addFootBallTeams(const FootballTeam& team)
+    {
+        teams.push_back(team);
+    }
+
+    // ADD FIXTURE
+
+    void addFixtures(const Fixture& fixture)
+    {
+        fixtures.push_back(fixture);
+    }
+
+    // REGISTER TEAM
+
+    void registerTeam(FootballTeam& newTeam)
+    {
+        for (FootballTeam& existing : teams)
+        {
+            if (existing.getTeamID() == newTeam.getTeamID())
+            {
+                throw DuplicateRegistrationException();
+            }
         }
 
-        const FootballTeam* findTeam(int id) const {
-            for (const FootballTeam& team : teams) if (team.getTeamID()==id) return &team;
-            return nullptr;
+        newTeam.setTeamStatus("registered");
+
+        teams.push_back(newTeam);
+
+        numberOfTeams = static_cast<int>(teams.size());
+
+        cout << "\nTeam registered successfully!\n";
+    }
+
+    // CHECK PLAYER AGE
+
+    bool meetsMinimumAge(const Player& player) const
+    {
+        return player.getAge() >= minimumAge;
+    }
+
+    bool registerPlayer(const Player& player) const
+    {
+        return meetsMinimumAge(player);
+    }
+
+    // FIND TEAM
+
+    FootballTeam* findTeam(int teamID)
+    {
+        for (FootballTeam& team : teams)
+        {
+            if (team.getTeamID() == teamID)
+            {
+                return &team;
+            }
         }
 
-        bool updateTeam(int id, const string& name, const string& parish) {
-            FootballTeam* team=findTeam(id);
-            return team && team->updateTeamDetails(name, parish);
+        return nullptr;
+    }
+
+    // CREATE FIXTURE
+
+    void createFixture(Fixture proposed,
+                       FootballTeam& home,
+                       FootballTeam& away)
+    {
+        if (!home.canParticipate() ||
+            !away.canParticipate())
+        {
+            throw TeamNotEligibleException();
         }
 
-        bool removeTeam(int id) {
-            for (vector<FootballTeam>::iterator it=teams.begin(); it!=teams.end(); ++it)
-                if (it->getTeamID()==id) {
-                    for (const Fixture& f : fixtures)
-                        if (f.getHomeTeamID()==id || f.getAwayTeamID()==id) return false;
-                    teams.erase(it);
-                    for (FootballTeam& remaining : teams) remaining.rebindMembers();
-                    numberOfTeams=static_cast<int>(teams.size()); return true;
+        if (home.getTeamID() == away.getTeamID())
+        {
+            throw TeamNotEligibleException();
+        }
+
+        if (findTeam(home.getTeamID()) == nullptr ||
+            findTeam(away.getTeamID()) == nullptr)
+        {
+            throw TeamNotEligibleException();
+        }
+
+        for (const Fixture& existing : fixtures)
+        {
+            if (existing.conflictsWith(proposed))
+            {
+                bool sameTeam =
+                    existing.getHomeTeamID() == home.getTeamID() ||
+                    existing.getAwayTeamID() == home.getTeamID() ||
+                    existing.getHomeTeamID() == away.getTeamID() ||
+                    existing.getAwayTeamID() == away.getTeamID();
+
+                if (sameTeam)
+                {
+                    throw SchedulingConflictException();
                 }
-            return false;
+            }
         }
 
-        void recordFixtureResult(int fixtureID, const MatchResult& result) {
-            for (Fixture& fixture : fixtures) {
-                if (fixture.getFixtureID()!=fixtureID) continue;
-                if (fixture.pointsAwarded()) throw FixtureIncompleteException();
-                FootballTeam* home=findTeam(fixture.getHomeTeamID());
-                FootballTeam* away=findTeam(fixture.getAwayTeamID());
-                if (!home || !away) throw FixtureIncompleteException();
-                if (fixture.hasResult() || fixture.pointsAwarded() ||
-                    fixture.getFixtureStatus()=="Cancelled" ||
-                    fixture.getFixtureStatus()=="Postponed" || !result.validateScores())
-                    throw FixtureIncompleteException();
-                MatchResult applied=result;
-                applied.determineWinner(*home,*away);
-                fixture.recordResults(applied);
-                fixture.leaguePointsAwarded=true;
-                return;
+        proposed.homeTeamID = home.getTeamID();
+        proposed.awayTeamID = away.getTeamID();
+
+        fixtures.push_back(proposed);
+    }
+
+    // RECORD RESULT AND UPDATE STANDINGS
+
+    void recordFixtureResult(int fixtureID,
+                             const MatchResult& matchResult)
+    {
+        Fixture* selectedFixture = nullptr;
+
+        for (Fixture& fixture : fixtures)
+        {
+            if (fixture.getFixtureID() == fixtureID)
+            {
+                selectedFixture = &fixture;
+                break;
             }
+        }
+
+        if (selectedFixture == nullptr)
+        {
             throw FixtureIncompleteException();
         }
 
-        void createFixture(Fixture proposed, FootballTeam& home, FootballTeam& away) {
-            // Rule 3: Both teams must be registered to play.
-            if (!home.canParticipate() || !away.canParticipate()) {
-                throw TeamNotEligibleException();
-            }
-
-            const int homeID = home.getTeamID();
-            const int awayID = away.getTeamID();
-
-            if (proposed.getStadiumID() <= 0)
-                throw FixtureIncompleteException();
-            bool stadiumFound = false;
-            for (const Stadium& stadium : stadiums)
-                if (stadium.getStadiumID() == proposed.getStadiumID()) stadiumFound = true;
-            if (!stadiumFound) throw FixtureIncompleteException();
-
-            if (homeID == awayID) {
-                throw TeamNotEligibleException();
-            }
-            if (proposed.getFixtureID() <= 0)
-                throw FixtureIncompleteException();
-            for (const Fixture& existing : fixtures)
-                if (existing.getFixtureID() == proposed.getFixtureID())
-                    throw DuplicateRegistrationException();
-
-            for (const Fixture& existing : fixtures) {
-                if (existing.getFixtureStatus() == "Cancelled" ||
-                    existing.getFixtureStatus() == "Postponed") continue;
-                // Rule 4: Check whether either team already plays at this kickoff.
-                const bool sameKickoff =
-                    existing.getFixtureDateMember().getDay() == proposed.getFixtureDateMember().getDay() &&
-                    existing.getFixtureDateMember().getMonth() == proposed.getFixtureDateMember().getMonth() &&
-                    existing.getFixtureDateMember().getYear() == proposed.getFixtureDateMember().getYear() &&
-
-                    existing.getFixtureTimeMember().getHours() == proposed.getFixtureTimeMember().getHours() &&
-                    existing.getFixtureTimeMember().getMinutes() == proposed.getFixtureTimeMember().getMinutes() &&
-                    existing.getFixtureTimeMember().getSeconds() == proposed.getFixtureTimeMember().getSeconds();
-
-                const bool sharesTeam =
-                    existing.getHomeTeamID() == homeID ||
-                    existing.getAwayTeamID() == homeID ||
-                    existing.getHomeTeamID() == awayID ||
-                    existing.getAwayTeamID() == awayID;
-
-                if (sameKickoff && sharesTeam) {
-                    throw SchedulingConflictException();
-                }
-                if (sameKickoff && proposed.getStadiumID() > 0 &&
-                    existing.getStadiumID() == proposed.getStadiumID()) {
-                    throw SchedulingConflictException();
-                }
-            }
-
-            if (findTeam(homeID)==nullptr || findTeam(awayID)==nullptr)
-                throw TeamNotEligibleException();
-
-            // Save the fixture only after both rules pass.
-            proposed.homeTeamID = homeID;
-            proposed.awayTeamID = awayID;
-            fixtures.push_back(proposed);
-            for (Stadium& stadium : stadiums) {
-                if (stadium.getStadiumID() == proposed.getStadiumID()) {
-                    fixtures.back().setStadium(&stadium);
-                    stadium.addFixture(&fixtures.back());
-                    break;
-                }
-            }
-            
-        }
-
-        bool meetsMinimumAge(const Player& player) const {
-            return player.getAge() >= minimumAge;
-        }
-
-        bool registerPlayer(const Player& player) const {
-            if (!meetsMinimumAge(player)) {
-                return false; 
-            }
-
-            return true;
-        }
-
-        void registerTeam(FootballTeam& NewTeam)
+        if (selectedFixture->hasAwardedPoints())
         {
-            if (NewTeam.getTeamID() <= 0 || NewTeam.getTeamName().empty())
-                throw TeamNotEligibleException();
-            for (FootballTeam& existing : teams)
-            {
-                if (existing.getTeamID() == NewTeam.getTeamID())
-                {
-                    throw DuplicateRegistrationException();
-                }
-            }
-
-            NewTeam.setTeamStatus("registered");
-            teams.push_back(NewTeam);
-            teams.back().rebindMembers();
-            numberOfTeams = static_cast<int>(teams.size());
-
-            cout << "\nTeam Registered Successfully!\n";
+            throw FixtureIncompleteException();
         }
 
+        FootballTeam* home =
+            findTeam(selectedFixture->getHomeTeamID());
+
+        FootballTeam* away =
+            findTeam(selectedFixture->getAwayTeamID());
+
+        if (home == nullptr || away == nullptr)
+        {
+            throw FixtureIncompleteException();
+        }
+
+        selectedFixture->recordResults(matchResult);
+
+        MatchResult storedResult = selectedFixture->getResult();
+
+        storedResult.determineWinner(*home, *away);
+
+        selectedFixture->leaguePointsAwarded = true;
+    }
+
+    // DISPLAY FIXTURES
+
+    void displayFixtures() const
+    {
+        if (fixtures.empty())
+        {
+            cout << "\nNo fixtures available.\n";
+            return;
+        }
+
+        for (const Fixture& fixture : fixtures)
+        {
+            fixture.Display();
+        }
+    }
+
+    // DISPLAY TEAMS
+
+    void displayTeams()
+    {
+        if (teams.empty())
+        {
+            cout << "\nNo teams registered.\n";
+            return;
+        }
+
+        for (FootballTeam& team : teams)
+        {
+            cout << "\nTeam ID: " << team.getTeamID();
+            cout << "\nTeam Name: " << team.getTeamName();
+            cout << "\nStatus: " << team.getTeamStatus();
+            cout << "\nPoints: " << team.getPoints();
+            cout << "\n";
+        }
+    }
+
+    // LEAGUE STANDINGS
+
+    void getStandings()
+    {
+        vector<FootballTeam*> rankedTeams;
+
+        for (FootballTeam& team : teams)
+        {
+            rankedTeams.push_back(&team);
+        }
+
+        sort(rankedTeams.begin(), rankedTeams.end(),
+             [](FootballTeam* a, FootballTeam* b)
+             {
+                 if (a->getPoints() != b->getPoints())
+                     return a->getPoints() > b->getPoints();
+
+                 if (a->getGoalDifference() != b->getGoalDifference())
+                     return a->getGoalDifference() > b->getGoalDifference();
+
+                 return a->getGoalsFor() > b->getGoalsFor();
+             });
+
+        cout << "\n============================================================\n";
+        cout << "                    FOOTBALL LEAGUE STANDINGS\n";
+        cout << "============================================================\n";
+
+        cout << left
+             << setw(5) << "POS"
+             << setw(25) << "TEAM"
+             << setw(5) << "P"
+             << setw(5) << "W"
+             << setw(5) << "D"
+             << setw(5) << "L"
+             << setw(7) << "GF"
+             << setw(7) << "GA"
+             << setw(7) << "GD"
+             << setw(5) << "PTS"
+             << endl;
+
+        cout << "------------------------------------------------------------\n";
+
+        int position = 1;
+
+        for (FootballTeam* team : rankedTeams)
+        {
+            int played =
+                team->getWins() +
+                team->getDraws() +
+                team->getLosses();
+
+            cout << left
+                 << setw(5) << position++
+                 << setw(25) << team->getTeamName()
+                 << setw(5) << played
+                 << setw(5) << team->getWins()
+                 << setw(5) << team->getDraws()
+                 << setw(5) << team->getLosses()
+                 << setw(7) << team->getGoalsFor()
+                 << setw(7) << team->getGoalsAgainst()
+                 << setw(7) << team->getGoalDifference()
+                 << setw(5) << team->getPoints()
+                 << endl;
+        }
+
+        cout << "============================================================\n";
+    }
 };
 
 #endif

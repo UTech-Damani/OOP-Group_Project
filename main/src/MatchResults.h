@@ -1,4 +1,3 @@
-
 #ifndef MATCHRESULTS_H
 #define MATCHRESULTS_H
 
@@ -7,12 +6,11 @@
 
 #include <iostream>
 #include <string>
-#include <cstdlib>
-#include <ctime>
 
 using namespace std;
 
-class MatchResult {
+class MatchResult
+{
 private:
     int homeScore;
     int awayScore;
@@ -20,145 +18,139 @@ private:
     string matchStatistics;
 
 public:
-    // Default constructor
-    MatchResult() {
+    MatchResult()
+    {
         homeScore = 0;
         awayScore = 0;
         winner = "";
         matchStatistics = "";
     }
 
-    // Parameterized constructor
     MatchResult(int homeScore, int awayScore,
-                string winner, string matchStatistics) {
+                string winner, string matchStatistics)
+    {
         setHomeScore(homeScore);
         setAwayScore(awayScore);
+
         this->winner = winner;
         this->matchStatistics = matchStatistics;
     }
 
-    // Getters
-    int getHomeScore() const {
+    int getHomeScore() const
+    {
         return homeScore;
     }
 
-    int getAwayScore() const {
+    int getAwayScore() const
+    {
         return awayScore;
     }
 
-    string getWinner() const {
+    string getWinner() const
+    {
         return winner;
     }
 
-    string getMatchStatistics() const {
+    string getMatchStatistics() const
+    {
         return matchStatistics;
     }
 
-    // Setters
-    void setHomeScore(int homeScore) {
-        if (homeScore < 0) {
+    void setHomeScore(int score)
+    {
+        if (score < 0)
+        {
             throw InvalidScoreException();
         }
 
-        this->homeScore = homeScore;
-
+        homeScore = score;
     }
 
-    void setAwayScore(int awayScore) {
-        if (awayScore < 0) {
+    void setAwayScore(int score)
+    {
+        if (score < 0)
+        {
             throw InvalidScoreException();
         }
-        this->awayScore = awayScore;
 
+        awayScore = score;
     }
 
-    void setMatchStatistics(string matchStatistics) {
-        this->matchStatistics = matchStatistics;
+    void setMatchStatistics(string statistics)
+    {
+        matchStatistics = statistics;
     }
 
-    void setWinner(const string& value) { winner = value; }
-
-    // Determine the winner
-    void determineWinner(FootballTeam& home, FootballTeam& away) {
-        if (homeScore > awayScore) {
+    void determineWinner(FootballTeam& home,
+                         FootballTeam& away)
+    {
+        if (homeScore > awayScore)
+        {
             winner = home.getTeamName();
+
             home.updateLeaguePoints("win");
             away.updateLeaguePoints("loss");
-            home.addGoalsFor(homeScore);
-            away.addGoalsFor(awayScore);
-            home.addGoalsAgainst(awayScore);
-            away.addGoalsAgainst(homeScore);
         }
-        else if (awayScore > homeScore) {
+        else if (awayScore > homeScore)
+        {
             winner = away.getTeamName();
+
             away.updateLeaguePoints("win");
             home.updateLeaguePoints("loss");
-            home.addGoalsFor(homeScore);
-            away.addGoalsFor(awayScore);
-            home.addGoalsAgainst(awayScore);
-            away.addGoalsAgainst(homeScore);
         }
-        else {
+        else
+        {
             winner = "Draw";
+
             home.updateLeaguePoints("draw");
             away.updateLeaguePoints("draw");
-            home.addGoalsFor(homeScore);
-            away.addGoalsFor(awayScore);
-            home.addGoalsAgainst(awayScore);
-            away.addGoalsAgainst(homeScore);
         }
+
+        home.addGoalsFor(homeScore);
+        away.addGoalsFor(awayScore);
+
+        home.addGoalsAgainst(awayScore);
+        away.addGoalsAgainst(homeScore);
+
         home.calcGoalDifference();
         away.calcGoalDifference();
     }
 
-    // Randomize match scores
-    void randomizeResults() {
-        int homeGoals = rand() % 13;
-        int awayGoals = rand() % 13;
-
-        setHomeScore(homeGoals);
-        setAwayScore(awayGoals);
-    }
-
-    // Calculate home team points
-    int getHomePoints() const {
-        if (homeScore > awayScore) {
+    int getHomePoints() const
+    {
+        if (homeScore > awayScore)
             return 3;
-        }
-        else if (homeScore == awayScore) {
+
+        if (homeScore == awayScore)
             return 1;
-        }
-        else {
-            return 0;
-        }
+
+        return 0;
     }
 
-    // Calculate away team points
-    int getAwayPoints() const {
-        if (awayScore > homeScore) {
+    int getAwayPoints() const
+    {
+        if (awayScore > homeScore)
             return 3;
-        }
-        else if (awayScore == homeScore) {
+
+        if (awayScore == homeScore)
             return 1;
-        }
-        else {
-            return 0;
-        }
+
+        return 0;
     }
 
-    // Validate match scores
-    bool validateScores() const {
+    bool validateScores() const
+    {
         return homeScore >= 0 && awayScore >= 0;
     }
 
-    // Display match result
-    void Display() const {
-        cout << "\n========== Match Result ==========" << endl;
-        cout << "Home Score: " << homeScore << endl;
-        cout << "Away Score: " << awayScore << endl;
-        cout << "Winner: " << winner << endl;
-        cout << "Statistics: " << matchStatistics << endl;
-        cout << "==================================" << endl;
+    void Display() const
+    {
+        cout << "\n========== MATCH RESULT ==========";
+        cout << "\nHome Score: " << homeScore;
+        cout << "\nAway Score: " << awayScore;
+        cout << "\nWinner: " << winner;
+        cout << "\nStatistics: " << matchStatistics;
+        cout << "\n==================================\n";
     }
 };
 

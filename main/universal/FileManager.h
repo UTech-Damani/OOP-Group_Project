@@ -4,12 +4,8 @@
 #include <fstream>
 #include <memory>
 #include <string>
-#include <cerrno>
-#ifdef _WIN32
 #include <direct.h>
-#else
-#include <sys/stat.h>
-#endif
+#include <cerrno>
 
 #include "../exceptions/DataFileException.h"
 #include "../exceptions/KPFLExceptions.h"
@@ -34,8 +30,10 @@ private:
             return fileName;
 
         const char last = dataDirectory.back();
-        if (last == '/' || last == '\\') return dataDirectory + fileName;
-        return dataDirectory + "/" + fileName;
+        if (last == '/' || last == '\\')
+            return dataDirectory + fileName;
+
+        return dataDirectory + "\\" + fileName;
     }
 
 public:
@@ -53,13 +51,8 @@ public:
     {
         if (!dataDirectory.empty())
         {
-#ifdef _WIN32
             if (_mkdir(dataDirectory.c_str()) != 0 && errno != EEXIST)
                 throw DataFileException();
-#else
-            if (mkdir(dataDirectory.c_str(), 0777) != 0 && errno != EEXIST)
-                throw DataFileException();
-#endif
         }
     }
 
@@ -173,11 +166,6 @@ public:
         saveRecords(FIXTURES_FILE, fixtures, count);
     }
 
-    void saveStadiums(Persistable* stadiums[], int count) const
-    {
-        saveRecords(STADIUMS_FILE, stadiums, count);
-    }
-
     template <typename T>
     int loadRecords(
         const string& fileName,
@@ -210,7 +198,7 @@ public:
                 if (!records[count])
                     throw DataFileException();
             }
-            catch (...)
+            catch (const KPFLExceptions&)
             {
                 throw DataFileException();
             }
@@ -234,12 +222,6 @@ public:
     int loadFixtures(unique_ptr<T> fixtures[], int maxFixtures) const
     {
         return loadRecords(FIXTURES_FILE, fixtures, maxFixtures);
-    }
-
-    template <typename T>
-    int loadStadiums(unique_ptr<T> stadiums[], int maxStadiums) const
-    {
-        return loadRecords(STADIUMS_FILE, stadiums, maxStadiums);
     }
 
     template <typename T>

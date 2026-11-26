@@ -93,18 +93,10 @@ class LeagueCommissioner : public Person{
             if(!official.canAssignFixture()){
                 throw SchedulingConflictException();
             }
-            for (Fixture* existing : official.getAssignedFixtures()) {
-                if (existing && existing->getFixtureDateMember().getDay()==fixture.getFixtureDateMember().getDay() &&
-                    existing->getFixtureDateMember().getMonth()==fixture.getFixtureDateMember().getMonth() &&
-                    existing->getFixtureDateMember().getYear()==fixture.getFixtureDateMember().getYear() &&
-                    existing->getFixtureTimeMember().getHours()==fixture.getFixtureTimeMember().getHours() &&
-                    existing->getFixtureTimeMember().getMinutes()==fixture.getFixtureTimeMember().getMinutes() &&
-                    existing->getFixtureTimeMember().getSeconds()==fixture.getFixtureTimeMember().getSeconds())
-                    throw SchedulingConflictException();
-            }
-            if (!official.assignFixture(fixture))
-                throw SchedulingConflictException();
+
             fixture.addOfficial(&official);
+
+            official.assignFixture(fixture);
 
         }
 

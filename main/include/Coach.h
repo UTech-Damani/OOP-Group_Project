@@ -27,7 +27,6 @@ class Coach : public Person{
             qualification = qual;
             coachingRole = role;
             this->yearsExperience = yearsExperience;
-            team = nullptr;
         }
 
         //Getters
