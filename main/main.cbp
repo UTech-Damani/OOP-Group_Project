@@ -14,6 +14,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-std=c++11" />
 					<Add directory="include" />
 					<Add directory="data" />
 					<Add directory="src" />
@@ -27,6 +28,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add option="-std=c++11" />
 					<Add directory="include" />
 					<Add directory="data" />
 					<Add directory="src" />
@@ -38,6 +40,7 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-std=c++11" />
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
@@ -51,10 +54,18 @@
 		<Unit filename="include/MatchOfficial.h" />
 		<Unit filename="include/Person.h" />
 		<Unit filename="include/Player.h" />
-		<Unit filename="include/Product.h">
-			<Option virtualFolder="data/" />
-		</Unit>
 		<Unit filename="include/Spectator.h" />
+		<Unit filename="exceptions/CapacityExceededException.h" />
+		<Unit filename="exceptions/DataFileException.h" />
+		<Unit filename="exceptions/DuplicateRegistrationException.h" />
+		<Unit filename="exceptions/FixtureIncompleteException.h" />
+		<Unit filename="exceptions/InsufficientPaymentException.h" />
+		<Unit filename="exceptions/InsufficientStockException.h" />
+		<Unit filename="exceptions/InvalidScoreException.h" />
+		<Unit filename="exceptions/KPFLExceptions.h" />
+		<Unit filename="exceptions/SchedulingConflictException.h" />
+		<Unit filename="exceptions/TeamNotEligibleException.h" />
+		<Unit filename="exceptions/UnderageExceptions.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/Fixture.h" />
 		<Unit filename="src/FootballLeague.h" />
@@ -62,7 +73,7 @@
 		<Unit filename="src/Stadium.h" />
 		<Unit filename="src/StadiumShop.h" />
 		<Unit filename="universal/Date.h" />
-		<Unit filename="universal/Time.h" />
+		<Unit filename="universal/ProjectTime.h" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

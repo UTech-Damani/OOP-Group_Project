@@ -89,10 +89,7 @@ class MatchOfficial : public Person {
             return availability;
         }
 
-        bool assignFixture(Fixture& fixture){
-            assignedFixtures.push_back(&fixture);
-            return true;
-        }
+        bool assignFixture(Fixture& fixture);
         void Display(){
             cout << "\nOfficial ID: " << getIdNom();
             cout << "\nName: " << getFullName();

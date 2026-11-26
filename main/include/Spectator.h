@@ -70,13 +70,16 @@ class Spectator : public Person{
             totalAmountSpent += price;
         }
         void deductBalance(double amount){
-            if(balance < amount)
-            {
+            if(amount < 0 || balance < amount)
                 throw InsufficientPaymentException();
-            }
-
             balance -= amount;
         }
+        bool payWithCash(double total, double tendered, double& change){
+            if (total < 0 || tendered < total) return false;
+            change = tendered - total;
+            return true;
+        }
+
         void addToTotalSpent(double amount){
             if (amount >= 0) {
                 totalAmountSpent += amount;

@@ -4,6 +4,7 @@
 #include "../data/Product.h"
 #include "../include/Spectator.h"
 #include "../exceptions/InsufficientStockException.h"
+#include "../exceptions/InsufficientPaymentException.h"
 
 #include <string>
 #include <math.h>
@@ -110,6 +111,7 @@ class StadiumShop
 
         // Store the tax-inclusive price using the product's existing setter.
         void setPriceFromPreTax(Product* product, double preTaxPrice) {
+            if (product == nullptr || preTaxPrice < 0) return;
             product->setPrice(calculatePriceWithGCT(preTaxPrice));
         }
 
@@ -118,7 +120,8 @@ class StadiumShop
             return std::round(sellingPrice * (taxRate / 115.0) * 100.0) / 100.0;
         }
 
-        void addProduct(Product* p){
+        void addProduct(Product* p, bool applyGCT = true){
+            if (p == nullptr) throw InsufficientStockException();
             // Check if product already exists
             for (size_t i = 0; i < products.size(); ++i)
             {
@@ -128,16 +131,38 @@ class StadiumShop
                 }
             }
 
-            // Add GCT to the product price
-            setPriceFromPreTax(p, p->getPrice());
+            // Apply GCT only to a newly registered pre-tax product.
+            if (applyGCT) setPriceFromPreTax(p, p->getPrice());
 
             // Add product to inventory
             products.push_back(p);
 
             // Update shop data
             productCount++;
-            inventoryValue += p->getPrice();
+            inventoryValue += p->getPrice() * p->getQuantityInStock();
           
+        }
+
+        void clearInventory() { products.clear(); productCount=0; inventoryValue=0.0; totalProductsSold=0; }
+        const vector<Product*>& getProducts() const { return products; }
+        bool removeProduct(Product* product) {
+            for (vector<Product*>::iterator it=products.begin(); it!=products.end(); ++it)
+                if (*it==product) { products.erase(it); --productCount; if(product) inventoryValue-=product->getPrice()*product->getQuantityInStock(); return true; }
+            return false;
+        }
+
+        double transactionWithCash(Spectator* spectator, Product* product, double tendered)
+        {
+            if (spectator == nullptr || product == nullptr || !product->isInStock())
+                throw InsufficientStockException();
+            double change = 0.0;
+            if (!spectator->payWithCash(product->getPrice(), tendered, change))
+                throw InsufficientPaymentException();
+            product->decreaseStock(1);
+            spectator->buyProduct(product->getPrice());
+            ++totalProductsSold;
+            inventoryValue -= product->getPrice();
+            return change;
         }
 
         void transaction(Spectator* spectator, Product* product){
@@ -152,11 +177,15 @@ class StadiumShop
 
             // Deduct payment. Throws if the spectator
             // does not have sufficient funds.
-            spectator->deductBalance(product->getPrice());
-
-            // Reduce stock by one unit.
-            product->decreaseStock(1);
-            spectator->buyProduct(product->getPrice());
+            const double price = product->getPrice();
+            spectator->deductBalance(price);
+            try {
+                product->decreaseStock(1);
+            } catch (...) {
+                spectator->setBalance(spectator->getBalance() + price);
+                throw;
+            }
+            spectator->buyProduct(price);
 
             totalProductsSold++;
             inventoryValue -= product->getPrice();

@@ -41,13 +41,13 @@ class Stadium : public Persistable
         Stadium(int stadiumID, string stadiumName, string location,
                 int seatingCapacity, string fieldCondition,
                 double ticketPrice, int occupancy) {
-            this->stadiumID = stadiumID;
+            this->stadiumID = (stadiumID > 0 ? stadiumID : 0);
             this->stadiumName = stadiumName;
             this->location = location;
-            this->seatingCapacity = seatingCapacity;
+            this->seatingCapacity = (seatingCapacity > 0 ? seatingCapacity : 0);
             this->fieldCondition = fieldCondition;
-            this->ticketPrice = ticketPrice;
-            this->occupancy = occupancy;
+            this->ticketPrice = (ticketPrice >= 0 ? ticketPrice : 0.0);
+            this->occupancy = (occupancy >= 0 && occupancy <= this->seatingCapacity ? occupancy : 0);
         }
 
         // Getters
@@ -95,7 +95,8 @@ class Stadium : public Persistable
         }
 
         void setSeatingCapacity(int seatingCapacity) {
-            this->seatingCapacity = seatingCapacity;
+            if (seatingCapacity >= occupancy && seatingCapacity > 0)
+                this->seatingCapacity = seatingCapacity;
         }
 
         void setFieldCondition(string fieldCondition) {
@@ -103,11 +104,12 @@ class Stadium : public Persistable
         }
 
         void setTicketPrice(double ticketPrice) {
-            this->ticketPrice = ticketPrice;
+            if (ticketPrice >= 0) this->ticketPrice = ticketPrice;
         }
 
         void setOccupancy(int occupancy) {
-            this->occupancy = occupancy;
+            if (occupancy >= 0 && occupancy <= seatingCapacity)
+                this->occupancy = occupancy;
         }
 
         bool hasCapacityFor(int requiredSeats) const {
@@ -160,6 +162,7 @@ class Stadium : public Persistable
             return true;
         }
         void addFixture(Fixture* fixture);
+        void clearFixtures() { fixtures.clear(); }
 
         string toFileString() const override
         {
@@ -183,19 +186,13 @@ class Stadium : public Persistable
             int id, capacity, occupancy;
             double price;
             string name, location, condition;
-
             char comma;
-
             ss >> id >> comma;
             getline(ss, name, ',');
-
             getline(ss, location, ',');
-
+            ss >> capacity >> comma;
             getline(ss, condition, ',');
-
-            ss >> capacity >> comma
-            >> price >> comma
-            >> occupancy;
+            ss >> price >> comma >> occupancy;
 
             return Stadium(
                 id, name, location,
@@ -215,6 +212,7 @@ inline void Stadium::addFixture(Fixture* fixture)
 {
     if (fixture != nullptr)
     {
+        for (Fixture* existing : fixtures) if (existing == fixture) return;
         fixtures.push_back(fixture);
     }
 }
