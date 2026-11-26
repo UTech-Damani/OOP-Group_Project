@@ -291,6 +291,30 @@ class FootballTeam : public Persistable {
         return FootballTeam(id, name, parish, points, wins, draws,
                             losses, status, day, month, year);
     }
+
+    void Display()
+    {
+        cout << "\n===== TEAM DETAILS =====\n";
+        cout << "Team ID: " << teamID << endl;
+        cout << "Team Name: " << teamName << endl;
+        cout << "Parish: " << parish << endl;
+
+        cout << "Registration Date: ";
+        registrationDate.displayDate();
+
+        cout << "Status: " << teamStatus << endl;
+        cout << "Points: " << points << endl;
+        cout << "Wins: " << wins << endl;
+        cout << "Draws: " << draws << endl;
+        cout << "Losses: " << losses << endl;
+
+        cout << "Goals For: " << goalsFor << endl;
+        cout << "Goals Against: " << goalsAgainst << endl;
+        cout << "Goal Difference: " << goalDifference << endl;
+
+        cout << "Number of Players: " << players.size() << "/" << maxPlayers << endl;
+        cout << "Number of Coaches: " << coaches.size() << endl;
+    }
     
 };
  

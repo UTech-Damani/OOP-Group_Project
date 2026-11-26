@@ -22,6 +22,14 @@ using namespace std;
 class Fixture : public Persistable
 {
 private:
+
+    // Live match information
+    int currentMinute = 0;
+    int liveHomeScore = 0;
+    int liveAwayScore = 0;
+
+    vector<string> matchEvents;
+
     int fixtureID;
     Date fixtureDate;
     ProjectTime fixtureTime;
@@ -91,6 +99,27 @@ public:
         leaguePointsAwarded = false;
 
         this->stadium = &stadium;
+    }
+
+    // Getters for live match information
+    int getCurrentMinute() const
+    {
+        return currentMinute;
+    }
+
+    int getLiveHomeScore() const
+    {
+        return liveHomeScore;
+    }
+
+    int getLiveAwayScore() const
+    {
+        return liveAwayScore;
+    }
+
+    const vector<string>& getMatchEvents() const
+    {
+        return matchEvents;
     }
 
     // SETTERS
@@ -356,6 +385,121 @@ public:
              << (resultRecorded ? "Yes" : "No");
 
         cout << "\n=============================\n";
+    }
+
+    // ================= LIVE MATCH MANAGEMENT =================
+
+    // Start the match
+    void startMatch()
+    {
+        if(fixtureStatus != "Scheduled")
+        {
+            throw FixtureIncompleteException();
+        }
+
+        if(officials.empty())
+        {
+            throw FixtureIncompleteException();
+        }
+
+        if(homeTeamID == 0 || awayTeamID == 0)
+        {
+            throw FixtureIncompleteException();
+        }
+
+        currentMinute = 0;
+        liveHomeScore = 0;
+        liveAwayScore = 0;
+
+        matchEvents.clear();
+
+        fixtureStatus = "In progress";
+
+        matchEvents.push_back("Match started.");
+    }
+
+
+    // Update the match minute
+    void updateMatchMinute(int minute)
+    {
+        if(fixtureStatus != "In progress")
+        {
+            throw FixtureIncompleteException();
+        }
+
+        if(minute < currentMinute || minute > 120)
+        {
+            throw FixtureIncompleteException();
+        }
+
+        currentMinute = minute;
+    }
+
+
+    // Record a goal
+    void recordLiveGoal(bool homeTeam, const string& teamName)
+    {
+        if(fixtureStatus != "In progress")
+        {
+            throw FixtureIncompleteException();
+        }
+
+        if(homeTeam)
+        {
+            liveHomeScore++;
+        }
+        else
+        {
+            liveAwayScore++;
+        }
+
+        string event = to_string(currentMinute) +
+                    "' - GOAL! " + teamName;
+
+        matchEvents.push_back(event);
+    }
+
+
+    // Half-time
+    void startHalfTime()
+    {
+        if(fixtureStatus != "In progress" || currentMinute < 45)
+        {
+            throw FixtureIncompleteException();
+        }
+
+        fixtureStatus = "Half Time";
+
+        matchEvents.push_back("Half-time.");
+    }
+
+
+    // Resume the second half
+    void resumeMatch()
+    {
+        if(fixtureStatus != "Half Time")
+        {
+            throw FixtureIncompleteException();
+        }
+
+        fixtureStatus = "In progress";
+
+        matchEvents.push_back("Second half started.");
+    }
+
+
+    // End the match
+    void finishLiveMatch()
+    {
+        if(fixtureStatus != "In progress" || currentMinute < 90)
+        {
+            throw FixtureIncompleteException();
+        }
+
+        matchEvents.push_back("Full-time.");
+
+        // The final result is recorded separately
+        // using the existing MatchResult class.
     }
 
     // FILE MANAGEMENT
