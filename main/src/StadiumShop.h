@@ -8,7 +8,7 @@
 
 #include <string>
 #include <math.h>
-#include <vector>
+#include <vector> // Provides the vector container for storing dynamic collections.
 
 using namespace std;
 
@@ -17,18 +17,24 @@ class Stadium;
 class StadiumShop
 {
     private:
+        // Stores the shop's identification and general information
         int shopID;
         string shopName;
         int productCount;
         string location;
+
+        // Tracks the financial value and sales performance of the shop
         double inventoryValue;
         int totalProductsSold;
+
+        // Defines the GCT percentage applied to product prices
         const double taxRate = 15;
 
+        // Stores pointers to the products available in the shop
         vector<Product*> products;
 
     public:
-    // Default Constructor
+        // Default Constructor
         StadiumShop() {
             shopID = 0;
             shopName = "";
@@ -36,7 +42,7 @@ class StadiumShop
             location = "";
             inventoryValue = 0.0;
             totalProductsSold = 0;
-            
+
         }
 
         // Parameterized Constructor
@@ -49,10 +55,13 @@ class StadiumShop
             this->location = location;
             this->inventoryValue = inventoryValue;
             this->totalProductsSold = totalProductsSold;
-        
+
         }
 
-        // Getters
+        // ================= GETTERS =================
+
+        // Returns the shop's stored attributes
+
         int getShopID() {
             return shopID;
         }
@@ -77,11 +86,15 @@ class StadiumShop
             return totalProductsSold;
         }
 
+        // Returns the shop's GCT rate
         double getTaxRate() {
             return taxRate;
         }
 
-        // Setters
+        // ================= SETTERS =================
+
+        // Updates the shop's stored attributes
+
         void setShopID(int shopID) {
             this->shopID = shopID;
         }
@@ -106,23 +119,25 @@ class StadiumShop
             this->totalProductsSold = totalProductsSold;
         }
 
-        // Rule 1: Add 15% GCT to a price that does not include tax yet.
+        // Calculates the product's selling price after adding 15% GCT
         double calculatePriceWithGCT(double preTaxPrice) {
             return round(preTaxPrice * (1 + taxRate / 100.0) * 100.0) / 100.0;
         }
 
-        // Store the tax-inclusive price using the product's existing setter.
+        // Updates a product's price to include GCT
         void setPriceFromPreTax(Product* product, double preTaxPrice) {
             product->setPrice(calculatePriceWithGCT(preTaxPrice));
         }
 
-        // Find the tax already included in a selling price for a receipt.
+        // Calculates the GCT amount already included in a selling price
+        // This value can be used when preparing a customer receipt
         double calculateIncludedGCT(double sellingPrice) {
             return std::round(sellingPrice * (taxRate / 115.0) * 100.0) / 100.0;
         }
 
+        // Adds a product to the shop's inventory
         void addProduct(Product* p){
-            // Check if product already exists
+            // Prevents the same product pointer from being added more than once
             for (size_t i = 0; i < products.size(); ++i)
             {
                 if (products[i] == p)
@@ -131,40 +146,46 @@ class StadiumShop
                 }
             }
 
-            // Add GCT to the product price
+            // Adds GCT to the product's original price
             setPriceFromPreTax(p, p->getPrice());
 
-            // Add product to inventory
+            // Stores the product in the shop's inventory
             products.push_back(p);
 
-            // Update shop data
+            // Updates the shop's product count and inventory value
             productCount++;
             inventoryValue += p->getPrice();
-          
+
         }
 
+        // Processes a transaction between a spectator and the shop
         void transaction(Spectator* spectator, Product* product){
-            
+
+            // Ensures both the spectator and product pointers are valid
             if (spectator == nullptr || product == nullptr) {
                 return;
             }
 
-            // Check that the product is available first.
+            // Checks that the product is available before processing the sale
             if (!product->isInStock()) {
                 throw InsufficientStockException();
             }
 
-            // Deduct payment. Throws if the spectator
-            // does not have sufficient funds.
+            // Deducts the product's price from the spectator's balance
+            // Throws an exception if the spectator has insufficient funds
             spectator->deductBalance(product->getPrice());
 
-            // Reduce stock by one unit.
+            // Reduces the product's available stock by one unit
             product->decreaseStock(1);
+
+            // Records the spectator's purchase
             spectator->buyProduct(product->getPrice());
 
+            // Updates the shop's sales and inventory records
             totalProductsSold++;
             inventoryValue -= product->getPrice();
 
+            // Displays the product involved in the transaction
             product->Display();
         }
 };

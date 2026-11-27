@@ -26,7 +26,7 @@ class ProjectTime {
             setSeconds(s);
         }
 
-        // Setters
+        // ================= SETTERS =================
         void setHours(int h) {
             if (h >= 0 && h <= 23) {
                 hours = h;
@@ -45,7 +45,7 @@ class ProjectTime {
             }
         }
 
-        // Getters
+        // ================= GETTERS =================
         int getHours() const {
             return hours;
         }

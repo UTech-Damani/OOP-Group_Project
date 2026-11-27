@@ -1,7 +1,8 @@
 #ifndef TICKETS_H
 #define TICKETS_H
+
 #include <string>
-#include <iomanip>
+#include <iomanip> // Provides formatting tools such as setw() and methods for aligning data.
 #include <iostream>
 
 #include "Product.h"
@@ -9,74 +10,103 @@
 
 using namespace std;
 
-class Tickets : public Product{
-    private:
-        string ticketCategory;
-        Date matchDate;
-        string seatNumber;
+// Inherits common product attributes and methods from the Product class.
+class Tickets : public Product
+{
+private:
+    // Stores the category of the ticket.
+    string ticketCategory;
 
-    public:
-        // Constructors
-        Tickets() : Product() {
-            ticketCategory = "";
-            
-            seatNumber = "";
-        }
+    // Stores the date of the football match associated with the ticket.
+    Date matchDate;
 
-        Tickets(string ticketCategory, Date matchDate, string seatNumber, int productID,
-            std::string productName, double price, int quantityInStock) : Product(productID, productName, price, quantityInStock){
+    // Stores the seat number assigned to the ticket.
+    string seatNumber;
 
-            this->ticketCategory = ticketCategory;
-            this->matchDate = matchDate;
-            this->seatNumber = seatNumber;
-        }
+public:
 
-        // Getters
-        string getTicketCategory() {
-            return ticketCategory;
-        }
+    // Default constructor
+    Tickets() : Product()
+    {
+        ticketCategory = "";
+        seatNumber = "";
+    }
 
-        Date getMatchDate() {
-            return matchDate;
-        }
+    // Parameterized constructor 
+    Tickets(string ticketCategory, Date matchDate, string seatNumber, int productID,
+            std::string productName, double price, int quantityInStock)
+        : Product(productID, productName, price, quantityInStock)
+    {
+        this->ticketCategory = ticketCategory;
+        this->matchDate = matchDate;
+        this->seatNumber = seatNumber;
+    }
 
-        string getSeatNumber() {
-            return seatNumber;
-        }
+    // ================= GETTERS =================
 
-        // Setters
-        void setTicketCategory(string ticketCategory) {
-            this->ticketCategory = ticketCategory;
-        }
+    // Returns the category of the ticket.
+    string getTicketCategory()
+    {
+        return ticketCategory;
+    }
 
-        void setMatchDate(Date matchDate) {
-            this->matchDate = matchDate;
-        }
+    // Returns the date of the match associated with the ticket.
+    Date getMatchDate()
+    {
+        return matchDate;
+    }
 
-        void setSeatNumber(string seatNumber) {
-            this->seatNumber = seatNumber;
-        }
+    // Returns the seat number assigned to the ticket.
+    string getSeatNumber()
+    {
+        return seatNumber;
+    }
 
-        bool isTicket() const
-        {
-            return true;
-        }
+    // ================= SETTERS =================
 
-        // Display method for attributes within the class
-        void Display() override{ // override tells the compiler that this method should be overriding a method in the parent class
-            cout << "\n================================"
-            << "\n      Tickets DETAILS"
-            << "\n================================"
-            << "\nProduct ID:       " << getProductID()
-            << "\nProduct Name:     " << getProductName()
-            << "\nPrice:            $" << fixed << setprecision(2) << getPrice()
-            << "\nQuantity:         " << getQuantityInStock()
-            << "\nTicket Category:             " << ticketCategory
-            << "\nMatch Date:            "; 
-            matchDate.displayDate();
-            cout << "\nSeat Number:           " << seatNumber
-            << "\n================================\n";
-        }
+    // Sets or updates the ticket category.
+    void setTicketCategory(string ticketCategory)
+    {
+        this->ticketCategory = ticketCategory;
+    }
+
+    // Sets or updates the match date associated with the ticket.
+    void setMatchDate(Date matchDate)
+    {
+        this->matchDate = matchDate;
+    }
+
+    // Sets or updates the seat number assigned to the ticket.
+    void setSeatNumber(string seatNumber)
+    {
+        this->seatNumber = seatNumber;
+    }
+
+    // Overrides the isTicket() method from the Product class.
+    bool isTicket() const
+    {
+        return true;
+    }
+
+    // Overrides the Display() method inherited from the Product class.
+    void Display() 
+    {
+        cout << "\n================================"
+             << "\n      Tickets DETAILS"
+             << "\n================================"
+             << "\nProduct ID:       " << getProductID()
+             << "\nProduct Name:     " << getProductName()
+             << "\nPrice:            $" << fixed << setprecision(2) << getPrice()
+             << "\nQuantity:         " << getQuantityInStock() 
+             << "\nTicket Category:             " << ticketCategory
+             << "\nMatch Date:            ";
+
+        // Calls the Date class method to display the match date.
+        matchDate.displayDate();
+
+        cout << "\nSeat Number:           " << seatNumber
+             << "\n================================\n";
+    }
 };
 
 #endif // TICKETS_H

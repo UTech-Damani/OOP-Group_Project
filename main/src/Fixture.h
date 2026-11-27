@@ -13,46 +13,55 @@
 #include "../exceptions/SchedulingConflictException.h"
 
 #include <string>
-#include <vector>
+#include <vector> // Provides the vector container for storing dynamic collections.
 #include <sstream>
 #include <iostream>
 
 using namespace std;
 
+// Inherits from Persistable to support saving and loading fixture records.
 class Fixture : public Persistable
 {
 private:
 
-    // Live match information
+    // Tracks the current state of a live match
     int currentMinute = 0;
     int liveHomeScore = 0;
     int liveAwayScore = 0;
 
+    // Stores events that occur during the match, such as goals and half-time.
     vector<string> matchEvents;
 
+    // Identifies the fixture and its scheduled teams
     int fixtureID;
-    Date fixtureDate;
-    ProjectTime fixtureTime;
-
-    string fixtureStatus;
-    int attendance;
-
     int homeTeamID;
     int awayTeamID;
 
+    // Stores fixture details
+    Date fixtureDate;
+    ProjectTime fixtureTime;
+    string fixtureStatus;
+    
+    // Indicates whether the final match result has been recorded.
     bool resultRecorded;
+
+    // Indicates whether league points have already been awarded.
     bool leaguePointsAwarded;
 
+    // Stores the stadium and officials assigned to the fixture and the number of persons attending
     Stadium* stadium;
-
-    MatchResult result;
-
     vector<MatchOfficial*> officials;
+    int attendance;
 
+    // Stores the official result of the fixture.
+    MatchResult result;
+    
+    // Allows the FootballLeague class to access private Fixture members.
     friend class FootballLeague;
 
 public:
 
+    // Default constructor initializes the fixture with default values.
     Fixture()
     {
         fixtureID = 0;
@@ -78,6 +87,7 @@ public:
         stadium = nullptr;
     }
 
+    // Parameterized constructor initializes the fixture attributes
     Fixture(int day, int month, int year,
             int hours, int minutes, int seconds,
             string status, int attendance,
@@ -101,39 +111,46 @@ public:
         this->stadium = &stadium;
     }
 
-    // Getters for live match information
+    // Returns the current minute of the live match.
     int getCurrentMinute() const
     {
         return currentMinute;
     }
 
+    // Returns the current live score of the home team.
     int getLiveHomeScore() const
     {
         return liveHomeScore;
     }
 
+    // Returns the current live score of the away team.
     int getLiveAwayScore() const
     {
         return liveAwayScore;
     }
 
+    // Returns a constant reference to the collection of recorded match events.
+    // "const" Prevents the caller from modifying the original event collection.
     const vector<string>& getMatchEvents() const
     {
         return matchEvents;
     }
 
-    // SETTERS
+    // ================= SETTERS =================
 
+    // Sets or updates the fixture ID.
     void setFixtureID(int id)
     {
         fixtureID = id;
     }
 
+    // Assigns a stadium to the fixture using its memory address.
     void setStadium(Stadium* stadium)
     {
         this->stadium = stadium;
     }
 
+    // Sets the scheduled date of the fixture.
     void setFixtureDate(int day, int month, int year)
     {
         fixtureDate.setDay(day);
@@ -141,6 +158,7 @@ public:
         fixtureDate.setYear(year);
     }
 
+    // Sets the scheduled starting time of the fixture.
     void setFixtureTime(int hours, int minutes, int seconds)
     {
         fixtureTime.setHours(hours);
@@ -148,6 +166,7 @@ public:
         fixtureTime.setSeconds(seconds);
     }
 
+    // Updates the fixture status if it matches one of the accepted values.
     void setFixtureStatus(string status)
     {
         if (status == "Scheduled" ||
@@ -161,6 +180,7 @@ public:
         }
     }
 
+    // Updates the fixture attendance if the supplied value is non-negative.
     void setAttendance(int attend)
     {
         if (attend >= 0)
@@ -169,104 +189,114 @@ public:
         }
     }
 
-    // GETTERS
+    // ================= GETTERS =================
 
+    // Returns the fixture ID.
     int getFixtureID() const
     {
         return fixtureID;
     }
 
+    // Displays the scheduled fixture date.
     void getFixtureDate()
     {
         fixtureDate.displayDate();
     }
 
+    // Returns the Date object containing the fixture date.
     Date getFixtureDateMember() const
     {
         return fixtureDate;
     }
 
+    // Displays the scheduled fixture time.
     void getFixtureTime() const
     {
         fixtureTime.displayTime();
     }
 
+    // Returns the ProjectTime object containing the fixture time.
     ProjectTime getFixtureTimeMember() const
     {
         return fixtureTime;
     }
 
+    // Returns the current fixture status.
     string getFixtureStatus() const
     {
         return fixtureStatus;
     }
 
+    // Returns the number of spectators attending the fixture.
     int getAttendance() const
     {
         return attendance;
     }
 
+    // Returns the home team's ID.
     int getHomeTeamID() const
     {
         return homeTeamID;
     }
 
+    // Returns the away team's ID.
     int getAwayTeamID() const
     {
         return awayTeamID;
     }
 
+    // Checks whether a result has been recorded for the fixture.
     bool hasResult() const
     {
         return resultRecorded;
     }
 
+    // Checks whether league points have already been awarded.
     bool hasAwardedPoints() const
     {
         return leaguePointsAwarded;
     }
 
+    // Returns the pointer to the stadium assigned to the fixture.
     Stadium* getStadium() const
     {
         return stadium;
     }
 
+    // Returns the recorded MatchResult object.
     MatchResult getResult() const
     {
         return result;
     }
 
+    // Returns a reference to the collection of assigned match officials.
     vector<MatchOfficial*>& getOfficials()
     {
         return officials;
     }
 
-    // CHECK SCHEDULING CONFLICTS
-
+    // Checks whether two fixtures are scheduled for the same date and time.
     bool conflictsWith(const Fixture& other) const
     {
-        if (fixtureStatus == "Cancelled" ||
-            fixtureStatus == "Postponed" ||
-            other.fixtureStatus == "Cancelled" ||
-            other.fixtureStatus == "Postponed")
+        if (fixtureStatus == "Cancelled" || fixtureStatus == "Postponed" ||
+            other.fixtureStatus == "Cancelled" || other.fixtureStatus == "Postponed")
         {
             return false;
         }
 
-        bool sameDate =
-            fixtureDate.getDay() == other.fixtureDate.getDay() &&
-            fixtureDate.getMonth() == other.fixtureDate.getMonth() &&
-            fixtureDate.getYear() == other.fixtureDate.getYear();
+        // Checks whether both fixtures have the same calendar date.
+        bool sameDate = fixtureDate.getDay() == other.fixtureDate.getDay() &&
+                        fixtureDate.getMonth() == other.fixtureDate.getMonth() &&
+                        fixtureDate.getYear() == other.fixtureDate.getYear();
 
-        bool sameTime =
-            fixtureTime.getHours() == other.fixtureTime.getHours() &&
-            fixtureTime.getMinutes() == other.fixtureTime.getMinutes();
+        // Checks whether both fixtures have the same starting time.
+        bool sameTime = fixtureTime.getHours() == other.fixtureTime.getHours() &&
+                        fixtureTime.getMinutes() == other.fixtureTime.getMinutes();
 
         return sameDate && sameTime;
     }
 
-    // OFFICIAL MANAGEMENT
-
+    // Assigns a match official to the fixture.
     void addOfficial(MatchOfficial* official)
     {
         if (official == nullptr)
@@ -274,6 +304,7 @@ public:
             throw SchedulingConflictException();
         }
 
+        // Checks whether the official is already assigned.
         for (MatchOfficial* existing : officials)
         {
             if (existing == official)
@@ -285,8 +316,7 @@ public:
         officials.push_back(official);
     }
 
-    // RESULT MANAGEMENT
-
+    // Records the final result of the fixture.
     void recordResults(const MatchResult& matchResult)
     {
         if (fixtureStatus == "Cancelled" ||
@@ -301,6 +331,7 @@ public:
             throw FixtureIncompleteException();
         }
 
+        // Validates the scores before storing the result.
         if (!matchResult.validateScores())
         {
             throw FixtureIncompleteException();
@@ -313,12 +344,10 @@ public:
         fixtureStatus = "Full Time";
     }
 
-    // COMPLETE FIXTURE
-
+    // Marks the fixture as completed.
     void completeFixture()
     {
-        if (fixtureStatus == "Cancelled" ||
-            fixtureStatus == "Postponed")
+        if (fixtureStatus == "Cancelled" || fixtureStatus == "Postponed")
         {
             throw FixtureIncompleteException();
         }
@@ -336,12 +365,10 @@ public:
         fixtureStatus = "Full Time";
     }
 
-    // POSTPONE FIXTURE
-
+    // Changes the fixture status to Postponed.
     void postpone()
     {
-        if (fixtureStatus == "Full Time" ||
-            fixtureStatus == "Cancelled")
+        if (fixtureStatus == "Full Time" || fixtureStatus == "Cancelled")
         {
             throw FixtureIncompleteException();
         }
@@ -349,8 +376,7 @@ public:
         fixtureStatus = "Postponed";
     }
 
-    // CANCEL FIXTURE
-
+    // Changes the fixture status to Cancelled.
     void cancel()
     {
         if (fixtureStatus == "Full Time")
@@ -361,8 +387,7 @@ public:
         fixtureStatus = "Cancelled";
     }
 
-    // DISPLAY FIXTURE
-
+    // Displays the main details and current status of the fixture.
     void Display() const
     {
         cout << "\n========== FIXTURE ==========";
@@ -381,15 +406,12 @@ public:
         cout << "\nStatus: " << fixtureStatus;
         cout << "\nAttendance: " << attendance;
 
-        cout << "\nResult Recorded: "
-             << (resultRecorded ? "Yes" : "No");
+        cout << "\nResult Recorded: " << (resultRecorded ? "Yes" : "No");
 
         cout << "\n=============================\n";
     }
 
-    // ================= LIVE MATCH MANAGEMENT =================
-
-    // Start the match
+    // Starts a scheduled fixture and initializes its live match information.
     void startMatch()
     {
         if(fixtureStatus != "Scheduled")
@@ -407,19 +429,22 @@ public:
             throw FixtureIncompleteException();
         }
 
+        // Resets the live match minute and both teams' scores.
         currentMinute = 0;
         liveHomeScore = 0;
         liveAwayScore = 0;
 
+        // Removes any events from previous match activity.
         matchEvents.clear();
 
+        // Updates the fixture status to indicate that the match has started.
         fixtureStatus = "In progress";
 
+        // Records the start of the match in the event collection.
         matchEvents.push_back("Match started.");
     }
 
-
-    // Update the match minute
+    // Updates the current minute of an ongoing match.
     void updateMatchMinute(int minute)
     {
         if(fixtureStatus != "In progress")
@@ -435,8 +460,7 @@ public:
         currentMinute = minute;
     }
 
-
-    // Record a goal
+    // Records a goal scored by either the home or away team.
     void recordLiveGoal(bool homeTeam, const string& teamName)
     {
         if(fixtureStatus != "In progress")
@@ -444,23 +468,24 @@ public:
             throw FixtureIncompleteException();
         }
 
+        // Increases the home team's live score if homeTeam is true.
         if(homeTeam)
         {
             liveHomeScore++;
         }
+        // Otherwise, increases the away team's live score.
         else
         {
             liveAwayScore++;
         }
 
-        string event = to_string(currentMinute) +
-                    "' - GOAL! " + teamName;
+        // Creates a match event containing the current minute and team name.
+        string event = to_string(currentMinute) + "' - GOAL! " + teamName;
 
         matchEvents.push_back(event);
     }
 
-
-    // Half-time
+    // Changes the fixture status to Half Time.
     void startHalfTime()
     {
         if(fixtureStatus != "In progress" || currentMinute < 45)
@@ -470,11 +495,11 @@ public:
 
         fixtureStatus = "Half Time";
 
+        // Records the half-time event.
         matchEvents.push_back("Half-time.");
     }
 
-
-    // Resume the second half
+    // Resumes a fixture after half-time.
     void resumeMatch()
     {
         if(fixtureStatus != "Half Time")
@@ -484,11 +509,11 @@ public:
 
         fixtureStatus = "In progress";
 
+        // Records the beginning of the second half.
         matchEvents.push_back("Second half started.");
     }
 
-
-    // End the match
+    // Records the end of the live match.
     void finishLiveMatch()
     {
         if(fixtureStatus != "In progress" || currentMinute < 90)
@@ -496,15 +521,14 @@ public:
             throw FixtureIncompleteException();
         }
 
+        // Adds the full-time event to the match event collection.
         matchEvents.push_back("Full-time.");
 
-        // The final result is recorded separately
-        // using the existing MatchResult class.
+        // The final result is recorded separately using the existing MatchResult class.
     }
 
-    // FILE MANAGEMENT
-
-    string toFileString() const override
+    // Converts the fixture's information into a csv format.
+    string toFileString() const
     {
         stringstream ss;
 
@@ -522,23 +546,23 @@ public:
            << resultRecorded << ","
            << leaguePointsAwarded;
 
+        // Adds the final scores if a result has been recorded.
         if (resultRecorded)
         {
-            ss << ","
-               << result.getHomeScore()
-               << ","
-               << result.getAwayScore();
+            ss << "," << result.getHomeScore() << "," << result.getAwayScore();
         }
 
         return ss.str();
     }
 
+    // Extracts the saved fixture information and restores its attributes.
     static Fixture fromFileString(const string& data)
     {
         stringstream ss(data);
 
         Fixture fixture;
 
+        // Variables temporarily store the values extracted from the file.
         int id, day, month, year;
         int hours, minutes, seconds;
         int attend, homeID, awayID;
@@ -550,31 +574,38 @@ public:
 
         char comma;
 
+        // Extracts the fixture ID and date.
         ss >> id >> comma;
         ss >> day >> comma;
         ss >> month >> comma;
         ss >> year >> comma;
 
+        // Extracts the scheduled fixture time.
         ss >> hours >> comma;
         ss >> minutes >> comma;
         ss >> seconds >> comma;
 
+        // Extracts the fixture status.
         getline(ss, status, ',');
 
+        // Extracts attendance and the participating team IDs.
         ss >> attend >> comma;
         ss >> homeID >> comma;
         ss >> awayID;
 
+        // Extracts the result-recorded flag if it exists.
         if (ss.peek() == ',')
         {
             ss >> comma >> recorded;
         }
 
+        // Extracts the league-points-awarded flag if it exists.
         if (ss.peek() == ',')
         {
             ss >> comma >> awarded;
         }
 
+        // Restores the fixture's basic information.
         fixture.setFixtureID(id);
         fixture.setFixtureDate(day, month, year);
         fixture.setFixtureTime(hours, minutes, seconds);
@@ -584,9 +615,11 @@ public:
         fixture.homeTeamID = homeID;
         fixture.awayTeamID = awayID;
 
+        // Restores the result and league-points flags.
         fixture.resultRecorded = recorded != 0;
         fixture.leaguePointsAwarded = awarded != 0;
 
+        // Restores the final scores if a result was previously recorded.
         if (fixture.resultRecorded)
         {
             int homeScore = 0;

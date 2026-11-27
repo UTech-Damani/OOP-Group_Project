@@ -2,65 +2,83 @@
 #define MERCHANDISE_H
 
 #include <string>
-#include <iomanip>
+#include <iomanip> // Provides formatting tools such as setw() and methods for aligning data.
 #include <iostream>
 
 #include "Product.h"
 
 using namespace std;
 
-class Merchandise : public Product{
-    private:
-        string sizeOfItem;
-        string brand;
+// Represents merchandise products sold at the stadium shop.
+class Merchandise : public Product
+{
+private:
+    // Stores the size of the merchandise item.
+    string sizeOfItem;
 
-    public:
+    // Stores the brand associated with the merchandise item.
+    string brand;
 
-        // Constructors
-        Merchandise() {
-            sizeOfItem = "";
-            brand = "";
-        }
+public:
 
-        Merchandise(string sizeOfItem, string brand, int productID,
-                    string productName, double price, int quantityInStock) : Product(productID, productName, price, quantityInStock){
+    // Default constructor.
+    Merchandise()
+    {
+        sizeOfItem = "";
+        brand = "";
+    }
 
-            this->sizeOfItem = sizeOfItem;
-            this->brand = brand;
-        }
+    // Parameterized constructor.
+    Merchandise(string sizeOfItem, string brand, int productID,
+                string productName, double price, int quantityInStock)
+        : Product(productID, productName, price, quantityInStock)
+    {
+        this->sizeOfItem = sizeOfItem;
+        this->brand = brand;
+    }
 
-        // Getters
-        string getSizeOfItem() {
-            return sizeOfItem;
-        }
+    // ================= GETTERS =================
 
-        string getBrand() {
-            return brand;
-        }
+    // Returns the size of the merchandise item.
+    string getSizeOfItem()
+    {
+        return sizeOfItem;
+    }
 
-        // Setters
-        void setSizeOfItem(string size) {
-            this->sizeOfItem = size;
-        }
+    // Returns the brand of the merchandise item.
+    string getBrand()
+    {
+        return brand;
+    }
 
-        void setBrand(string brand) {
-            this->brand = brand;
-        }
+    // ================= SETTERS =================
 
-        // Display method for attributes within the class
-        void Display() override{ // override tells the compiler that this method should be overriding a method in the parent class
-            cout << "\n================================"
-            << "\n      MERCHANDISE DETAILS"
-            << "\n================================"
-            << "\nProduct ID:       " << getProductID()
-            << "\nProduct Name:     " << getProductName()
-            << "\nPrice:            $" << fixed << setprecision(2) << getPrice()
-            << "\nQuantity:         " << getQuantityInStock()
-            << "\nSize:             " << sizeOfItem
-            << "\nBrand:            " << brand
-            << "\n================================\n";
-        }
+    // Sets or updates the size of the merchandise item.
+    void setSizeOfItem(string size)
+    {
+        this->sizeOfItem = size;
+    }
 
+    // Sets or updates the brand of the merchandise item.
+    void setBrand(string brand)
+    {
+        this->brand = brand;
+    }
 
+    // Overrides the Display() method inherited from the Product class.
+    void Display()
+    {
+        cout << "\n================================"
+             << "\n      MERCHANDISE DETAILS"
+             << "\n================================"
+             << "\nProduct ID:       " << getProductID()
+             << "\nProduct Name:     " << getProductName()
+             << "\nPrice:            $" << fixed << setprecision(2) << getPrice()
+             << "\nQuantity:         " << getQuantityInStock()
+             << "\nSize:             " << sizeOfItem
+             << "\nBrand:            " << brand
+             << "\n================================\n";
+    }
 };
+
 #endif // MERCHANDISE_H
