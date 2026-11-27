@@ -2,10 +2,10 @@
 #define FOOTBALLLEAGUE_H
 
 #include <string>
-#include <vector>
-#include <iomanip>
+#include <vector> // Provides the vector container for storing dynamic collections.
+#include <iomanip> // Provides formatting tools such as setw() and methods for aligning data.
 #include <iostream>
-#include <algorithm>
+#include <algorithm> // Provides standard algorithms such as sort() for arranging teams in the league standings.
 
 #include "../universal/Date.h"
 
@@ -26,24 +26,30 @@ class FootballLeague
 {
 private:
 
+    // Stores the league's identification and general information
     int leagueID;
     string leagueName;
     string season;
 
+    // Defines the starting and ending dates of the league season
     Date startDate;
     Date endDate;
 
+    // Tracks the number of registered teams and the league's current status
     int numberOfTeams;
     string currentStatus;
 
+    // Establishes the minimum age required for players to participate
     const int minimumAge = 16;
 
+    // Stores the fixtures, stadiums and football teams managed by the league
     vector<Fixture> fixtures;
     vector<Stadium> stadiums;
     vector<FootballTeam> teams;
 
 public:
 
+    // Default Constructor
     FootballLeague()
     {
         leagueID = 0;
@@ -53,6 +59,7 @@ public:
         currentStatus = "";
     }
 
+    // Parameterized Constructor
     FootballLeague(int leagueID, string leagueName,
                    string season, Date startDate,
                    Date endDate, int numberOfTeams,
@@ -67,7 +74,9 @@ public:
         this->currentStatus = currentStatus;
     }
 
-    // GETTERS
+    // ================= GETTERS =================
+
+    // Retrieve the league's stored information
 
     int getLeagueID() const
     {
@@ -109,6 +118,7 @@ public:
         return minimumAge;
     }
 
+    // Returns references to the league's collections
     vector<Fixture>& getFixtures()
     {
         return fixtures;
@@ -139,7 +149,9 @@ public:
         return teams;
     }
 
-    // SETTERS
+    // ================= SETTERS =================
+    
+    // Update the league's stored information
 
     void setLeagueID(int id)
     {
@@ -178,7 +190,6 @@ public:
     }
 
     // ADD STADIUM
-
     void addStadiums(const Stadium& stadium)
     {
         for (const Stadium& existing : stadiums)
@@ -193,21 +204,19 @@ public:
     }
 
     // ADD TEAM
-
     void addFootBallTeams(const FootballTeam& team)
     {
+        // 
         teams.push_back(team);
     }
 
     // ADD FIXTURE
-
     void addFixtures(const Fixture& fixture)
     {
         fixtures.push_back(fixture);
     }
 
     // REGISTER TEAM
-
     void registerTeam(FootballTeam& newTeam)
     {
         for (FootballTeam& existing : teams)
@@ -222,29 +231,31 @@ public:
             }
         }
 
+        // Updates the team's registration status
         newTeam.setTeamStatus("registered");
 
+        // Adds the registered team to the league
         teams.push_back(newTeam);
 
+        // Synchronizes the team count with the collection size
         numberOfTeams = static_cast<int>(teams.size());
 
         cout << "\nTeam registered successfully!\n";
     }
 
     // CHECK PLAYER AGE
-
     bool meetsMinimumAge(const Player& player) const
     {
         return player.getAge() >= minimumAge;
     }
 
+    // Checks whether a player meets the age requirement for registration
     bool registerPlayer(const Player& player) const
     {
         return meetsMinimumAge(player);
     }
 
     // FIND TEAM
-
     FootballTeam* findTeam(int teamID)
     {
         for (FootballTeam& team : teams)
@@ -259,37 +270,34 @@ public:
     }
 
     // CREATE FIXTURE
-
-    void createFixture(Fixture proposed,
-                       FootballTeam& home,
-                       FootballTeam& away)
+    void createFixture(Fixture proposed, FootballTeam& home, FootballTeam& away)
     {
+        // Ensure both teams are eligible to participate
         if (!home.canParticipate() ||
             !away.canParticipate())
         {
             throw TeamNotEligibleException();
         }
 
+        // Prevent a team from playing against itself
         if (home.getTeamID() == away.getTeamID())
         {
             throw TeamNotEligibleException();
         }
 
-        if (findTeam(home.getTeamID()) == nullptr ||
-            findTeam(away.getTeamID()) == nullptr)
+        // Ensure both teams are registered in this league
+        if (findTeam(home.getTeamID()) == nullptr || findTeam(away.getTeamID()) == nullptr)
         {
             throw TeamNotEligibleException();
         }
 
+        // Check existing fixtures for scheduling conflicts
         for (const Fixture& existing : fixtures)
         {
             if (existing.conflictsWith(proposed))
             {
-                bool sameTeam =
-                    existing.getHomeTeamID() == home.getTeamID() ||
-                    existing.getAwayTeamID() == home.getTeamID() ||
-                    existing.getHomeTeamID() == away.getTeamID() ||
-                    existing.getAwayTeamID() == away.getTeamID();
+                bool sameTeam = existing.getHomeTeamID() == home.getTeamID() || existing.getAwayTeamID() == home.getTeamID() ||
+                    existing.getHomeTeamID() == away.getTeamID() || existing.getAwayTeamID() == away.getTeamID();
 
                 if (sameTeam)
                 {
@@ -298,19 +306,20 @@ public:
             }
         }
 
+        // Assign the participating teams to the proposed fixture
         proposed.homeTeamID = home.getTeamID();
         proposed.awayTeamID = away.getTeamID();
 
+        // Store the fixture in the league
         fixtures.push_back(proposed);
     }
 
     // RECORD RESULT AND UPDATE STANDINGS
-
     void recordFixtureResult(int fixtureID, const MatchResult& matchResult)
     {
         Fixture* selectedFixture = nullptr;
 
-        // Find the fixture.
+        // Find the fixture using its unique ID
         for (Fixture& fixture : fixtures)
         {
             if (fixture.getFixtureID() == fixtureID)
@@ -320,56 +329,55 @@ public:
             }
         }
 
+        // Ensure the requested fixture exists
         if (selectedFixture == nullptr)
         {
             throw FixtureIncompleteException();
         }
 
-        // Prevent the result from being recorded twice.
+        // Prevent league points from being awarded more than once
         if (selectedFixture->hasAwardedPoints())
         {
             throw FixtureIncompleteException();
         }
 
-        // Validate the scores.
+        // Validate the submitted match scores
         if (!matchResult.validateScores())
         {
             throw FixtureIncompleteException();
         }
 
-        // Find the actual teams stored in the league.
-        FootballTeam* home =
-            findTeam(selectedFixture->getHomeTeamID());
+        // Retrieve the actual teams participating in the fixture
+        FootballTeam* home = findTeam(selectedFixture->getHomeTeamID());
 
-        FootballTeam* away =
-            findTeam(selectedFixture->getAwayTeamID());
+        FootballTeam* away = findTeam(selectedFixture->getAwayTeamID());
 
+        // Ensure both participating teams exist
         if (home == nullptr || away == nullptr)
         {
             throw FixtureIncompleteException();
         }
 
-        // Determine the winner and update the teams' statistics.
+        // Determine the winner and update the teams' statistics
         MatchResult appliedResult = matchResult;
 
         appliedResult.determineWinner(*home, *away);
 
-        // Store the result with its determined winner.
+        // Store the finalized result in the fixture
         selectedFixture->recordResults(appliedResult);
 
-        // Mark the fixture as completed for points awarding.
+        // Mark the fixture to prevent duplicate awarding of league points
         selectedFixture->leaguePointsAwarded = true;
 
         cout << "\nMatch result recorded successfully!\n";
 
-        // Display the updated standings.
+        // Display the updated league standings
         cout << "\n========== UPDATED LEAGUE STANDINGS ==========\n";
 
         getStandings();
     }
 
     // DISPLAY FIXTURES
-
     void displayFixtures() const
     {
         if (fixtures.empty())
@@ -385,7 +393,6 @@ public:
     }
 
     // DISPLAY TEAMS
-
     void displayTeams()
     {
         if (teams.empty())
@@ -405,9 +412,9 @@ public:
     }
 
     // LEAGUE STANDINGS
-
     void getStandings()
     {
+        // Store pointers to the teams for ranking without changing their original order
         vector<FootballTeam*> rankedTeams;
 
         for (FootballTeam& team : teams)
@@ -415,6 +422,7 @@ public:
             rankedTeams.push_back(&team);
         }
 
+        // Sort teams using the league's ranking rules
         sort(rankedTeams.begin(), rankedTeams.end(),
              [](FootballTeam* a, FootballTeam* b)
              {
@@ -427,6 +435,7 @@ public:
                  return a->getGoalsFor() > b->getGoalsFor();
              });
 
+        // Display the standings table headings
         cout << "\n===========================================================================================\n";
         cout << "                    FOOTBALL LEAGUE STANDINGS\n";
         cout << "==============================================================================================\n";
@@ -446,14 +455,13 @@ public:
 
         cout << "---------------------------------------------------------------------------------------------------\n";
 
+        // Display each team according to its calculated position
         int position = 1;
 
         for (FootballTeam* team : rankedTeams)
         {
-            int played =
-                team->getWins() +
-                team->getDraws() +
-                team->getLosses();
+            // Calculate the total number of matches played
+            int played = team->getWins() + team->getDraws() + team->getLosses();
 
             cout << left
                  << setw(5) << position++
@@ -473,4 +481,4 @@ public:
     }
 };
 
-#endif
+#endif // FOOTBALLLEAGUE_H

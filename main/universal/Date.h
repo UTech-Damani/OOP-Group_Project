@@ -25,7 +25,7 @@ class Date {
             setYear(y);
         }
 
-        // Setters
+        // ================= SETTERS =================
         void setDay(int d){
             day = d;
         }
@@ -36,7 +36,7 @@ class Date {
             year = y;
         }
 
-        // Getters
+        // ================= GETTERS =================
         int getDay() const{
             return day;
         }

@@ -15,14 +15,18 @@ using namespace std;
 class Stadium : public Persistable
 {
     private:
+        // Stores the stadium's identification and general information
         int stadiumID;
         string stadiumName;
         string location;
+
+        // Stores the stadium's physical condition and seating information
         int seatingCapacity;
         string fieldCondition;
         double ticketPrice;
         int occupancy;
 
+        // Stores pointers to the shops and fixtures associated with the stadium
         vector<StadiumShop*> shops;
         vector<Fixture*> fixtures;
 
@@ -50,7 +54,10 @@ class Stadium : public Persistable
             this->occupancy = occupancy;
         }
 
-        // Getters
+        // ================= GETTERS =================
+
+        // Returns the stadium's stored attributes
+
         int getStadiumID() const{
             return stadiumID;
         }
@@ -79,9 +86,13 @@ class Stadium : public Persistable
             return occupancy;
         }
 
+        // Returns the fixtures associated with the stadium
         vector<Fixture*>& getFixtures();
 
-        // Setters
+        // ================= SETTERS =================
+
+        // Updates the stadium's stored attributes
+
         void setStadiumID(int stadiumID) {
             this->stadiumID = stadiumID;
         }
@@ -110,15 +121,22 @@ class Stadium : public Persistable
             this->occupancy = occupancy;
         }
 
+        // Checks whether the stadium has enough available seats
         bool hasCapacityFor(int requiredSeats) const {
             return (seatingCapacity - occupancy) >= requiredSeats;
         }
+
+        // Calculates and returns the number of remaining seats
         int getRemainingSeats() const {
             return seatingCapacity - occupancy;
         }
+
+        // Checks whether the stadium is in good condition and has available seats
         bool isAvailable() const {
             return fieldCondition == "Good" && occupancy < seatingCapacity;
         }
+
+        // Increases stadium occupancy when spectators can be accommodated
         void increaseOccupancy(int spectators) {
             if (spectators <= 0) {
                 cout << "Invalid number of spectators." << endl;
@@ -133,10 +151,12 @@ class Stadium : public Persistable
             }
         }
 
+        // Adds a stadium shop to the stadium's collection
         void addShop(StadiumShop* shop){
             shops.push_back(shop);
         }
 
+        // Checks whether the requested number of tickets can be sold
         bool canSellTickets(int quantity) const {
             if (quantity <= 0) {
                 return false;
@@ -144,14 +164,16 @@ class Stadium : public Persistable
             return (occupancy + quantity) <= seatingCapacity;
         }
 
+        // Sells tickets by increasing occupancy
         void sellTickets(int quantity) {
             if (!canSellTickets(quantity)) {
                 throw CapacityExceededException();
             }
             occupancy += quantity;
-            
+
         }
 
+        // Releases previously occupied seats
         bool releaseTickets(int quantity) {
             if (quantity <= 0 || quantity > occupancy) {
                 return false;
@@ -159,8 +181,11 @@ class Stadium : public Persistable
             occupancy -= quantity;
             return true;
         }
+
+        // Adds a fixture to the stadium's scheduled fixtures
         void addFixture(Fixture* fixture);
 
+        // Converts stadium information into a csv format
         string toFileString() const override
         {
             stringstream ss;
@@ -176,6 +201,7 @@ class Stadium : public Persistable
             return ss.str();
         }
 
+        // Reconstructs a Stadium object from a comma-separated file record
         static Stadium fromFileString(const string& data)
         {
             stringstream ss(data);
@@ -206,11 +232,13 @@ class Stadium : public Persistable
 
 };
 
+// Returns a reference to the stadium's fixture collection
 inline vector<Fixture*>& Stadium::getFixtures()
 {
     return fixtures;
 }
 
+// Adds a non-null fixture pointer to the stadium's fixture collection
 inline void Stadium::addFixture(Fixture* fixture)
 {
     if (fixture != nullptr)
@@ -219,4 +247,4 @@ inline void Stadium::addFixture(Fixture* fixture)
     }
 }
 
-#endif //
+#endif // STADIUM_H
