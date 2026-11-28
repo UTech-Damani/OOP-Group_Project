@@ -1513,13 +1513,18 @@ void coachManagement(FootballLeague& league) {
     }
 }
 
+
+
+//manageess match offcials and their fixtures
 void officialMenu(FootballLeague& league)
 {
     int choice;
+    //gets fixtures for leahue 
     vector<Fixture>& fixtures = league.getFixtures();
 
     do
     {
+        //display match dropdown menu
         cout << "\n========== MATCH OFFICIALS ==========";
         cout << "\n1. Register Official";
         cout << "\n2. Assign Official";
@@ -1528,7 +1533,9 @@ void officialMenu(FootballLeague& league)
         cout << "\n0. Back";
         cout << "\nChoice ==> ";
 
-        if (!readInt(choice)) {
+        if (!readInt(choice)) 
+            //checking if entered option is vallid
+        {
             cout << "\nInvalid choice. Enter a number.\n";
             continue;
         }
@@ -1537,6 +1544,7 @@ void officialMenu(FootballLeague& league)
         {
             case 1:
             {
+                //eveytjing needed to store officials info
                 int id, age, experience, available;
                 int roleChoice, rankChoice;
 
@@ -1544,6 +1552,7 @@ void officialMenu(FootballLeague& league)
 
                 vector<string> roles =
                 {
+                    //avaialbel official posotions
                     "Referee",
                     "Assistant Referee",
                     "Fourth Official",
@@ -1552,6 +1561,7 @@ void officialMenu(FootballLeague& league)
 
                 vector<string> ranks =
                 {
+                    // avaialbe acceptable ranks 
                     "Level 1",
                     "Level 2",
                     "Level 3",
@@ -1617,7 +1627,8 @@ void officialMenu(FootballLeague& league)
                 MatchOfficial official(id, name, age, gender,
                                     role, rank, available == 1,
                                     experience);
-
+                    // stores registered official 
+                    
                 officials.push_back(official);
 
                 cout << "\nOfficial registered successfully!\n";
@@ -1626,6 +1637,8 @@ void officialMenu(FootballLeague& league)
 
             case 2:
             {
+
+                    // checks fixtures availanility 
                 if(officials.empty() || fixtures.empty())
                 {
                     cout << "\nOfficials or fixtures are unavailable.\n";
@@ -1635,7 +1648,8 @@ void officialMenu(FootballLeague& league)
                 int officialChoice, fixtureChoice;
 
                 cout << "\nREGISTERED OFFICIALS\n";
-
+                //displays regustered officials 
+                
                 for(size_t i = 0; i < officials.size(); ++i)
                 {
                     cout << "\n" << i + 1 << ". "
@@ -1650,7 +1664,8 @@ void officialMenu(FootballLeague& league)
                     cout << "\nInvalid official selection.\n";
                     break;
                 }
-
+                //checks if official is available 
+                
                 cout << "\nAVAILABLE FIXTURES\n";
 
                 for(size_t i = 0; i < fixtures.size(); ++i)
@@ -1674,7 +1689,8 @@ void officialMenu(FootballLeague& league)
                     cout << "\nOfficial is unavailable.\n";
                     break;
                 }
-
+                
+                
                 commissioner.assignOfficial(
                     fixtures[fixtureChoice - 1],
                     officials[officialChoice - 1]
@@ -1762,10 +1778,12 @@ void officialMenu(FootballLeague& league)
 void fixtureManagementMenu(FootballLeague& league)
 {
     int choice;
+    // retrevs fixtures registred in league
     vector<Fixture>& fixtures = league.getFixtures();
 
     do
     {
+        //displaying drop down menu list for fixtures 
         cout << "\n========= FIXTURE MANAGEMENT =========";
         cout << "\n1. Schedule Fixture";
         cout << "\n2. Assign Official";
@@ -1774,8 +1792,10 @@ void fixtureManagementMenu(FootballLeague& league)
         cout << "\n5. Manage Live Match";
         cout << "\n0. Back";
         cout << "\nChoice ==> ";
-
-        if (!readInt(choice)) {
+        
+            // checking vsalid option entered 
+        if (!readInt(choice))
+        {
             cout << "\nInvalid choice. Enter a number.\n";
             continue;
         }
@@ -1784,9 +1804,11 @@ void fixtureManagementMenu(FootballLeague& league)
         {
             case 1:
             {
+                //gets registered football teams
                 vector<FootballTeam>& teams = league.getTeams();
 
-                if(teams.size() < 2)
+                if(teams.size() < 2) 
+                    //ensure at leats two teams are availabile for fixture
                 {
                     cout << "\nAt least two teams are required.\n";
                     break;
@@ -1795,11 +1817,12 @@ void fixtureManagementMenu(FootballLeague& league)
                 cout << "\nREGISTERED TEAMS\n";
 
                 for(size_t i = 0; i < teams.size(); ++i)
+                    //displays the registred team for selction 
                 {
                     cout << "\n" << i + 1 << ". "
                          << teams[i].getTeamName();
                 }
-
+                    //stores home and away team
                 int home, away;
 
                 cout << "\nSelect Home Team: ";
@@ -1808,6 +1831,7 @@ void fixtureManagementMenu(FootballLeague& league)
                 cout << "Select Away Team: ";
                 cin >> away;
 
+                // prevents selection of the same team   
                 if(home < 1 || static_cast<size_t>(home) > teams.size() ||
                    away < 1 || static_cast<size_t>(away) > teams.size() || home == away)
                 {
@@ -1845,6 +1869,8 @@ void fixtureManagementMenu(FootballLeague& league)
                 proposed.setFixtureDate(day, month, year);
                 proposed.setFixtureTime(hours, minutes, seconds);
 
+
+                //checks whether stadiums have registered 
                 if(stadiums.empty())
                     {
                         cout << "\nNo stadiums registered.\n";
@@ -1852,7 +1878,8 @@ void fixtureManagementMenu(FootballLeague& league)
                     }
                     
                     cout << "\nREGISTERED STADIUMS\n";
-                    
+                    // displayings the registered stadium
+                
                     for(size_t i = 0; i < stadiums.size(); i++)
                     {
                         cout << "\n" << i + 1 << ". " << stadiums[i].getStadiumName();
@@ -2226,9 +2253,12 @@ void commissionerMenu(FootballLeague& league)
 }
 
 
-void spectatorManagement(){
+void spectatorManagement()
+{
+    //manages spectator reg, ticket purcahses and account bal
     int choice;
 
+        //displays spectator menu
     do {
         cout << "\n========== SPECTATOR MANAGEMENT ==========";
         cout << "\n1. Register Spectator";
@@ -2249,12 +2279,12 @@ void spectatorManagement(){
 
                 cout << "Spectator ID: ";
                 cin >> id;
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cin.ignore();
                 cout << "Name: ";
                 getline(cin, name);
                 cout << "Age: ";
                 cin >> age;
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cin.ignore();
                 cout << "Gender: ";
                 getline(cin, gender);
 
@@ -2385,7 +2415,7 @@ void stadiumMenu(FootballLeague& league){
                 double ticketPrice = 0.0;
                 string name, location, condition;
 
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cin.ignore();
 
                 cout << "\nStadium Name: ";
                 getline(cin, name);
@@ -2936,7 +2966,7 @@ void resultsMenu(FootballLeague& league)
                     break;
                 }
 
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cin.ignore();
                 cout << "Match Statistics: ";
                 getline(cin, stats);
 
