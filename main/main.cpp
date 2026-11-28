@@ -36,46 +36,59 @@ streamline league operations, maintain records and ensure
 reliable match-day management.
 */
 
-#include <iostream>
-#include <windows.h>
+#include <iostream>  // Provides input and output operations, such as cin and cout.
+#include <windows.h> // Provides Windows-specific functions.
 
-#include <string>
-#include <vector>
-#include <ctype.h>
-#include <cstdlib>
-#include <ctime>
-#include <limits>
+#include <string>    // Provides the string data type.
+#include <vector>    // Provides the vector container for storing collections of objects.
+#include <ctype.h>   // Provides character-handling functions, such as tolower().
+#include <cstdlib>   // Provides general utility functions, such as rand() and srand().
+#include <ctime>     // Provides time-related functions, such as time().
+#include <limits>    // Provides numeric limits for input validation.
 
-#include "universal/KPFL.h"
-#include "universal/FileManager.h"
+#include "universal/KPFL.h"         // Includes the main KPFL system classes.
+#include "universal/FileManager.h"  // Includes functionality for saving and loading system data.
 
 using namespace std;
 
+// Global collections for storing match officials, spectators and stadiums.
 vector<MatchOfficial> officials;
 vector<Spectator> spectators;
 vector<Stadium> stadiums;
+
+// Global commissioner object used to manage league administration.
 LeagueCommissioner commissioner;
 
+// Function declarations for the main menu and utility operations.
+int displayMainMenu();       // Displays the main system menu and returns the user's selection.
+int generateRandomID();      // Generates a random identification number.
+bool readInt(int& value);    // Reads and validates an integer input.
+bool readDouble(double& value); // Reads and validates a decimal number.
 
-int displayMainMenu();
-int generateRandomID();
-bool readInt(int& value);
-bool readDouble(double& value);
-void teamManagement(FootballLeague& league);
-void playerManagement(FootballLeague& league);
-void coachManagement(FootballLeague& league);
+// Function declarations for managing league members.
+void teamManagement(FootballLeague& league);   // Handles football team management.
+void playerManagement(FootballLeague& league); // Handles player management.
+void coachManagement(FootballLeague& league);  // Handles coach management.
+
+// Function for testing the system's custom exception classes.
 void testExceptions();
-void officialMenu(FootballLeague& league);
-void fixtureManagementMenu(FootballLeague& league);
-void commissionerMenu(FootballLeague& league);
-void resultsMenu(FootballLeague& league);
-void stadiumMenu(FootballLeague& league);
-void stadiumShopMenu();
-void spectatorManagement();
-void footballLeagueMenu(FootballLeague& league);
-void fileManagement(FootballLeague& league);
-void reportsMenu(FootballLeague& league);
-void liveMatchMenu(FootballLeague& league);
+
+// Function declarations for managing officials and fixtures.
+void officialMenu(FootballLeague& league);        // Handles match official management.
+void fixtureManagementMenu(FootballLeague& league); // Handles fixture scheduling and management.
+void commissionerMenu(FootballLeague& league);    // Handles commissioner operations.
+void resultsMenu(FootballLeague& league);          // Handles recording and displaying match results.
+
+// Function declarations for stadium and match-day management.
+void stadiumMenu(FootballLeague& league); // Handles stadium management.
+void stadiumShopMenu();                   // Handles stadium shop operations.
+void spectatorManagement();               // Handles spectator registration and management.
+
+// Function declarations for general league operations.
+void footballLeagueMenu(FootballLeague& league); // Handles football league operations.
+void fileManagement(FootballLeague& league);     // Handles saving and loading system data.
+void reportsMenu(FootballLeague& league);        // Displays league reports and statistics.
+void liveMatchMenu(FootballLeague& league);      // Handles live match updates and events.
 
 bool readInt(int& value)
 {
@@ -111,20 +124,23 @@ bool readDouble(double& value)
 
 int main()
 {
-    srand(time(NULL));
+    srand(time(NULL)); // Seeds the random number generator.
 
-    Date startDate(1, 12, 2026);
-    
-    Date endDate(31, 12, 2027);
-    
-    FootballLeague league(1,"Kingston Premier Football League","2026 Season",startDate,endDate, 0,"Active");
+    Date startDate(1, 12, 2026); // Sets the league start date.
+
+    Date endDate(31, 12, 2027); // Sets the league end date.
+
+    // Creates the Football League object.
+    FootballLeague league(1, "Kingston Premier Football League", "2026 Season", startDate, endDate, 0, "Active");
     int choice;
 
     cout << "Za Wurldo!" << endl;
 
+    // Repeatedly displays the main menu until the user chooses to exit.
     do{
         choice = displayMainMenu();
 
+        // Executes the selected menu operation.
         switch (choice)
         {
             case 1:
@@ -174,7 +190,7 @@ int main()
             case 12:
                 testExceptions();
                 break;
-            
+
             case 13:
                 fileManagement(league);
                 break;
@@ -186,13 +202,13 @@ int main()
             case 0:
                 cout << "You are now exiting the KPFL Demo program..." << endl;
                 break;
-            
+
             default:
                 break;
         }
     }while(choice != 0);
 
-    return 0;
+    return 0; // Indicates successful program termination.
 }
 
 
@@ -3469,8 +3485,11 @@ void testExceptions() {
 
 void fileManagement(FootballLeague& league){
     int choice;
+
+    // Creates a FileManager object using the data directory.
     FileManager fileManager("data");
 
+    // Repeatedly displays the file management menu until the user returns.
     do {
         cout << "\n===== FILE MANAGER =====\n";
         cout << "\n 1. Save Teams";
@@ -3481,30 +3500,38 @@ void fileManagement(FootballLeague& league){
         cout << "\n 6. Load People";
         cout << "\n 0. Back";
         cout << "\nChoice ==> ";
+
+        // Validates the menu selection.
         if (!readInt(choice)) {
             cout << "\nInvalid choice. Enter a number.\n";
             continue;
         }
 
+        // Handles file operations and catches related exceptions.
         try {
             switch(choice){
                 case 1: {
+                    // Retrieves the registered teams.
                     vector<FootballTeam>& teams = league.getTeams();
                     vector<Persistable*> teamRecords;
                     teamRecords.reserve(teams.size());
 
+                    // Converts team addresses into Persistable pointers.
                     for (FootballTeam& team : teams)
                         teamRecords.push_back(&team);
 
+                    // Saves the team records to a file.
                     fileManager.saveTeams(teamRecords.data(), teamRecords.size());
                     cout << "\nTeams saved successfully.\n";
                     break;
                 }
 
                 case 2: {
+                    // Loads team records from the file.
                     unique_ptr<FootballTeam> teams[100];
                     int count = fileManager.loadTeams(teams, 100);
 
+                    // Replaces the current teams with the loaded teams.
                     league.getTeams().clear();
                     for (int i = 0; i < count; ++i)
                         league.registerTeam(*teams[i]);
@@ -3514,23 +3541,28 @@ void fileManagement(FootballLeague& league){
                 }
 
                 case 3: {
+                    // Retrieves the fixtures and prepares them for saving.
                     vector<Fixture> fixtures = league.getFixtures();
                     vector<Persistable*> fixtureRecords;
                     fixtureRecords.reserve(fixtures.size());
 
+                    // Converts fixture addresses into Persistable pointers.
                     for (Fixture& fixture : fixtures)
                         fixtureRecords.push_back(&fixture);
 
+                    // Saves the fixture records to a file.
                     fileManager.saveFixtures(fixtureRecords.data(), fixtureRecords.size());
                     cout << "\nFixtures saved successfully.\n";
                     break;
                 }
 
                 case 4: {
+                    // Loads fixture records from the file.
                     unique_ptr<Fixture> fixtures[100];
                     int count = fileManager.loadFixtures(fixtures, 100);
                     league.getFixtures().clear();
 
+                    // Adds the loaded fixtures to the league.
                     for (int i = 0; i < count; ++i)
                         league.getFixtures().push_back(*fixtures[i]);
 
@@ -3540,8 +3572,11 @@ void fileManagement(FootballLeague& league){
 
                 case 5: {
                     int count = 0;
+
+                    // Clears the existing people records before saving new ones.
                     fileManager.clearFile(FileManager::PEOPLE_FILE);
 
+                    // Saves player records from each registered team.
                     for (FootballTeam& team : league.getTeams()) {
                         for (Player& player : team.getPlayers()) {
                             string record = "Player|" +
@@ -3556,6 +3591,7 @@ void fileManagement(FootballLeague& league){
                             ++count;
                         }
 
+                        // Saves coach records from each registered team.
                         for (Coach& coach : team.getCoaches()) {
                             string record = "Coach|" +
                                 to_string(coach.getIdNom()) + "|" +
@@ -3576,6 +3612,8 @@ void fileManagement(FootballLeague& league){
 
                 case 6: {
                     int count = 0;
+
+                    // Reads and displays the saved people records.
                     cout << "\nPeople Records:\n";
                     for (const string& line : fileManager.readLines(FileManager::PEOPLE_FILE)) {
                         cout << line << '\n';
@@ -3593,6 +3631,7 @@ void fileManagement(FootballLeague& league){
                     cout << "\nInvalid choice. Try again.\n";
             }
         }
+        // Displays an error message if a file operation fails.
         catch (const KPFLExceptions& exception){
             cout << "\nFile operation failed: "
                  << exception.getMessage() << '\n';
@@ -3600,6 +3639,7 @@ void fileManagement(FootballLeague& league){
     } while (choice != 0);
 }
 
+// Provides user a menu with all possible options
 int displayMainMenu(){
     int choice;
 
@@ -3634,14 +3674,16 @@ int displayMainMenu(){
     return choice;
 }
 
+// Generate a random number between 1 and 10000
 int generateRandomID() {
     return (rand() % 10000) + 1;
 }
 
 void reportsMenu(FootballLeague& league){
-    
+
     int choice;
 
+    // Repeatedly displays the reports menu until the user returns.
     do{
         cout << "\n========== MANAGEMENT REPORTS ==========";
         cout << "\n1. League Standings Report";
@@ -3652,10 +3694,12 @@ void reportsMenu(FootballLeague& league){
 
         cin >> choice;
 
+        // Executes the selected report.
         switch(choice)
         {
             case 1:
             {
+                // Displays the current league standings.
                 cout << "\n========== LEAGUE STANDINGS ==========\n";
 
                 league.getStandings();
@@ -3665,14 +3709,17 @@ void reportsMenu(FootballLeague& league){
 
             case 2:
             {
+                // Displays information about scheduled fixtures.
                 cout << "\n========== FIXTURE REPORT ==========\n";
 
+                // Checks whether any fixtures are available.
                 if(league.getFixtures().empty())
                 {
                     cout << "\nNo fixtures available.\n";
                     break;
                 }
 
+                // Displays the details of each fixture.
                 for(Fixture& fixture : league.getFixtures())
                 {
                     cout << "\nFixture ID: "
@@ -3687,6 +3734,7 @@ void reportsMenu(FootballLeague& league){
                     cout << "\nTime: ";
                     fixture.getFixtureTime();
 
+                    // Displays the stadium if one is assigned.
                     if(fixture.getStadium() != nullptr)
                     {
                         cout << "\nStadium: "
@@ -3701,14 +3749,17 @@ void reportsMenu(FootballLeague& league){
 
             case 3:
             {
+                // Displays information about registered stadiums.
                 cout << "\n========== STADIUM REPORT ==========\n";
 
+                // Checks whether any stadiums are registered.
                 if(stadiums.empty())
                 {
                     cout << "\nNo stadiums registered.\n";
                     break;
                 }
 
+                // Displays the details of each stadium.
                 for(Stadium& stadium : stadiums)
                 {
                     cout << "\nStadium ID: "
@@ -3749,9 +3800,11 @@ void reportsMenu(FootballLeague& league){
 
 void liveMatchMenu(FootballLeague& league)
 {
+    // Retrieves references to the league's fixtures and registered teams.
     vector<Fixture>& fixtures = league.getFixtures();
     vector<FootballTeam>& teams = league.getTeams();
 
+    // Checks whether any fixtures are available.
     if(fixtures.empty())
     {
         cout << "\nNo fixtures available.\n";
@@ -3760,30 +3813,34 @@ void liveMatchMenu(FootballLeague& league)
 
     cout << "\n========== AVAILABLE FIXTURES ==========\n";
 
+    // Displays all available fixtures and their statuses.
     for(size_t i = 0; i < fixtures.size(); i++)
     {
         cout << "\n" << i + 1
-             << ". Fixture ID: " << fixtures[i].getFixtureID()
-             << " | Status: " << fixtures[i].getFixtureStatus();
+            << ". Fixture ID: " << fixtures[i].getFixtureID()
+            << " | Status: " << fixtures[i].getFixtureStatus();
     }
 
     int choice;
 
     cout << "\n\nSelect Fixture: ";
 
+    // Validates the user's fixture selection.
     if(!readInt(choice) || choice < 1 ||
-       static_cast<size_t>(choice) > fixtures.size())
+    static_cast<size_t>(choice) > fixtures.size())
     {
         cout << "\nInvalid fixture selection.\n";
         return;
     }
 
+    // Retrieves a reference to the selected fixture.
     Fixture& fixture = fixtures[choice - 1];
 
     // Find the participating teams
     FootballTeam* home = nullptr;
     FootballTeam* away = nullptr;
 
+    // Locates the home and away teams using their IDs.
     for(FootballTeam& team : teams)
     {
         if(team.getTeamID() == fixture.getHomeTeamID())
@@ -3797,6 +3854,7 @@ void liveMatchMenu(FootballLeague& league)
         }
     }
 
+    // Checks whether both participating teams were found.
     if(home == nullptr || away == nullptr)
     {
         cout << "\nUnable to locate the participating teams.\n";
@@ -3805,38 +3863,40 @@ void liveMatchMenu(FootballLeague& league)
 
     int option = -1;
 
+    // Repeatedly displays the live match menu until the user returns.
     do
     {
-        cout << "\n\n========== LIVE MATCH MANAGEMENT ==========";
+    cout << "\n\n========== LIVE MATCH MANAGEMENT ==========";
 
-        cout << "\n\n" << home->getTeamName()
-             << " " << fixture.getLiveHomeScore()
-             << " - " << fixture.getLiveAwayScore()
-             << " " << away->getTeamName();
+    // Displays the current score, match minute and status.
+    cout << "\n\n" << home->getTeamName()
+         << " " << fixture.getLiveHomeScore()
+         << " - " << fixture.getLiveAwayScore()
+         << " " << away->getTeamName();
 
-        cout << "\nMatch Minute: "
-             << fixture.getCurrentMinute() << "'";
+    cout << "\nMatch Minute: " << fixture.getCurrentMinute() << "'";
 
-        cout << "\nMatch Status: "
-             << fixture.getFixtureStatus();
+    cout << "\nMatch Status: " << fixture.getFixtureStatus();
 
-        cout << "\n\n1. Start Match";
-        cout << "\n2. Update Match Minute";
-        cout << "\n3. Record Home Team Goal";
-        cout << "\n4. Record Away Team Goal";
-        cout << "\n5. Half-Time";
-        cout << "\n6. Resume Match";
-        cout << "\n7. View Match Events";
-        cout << "\n8. End Match";
-        cout << "\n0. Return";
+    // Displays the available live match operations.
+    cout << "\n\n1. Start Match";
+    cout << "\n2. Update Match Minute";
+    cout << "\n3. Record Home Team Goal";
+    cout << "\n4. Record Away Team Goal";
+    cout << "\n5. Half-Time";
+    cout << "\n6. Resume Match";
+    cout << "\n7. View Match Events";
+    cout << "\n8. End Match";
+    cout << "\n0. Return";
 
-        cout << "\n\nChoice ==> ";
+    cout << "\n\nChoice ==> ";
 
-        if(!readInt(option))
-        {
-            cout << "\nInvalid input.\n";
-            continue;
-        }
+    // Validates the user's menu selection.
+    if(!readInt(option))
+    {
+        cout << "\nInvalid input.\n";
+        continue;
+    }
 
         try
         {
